@@ -1,6 +1,5 @@
 package com.tonilr.ToDoList.Entities;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -13,25 +12,25 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Role")
-public class Role {
-
-    @Id
+@Table(name = "Category")
+public class Category {
+	
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long role_id;
+    private Long id;
 
-    private String name; 
-    
+    private String name;  // Nombre de la categoría, como "Trabajo", "Personal", etc.
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<Users> users = new HashSet<Users>();
-    
- // Getters y Setters
-    public Long getRole_Id() {
-        return role_id;
+    private Set<Task> tasks;  // Tareas asociadas a esta categoría
+
+    // Getters y Setters
+    public Long getId() {
+        return id;
     }
 
-    public void setRole_Id(Long role_id) {
-        this.role_id = role_id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -41,12 +40,12 @@ public class Role {
     public void setName(String name) {
         this.name = name;
     }
-    
-    public Set<Users> getUsers() {
-        return users;
+
+    public Set<Task> getTaks() {
+        return tasks;
     }
 
-    public void setUsers(Set<Users> users) {
-        this.users = users;
+    public void setTasks(Set<Task> tasks) {
+        this.tasks = tasks;
     }
 }

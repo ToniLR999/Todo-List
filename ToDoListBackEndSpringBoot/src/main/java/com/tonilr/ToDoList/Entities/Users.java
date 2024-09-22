@@ -1,12 +1,20 @@
 package com.tonilr.ToDoList.Entities;
 
 import java.sql.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -27,6 +35,28 @@ public class Users {
 	@Column(nullable = false, updatable = true)
 	private Date register_date;
 	
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "role_id",nullable = true)
+    private Role role;
+    
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<Task> tasks = new HashSet<Task>();
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<List> lists = new HashSet<List>();
+    
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<Project> projects = new HashSet<Project>();
+    
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Project> sharedProjects = new HashSet<Project>();
+    
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<TaskHistorical> tasksHistoricals = new HashSet<TaskHistorical>();
+    
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<Comment> comments = new HashSet<Comment>();
+    
 	public Users() {
 	}
 
@@ -76,4 +106,52 @@ public class Users {
 	public void setPassword(Date register_date) {
 		this.register_date = register_date;
 	}
+	
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+    
+    public Set<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(Set<Task> tasks) {
+        this.tasks = tasks;
+    }
+
+    public Set<List> getLists() {
+        return lists;
+    }
+
+    public void setTodoLists(Set<List> lists) {
+        this.lists = lists;
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
+    }
+
+    public Set<Project> getSharedProjects() {
+        return sharedProjects;
+    }
+
+    public void setSharedProjects(Set<Project> sharedProjects) {
+        this.sharedProjects = sharedProjects;
+    }
+
+    public Set<TaskHistorical> getActivityLogs() {
+        return tasksHistoricals;
+    }
+
+    public void setActivityLogs(Set<TaskHistorical> tasksHistoricals) {
+        this.tasksHistoricals = tasksHistoricals;
+    }
 }
