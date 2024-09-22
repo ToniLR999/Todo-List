@@ -30,7 +30,7 @@ public class Project {
     private Users user;
     
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<List> lists;
+    private Set<TaskList> lists;
     
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Users> sharedWith = new HashSet<Users>();  // Usuarios con los que se compartió la lista
@@ -60,11 +60,11 @@ public class Project {
         this.user = user;
     }
     
-    public Set<List> getLists() {
+    public Set<TaskList> getTaskLists() {
         return lists;
     }
 
-    public void setLists(Set<List> lists) {
+    public void setTaskLists(Set<TaskList> lists) {
         this.lists = lists;
     }
     

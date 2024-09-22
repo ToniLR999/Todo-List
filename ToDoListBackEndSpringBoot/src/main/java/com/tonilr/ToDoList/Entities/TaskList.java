@@ -15,8 +15,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "List")
-public class List {
+@Table(name = "TaskList")
+public class TaskList {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

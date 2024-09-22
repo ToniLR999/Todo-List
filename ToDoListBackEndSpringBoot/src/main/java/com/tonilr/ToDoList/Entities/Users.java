@@ -43,7 +43,7 @@ public class Users {
     private Set<Task> tasks = new HashSet<Task>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<List> lists = new HashSet<List>();
+    private Set<TaskList> lists = new HashSet<TaskList>();
     
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<Project> projects = new HashSet<Project>();
@@ -123,11 +123,11 @@ public class Users {
         this.tasks = tasks;
     }
 
-    public Set<List> getLists() {
+    public Set<TaskList> getTaskLists() {
         return lists;
     }
 
-    public void setTodoLists(Set<List> lists) {
+    public void setTaskLists(Set<TaskList> lists) {
         this.lists = lists;
     }
 
