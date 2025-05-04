@@ -1,5 +1,7 @@
 package com.tonilr.ToDoList.service;
 
+import com.tonilr.ToDoList.dto.DTOMapper;
+import com.tonilr.ToDoList.dto.TaskDTO;
 import com.tonilr.ToDoList.model.Task;
 import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.repository.TaskRepository;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -17,22 +20,32 @@ public class TaskService {
     @Autowired
     private UserService userService;
 
-    @Transactional
-    public Task createTask(Task task, String username) {
+    @Autowired
+    private DTOMapper dtoMapper;
+
+    public TaskDTO createTask(TaskDTO taskDTO, String username) {
         User user = userService.findByUsername(username);
+        Task task = dtoMapper.toTask(taskDTO);
         task.setAssignedTo(user);
         task.setCreatedAt(LocalDateTime.now());
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+        return dtoMapper.toTaskDTO(savedTask);
     }
 
-    public List<Task> getUserTasks(String username) {
+    public List<TaskDTO> getUserTasks(String username) {
         User user = userService.findByUsername(username);
-        return taskRepository.findByAssignedTo(user);
+        return taskRepository.findByAssignedTo(user)
+            .stream()
+            .map(dtoMapper::toTaskDTO)
+            .collect(Collectors.toList());
     }
 
-    public List<Task> getUserTasksByStatus(String username, boolean completed) {
+    public List<TaskDTO> getUserTasksByStatus(String username, boolean completed) {
         User user = userService.findByUsername(username);
-        return taskRepository.findByAssignedToAndCompleted(user, completed);
+        return taskRepository.findByAssignedToAndCompleted(user, completed)
+            .stream()
+            .map(dtoMapper::toTaskDTO)
+            .collect(Collectors.toList());
     }
 
     @Transactional

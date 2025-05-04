@@ -3,6 +3,7 @@ package com.tonilr.ToDoList.controller;
 import com.tonilr.ToDoList.model.Task;
 import com.tonilr.ToDoList.service.TaskService;
 import com.tonilr.ToDoList.service.SecurityService;
+import com.tonilr.ToDoList.dto.TaskDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +20,10 @@ public class TaskController {
     private SecurityService securityService;
 
     @PostMapping
-    public ResponseEntity<?> createTask(@RequestBody Task task) {
+    public ResponseEntity<?> createTask(@RequestBody TaskDTO taskDTO) {
         try {
             String username = securityService.getCurrentUsername();
-            Task newTask = taskService.createTask(task, username);
+            TaskDTO newTask = taskService.createTask(taskDTO, username);
             return ResponseEntity.ok(newTask);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -30,11 +31,10 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getUserTasks(
-            @RequestParam(required = false) Boolean completed) {
+    public ResponseEntity<?> getUserTasks(@RequestParam(required = false) Boolean completed) {
         try {
             String username = securityService.getCurrentUsername();
-            List<Task> tasks;
+            List<TaskDTO> tasks;
             if (completed != null) {
                 tasks = taskService.getUserTasksByStatus(username, completed);
             } else {
