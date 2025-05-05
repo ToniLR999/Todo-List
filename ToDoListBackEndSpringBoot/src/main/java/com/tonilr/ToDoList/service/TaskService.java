@@ -2,6 +2,9 @@ package com.tonilr.ToDoList.service;
 
 import com.tonilr.ToDoList.dto.DTOMapper;
 import com.tonilr.ToDoList.dto.TaskDTO;
+import com.tonilr.ToDoList.exception.BadRequestException;
+import com.tonilr.ToDoList.exception.ResourceNotFoundException;
+import com.tonilr.ToDoList.exception.UnauthorizedException;
 import com.tonilr.ToDoList.model.Task;
 import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.repository.TaskRepository;
@@ -19,6 +22,10 @@ public class TaskService {
     
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SecurityService securityService;
+
 
     @Autowired
     private DTOMapper dtoMapper;
@@ -49,23 +56,38 @@ public class TaskService {
     }
 
     @Transactional
-    public Task updateTask(Long taskId, Task taskDetails) {
+    public TaskDTO updateTask(Long taskId, TaskDTO taskDetails) {
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
-            
+            .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada con ID: " + taskId));
+        
+        // Verificar si el usuario tiene permiso
+        if (!securityService.isOwner(task.getAssignedTo().getId())) {
+            throw new UnauthorizedException("No tienes permiso para modificar esta tarea");
+        }
+    
+        // Validaciones de negocio
+        if (taskDetails.getTitle() == null || taskDetails.getTitle().trim().isEmpty()) {
+            throw new BadRequestException("El título de la tarea no puede estar vacío");
+        }
+    
+        // Actualizar la tarea
         task.setTitle(taskDetails.getTitle());
         task.setDescription(taskDetails.getDescription());
         task.setCompleted(taskDetails.isCompleted());
         task.setPriority(taskDetails.getPriority());
         task.setDueDate(taskDetails.getDueDate());
         
-        return taskRepository.save(task);
+        Task updatedTask = taskRepository.save(task);
+        return dtoMapper.toTaskDTO(updatedTask);
     }
 
     @Transactional
     public void deleteTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
+            .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada con ID: " + taskId));
+        if (!securityService.isOwner(task.getAssignedTo().getId())) {
+            throw new UnauthorizedException("No tienes permiso para eliminar esta tarea");
+        }
         taskRepository.delete(task);
     }
 }

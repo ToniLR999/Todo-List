@@ -49,9 +49,9 @@ public class TaskController {
     @PutMapping("/{taskId}")
     public ResponseEntity<?> updateTask(
             @PathVariable Long taskId,
-            @RequestBody Task taskDetails) {
+            @RequestBody TaskDTO taskDetails) {
         try {
-            Task updatedTask = taskService.updateTask(taskId, taskDetails);
+            TaskDTO updatedTask = taskService.updateTask(taskId, taskDetails);
             return ResponseEntity.ok(updatedTask);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

@@ -1,5 +1,7 @@
 package com.tonilr.ToDoList.service;
 
+import com.tonilr.ToDoList.exception.BadRequestException;
+import com.tonilr.ToDoList.exception.ResourceNotFoundException;
 import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.repository.UserRepository;
 import com.tonilr.ToDoList.repository.RoleRepository;
@@ -22,10 +24,10 @@ public class UserService {
     @Transactional
     public User registerUser(User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("El nombre de usuario ya existe");
+            throw new BadRequestException("El nombre de usuario ya existe");
         }
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("El email ya está registrado");
+            throw new BadRequestException("El email ya está registrado");
         }
         
         // Encriptar contraseña
@@ -40,13 +42,13 @@ public class UserService {
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
     @Transactional
     public User updateUser(Long userId, User userDetails) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
             
         user.setEmail(userDetails.getEmail());
         // No actualizamos username ni password aquí

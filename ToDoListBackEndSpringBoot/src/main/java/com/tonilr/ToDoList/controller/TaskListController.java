@@ -3,6 +3,7 @@ package com.tonilr.ToDoList.controller;
 import com.tonilr.ToDoList.model.TaskList;
 import com.tonilr.ToDoList.service.TaskListService;
 import com.tonilr.ToDoList.service.SecurityService;
+import com.tonilr.ToDoList.dto.TaskListDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +20,10 @@ public class TaskListController {
     private SecurityService securityService;
 
     @PostMapping
-    public ResponseEntity<?> createTaskList(@RequestBody TaskList taskList) {
+    public ResponseEntity<?> createTaskList(@RequestBody TaskListDTO taskListDTO) {
         try {
             String username = securityService.getCurrentUsername();
-            TaskList newList = taskListService.createTaskList(taskList, username);
+            TaskListDTO newList = taskListService.createTaskList(taskListDTO, username);
             return ResponseEntity.ok(newList);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -33,7 +34,7 @@ public class TaskListController {
     public ResponseEntity<?> getUserTaskLists() {
         try {
             String username = securityService.getCurrentUsername();
-            List<TaskList> lists = taskListService.getUserTaskLists(username);
+            List<TaskListDTO> lists = taskListService.getUserTaskLists(username);
             return ResponseEntity.ok(lists);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -43,9 +44,9 @@ public class TaskListController {
     @PutMapping("/{listId}")
     public ResponseEntity<?> updateTaskList(
             @PathVariable Long listId,
-            @RequestBody TaskList taskListDetails) {
+            @RequestBody TaskListDTO taskListDetails) {
         try {
-            TaskList updatedList = taskListService.updateTaskList(listId, taskListDetails);
+            TaskListDTO updatedList = taskListService.updateTaskList(listId, taskListDetails);
             return ResponseEntity.ok(updatedList);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
