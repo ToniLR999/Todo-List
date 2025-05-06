@@ -31,12 +31,23 @@ public class TaskListService {
     @Autowired
     private AuditLogService auditLogService;
 
+    @Autowired
+    private EmailService emailService;
+
     @Transactional
     public TaskListDTO createTaskList(TaskListDTO taskListDTO, String username) {
         User owner = userService.findByUsername(username);
         TaskList taskList = dtoMapper.toTaskList(taskListDTO);
         taskList.setOwner(owner);
         TaskList savedList = taskListRepository.save(taskList);
+
+        // Notificación de nueva lista
+        emailService.sendSimpleEmail(
+            owner.getEmail(),
+            "Nueva lista creada",
+            "Has creado una nueva lista: " + taskList.getName()
+        );
+
         auditLogService.logAction(owner, "CREAR_LISTA", "Lista creada: " + taskList.getName());
         return dtoMapper.toTaskListDTO(savedList);
     }

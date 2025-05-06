@@ -32,12 +32,25 @@ public class TaskService {
     @Autowired
     private AuditLogService auditLogService;
 
+    @Autowired
+    private EmailService emailService;
+
     public TaskDTO createTask(TaskDTO taskDTO, String username) {
         User user = userService.findByUsername(username);
         Task task = dtoMapper.toTask(taskDTO);
         task.setAssignedTo(user);
         task.setCreatedAt(LocalDateTime.now());
         Task savedTask = taskRepository.save(task);
+
+        // Notificación si la tarea es de alta prioridad
+        if (task.getPriority() == 1) {
+            emailService.sendSimpleEmail(
+                user.getEmail(),
+                "Nueva tarea importante creada",
+                "Has creado una tarea de alta prioridad: " + task.getTitle()
+            );
+        }
+
         auditLogService.logAction(user, "CREAR_TAREA", "Tarea creada: " + task.getTitle());
         return dtoMapper.toTaskDTO(savedTask);
     }
