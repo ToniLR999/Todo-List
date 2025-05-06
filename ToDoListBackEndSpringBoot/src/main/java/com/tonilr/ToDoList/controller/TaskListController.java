@@ -1,6 +1,9 @@
 package com.tonilr.ToDoList.controller;
 
 import com.tonilr.ToDoList.service.TaskListService;
+
+import io.swagger.v3.oas.annotations.Operation;
+
 import com.tonilr.ToDoList.service.SecurityService;
 import com.tonilr.ToDoList.dto.TaskListDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ public class TaskListController {
     @Autowired
     private SecurityService securityService;
 
+    @Operation(summary = "Crear una nueva lista de tareas")
     @PostMapping
     public ResponseEntity<?> createTaskList(@RequestBody TaskListDTO taskListDTO) {
         try {
@@ -29,6 +33,7 @@ public class TaskListController {
         }
     }
 
+    @Operation(summary = "Obtener las listas de tareas del usuario")
     @GetMapping
     public ResponseEntity<?> getUserTaskLists() {
         try {
@@ -40,6 +45,7 @@ public class TaskListController {
         }
     }
 
+    @Operation(summary = "Actualizar una lista de tareas")
     @PutMapping("/{listId}")
     public ResponseEntity<?> updateTaskList(
             @PathVariable Long listId,
@@ -52,6 +58,7 @@ public class TaskListController {
         }
     }
 
+    @Operation(summary = "Eliminar una lista de tareas")
     @DeleteMapping("/{listId}")
     public ResponseEntity<?> deleteTaskList(@PathVariable Long listId) {
         try {

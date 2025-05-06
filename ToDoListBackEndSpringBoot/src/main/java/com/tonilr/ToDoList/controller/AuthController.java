@@ -3,6 +3,9 @@ package com.tonilr.ToDoList.controller;
 import com.tonilr.ToDoList.dto.LoginDTO;
 import com.tonilr.ToDoList.dto.UserDTO;
 import com.tonilr.ToDoList.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +22,7 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @Operation(summary = "Iniciar sesión")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
         try {
@@ -29,12 +33,14 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Cerrar sesión")
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         // El logout real lo maneja Spring Security
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Verificar autenticación")
     @GetMapping("/check")
     public ResponseEntity<?> checkAuth() {
         return ResponseEntity.ok().build();

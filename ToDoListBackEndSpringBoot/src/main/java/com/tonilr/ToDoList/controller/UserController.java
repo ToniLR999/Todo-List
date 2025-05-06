@@ -3,6 +3,9 @@ package com.tonilr.ToDoList.controller;
 import com.tonilr.ToDoList.dto.UserDTO;
 import com.tonilr.ToDoList.dto.UserRegistrationDTO;
 import com.tonilr.ToDoList.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
+
 import com.tonilr.ToDoList.service.SecurityService;
 import com.tonilr.ToDoList.dto.DTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ public class UserController {
     @Autowired
     private DTOMapper dtoMapper;
 
+    @Operation(summary = "Registrar un nuevo usuario")
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationDTO userDTO) {
         try {
@@ -33,6 +37,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Obtener el current user")
     @GetMapping("/profile")
     public ResponseEntity<?> getCurrentUser() {
         try {
@@ -44,6 +49,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Actualizar el perfil del usuario")
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody UserDTO userDetails) {
         try {
