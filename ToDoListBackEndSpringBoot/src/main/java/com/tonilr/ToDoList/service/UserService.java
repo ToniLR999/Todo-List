@@ -21,6 +21,9 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     @Transactional
     public User registerUser(User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
@@ -37,7 +40,9 @@ public class UserService {
         roleRepository.findByName("ROLE_USER")
             .ifPresent(role -> user.getRoles().add(role));
             
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        auditLogService.logAction(savedUser, "REGISTRO_USUARIO", "Usuario registrado: " + savedUser.getUsername());
+        return savedUser;
     }
 
     public User findByUsername(String username) {
@@ -53,6 +58,8 @@ public class UserService {
         user.setEmail(userDetails.getEmail());
         // No actualizamos username ni password aquí
         
-        return userRepository.save(user);
+        User updatedUser = userRepository.save(user);
+        auditLogService.logAction(updatedUser, "ACTUALIZAR_USUARIO", "Usuario actualizado: " + updatedUser.getUsername());
+        return updatedUser;
     }
 }

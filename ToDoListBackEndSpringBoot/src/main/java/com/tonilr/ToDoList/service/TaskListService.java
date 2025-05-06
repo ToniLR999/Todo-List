@@ -28,12 +28,16 @@ public class TaskListService {
     @Autowired
     private SecurityService securityService;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     @Transactional
     public TaskListDTO createTaskList(TaskListDTO taskListDTO, String username) {
         User owner = userService.findByUsername(username);
         TaskList taskList = dtoMapper.toTaskList(taskListDTO);
         taskList.setOwner(owner);
         TaskList savedList = taskListRepository.save(taskList);
+        auditLogService.logAction(owner, "CREAR_LISTA", "Lista creada: " + taskList.getName());
         return dtoMapper.toTaskListDTO(savedList);
     }
 
@@ -60,6 +64,7 @@ public class TaskListService {
 
         taskList.setName(taskListDetails.getName());
         TaskList updatedList = taskListRepository.save(taskList);
+        auditLogService.logAction(taskList.getOwner(), "ACTUALIZAR_LISTA", "Lista actualizada: " + updatedList.getName());
         return dtoMapper.toTaskListDTO(updatedList);
     }
 
@@ -70,6 +75,7 @@ public class TaskListService {
         if (!securityService.isOwner(taskList.getOwner().getId())) {
             throw new UnauthorizedException("No tienes permiso para eliminar esta lista");
         }
+        auditLogService.logAction(taskList.getOwner(), "ELIMINAR_LISTA", "Lista eliminada: " + taskList.getName());
         taskListRepository.delete(taskList);
     }
 }

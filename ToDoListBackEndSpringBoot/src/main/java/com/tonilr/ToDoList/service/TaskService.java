@@ -26,9 +26,11 @@ public class TaskService {
     @Autowired
     private SecurityService securityService;
 
-
     @Autowired
     private DTOMapper dtoMapper;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     public TaskDTO createTask(TaskDTO taskDTO, String username) {
         User user = userService.findByUsername(username);
@@ -36,6 +38,7 @@ public class TaskService {
         task.setAssignedTo(user);
         task.setCreatedAt(LocalDateTime.now());
         Task savedTask = taskRepository.save(task);
+        auditLogService.logAction(user, "CREAR_TAREA", "Tarea creada: " + task.getTitle());
         return dtoMapper.toTaskDTO(savedTask);
     }
 
@@ -78,6 +81,7 @@ public class TaskService {
         task.setDueDate(taskDetails.getDueDate());
         
         Task updatedTask = taskRepository.save(task);
+        auditLogService.logAction(task.getAssignedTo(), "ACTUALIZAR_TAREA", "Tarea actualizada: " + updatedTask.getTitle());
         return dtoMapper.toTaskDTO(updatedTask);
     }
 
@@ -88,6 +92,7 @@ public class TaskService {
         if (!securityService.isOwner(task.getAssignedTo().getId())) {
             throw new UnauthorizedException("No tienes permiso para eliminar esta tarea");
         }
+        auditLogService.logAction(task.getAssignedTo(), "ELIMINAR_TAREA", "Tarea eliminada: " + task.getTitle());
         taskRepository.delete(task);
     }
 }
