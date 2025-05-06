@@ -1,9 +1,8 @@
 package com.tonilr.ToDoList.controller;
 
-import com.tonilr.ToDoList.model.Task;
+import com.tonilr.ToDoList.dto.TaskDTO;
 import com.tonilr.ToDoList.service.TaskService;
 import com.tonilr.ToDoList.service.SecurityService;
-import com.tonilr.ToDoList.dto.TaskDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

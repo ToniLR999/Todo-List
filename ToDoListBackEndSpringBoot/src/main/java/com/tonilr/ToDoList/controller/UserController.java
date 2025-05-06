@@ -1,9 +1,9 @@
 package com.tonilr.ToDoList.controller;
 
-import com.tonilr.ToDoList.model.User;
+import com.tonilr.ToDoList.dto.UserDTO;
+import com.tonilr.ToDoList.dto.UserRegistrationDTO;
 import com.tonilr.ToDoList.service.UserService;
 import com.tonilr.ToDoList.service.SecurityService;
-import com.tonilr.ToDoList.dto.UserRegistrationDTO;
 import com.tonilr.ToDoList.dto.DTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +25,8 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationDTO userDTO) {
         try {
-            User user = dtoMapper.toUser(userDTO);
-            User newUser = userService.registerUser(user);
+            var user = dtoMapper.toUser(userDTO);
+            var newUser = userService.registerUser(user);
             return ResponseEntity.ok(dtoMapper.toUserDTO(newUser));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -37,7 +37,7 @@ public class UserController {
     public ResponseEntity<?> getCurrentUser() {
         try {
             String username = securityService.getCurrentUsername();
-            User user = userService.findByUsername(username);
+            var user = userService.findByUsername(username);
             return ResponseEntity.ok(dtoMapper.toUserDTO(user));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -45,11 +45,12 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestBody User userDetails) {
+    public ResponseEntity<?> updateProfile(@RequestBody UserDTO userDetails) {
         try {
             String username = securityService.getCurrentUsername();
-            User user = userService.findByUsername(username);
-            User updatedUser = userService.updateUser(user.getId(), userDetails);
+            var user = userService.findByUsername(username);
+            user.setEmail(userDetails.getEmail());
+            var updatedUser = userService.updateUser(user.getId(), user);
             return ResponseEntity.ok(dtoMapper.toUserDTO(updatedUser));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

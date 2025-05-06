@@ -1,6 +1,5 @@
 package com.tonilr.ToDoList.controller;
 
-import com.tonilr.ToDoList.model.TaskList;
 import com.tonilr.ToDoList.service.TaskListService;
 import com.tonilr.ToDoList.service.SecurityService;
 import com.tonilr.ToDoList.dto.TaskListDTO;
