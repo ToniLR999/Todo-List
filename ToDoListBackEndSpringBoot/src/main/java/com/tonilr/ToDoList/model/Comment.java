@@ -5,7 +5,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import java.time.LocalDateTime;
@@ -28,5 +27,5 @@ public class Comment {
     @JoinColumn(name = "user_id")
     private User author;
 
-    // Getters y setters
+    // Getters y setters    
 }

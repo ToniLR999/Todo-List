@@ -1,26 +1,16 @@
 package com.tonilr.ToDoList.controller;
 
 import com.tonilr.ToDoList.dto.LoginDTO;
-import com.tonilr.ToDoList.dto.UserDTO;
-import com.tonilr.ToDoList.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class AuthController {
-
-    @Autowired
-    private UserService userService;
 
     @Operation(summary = "Iniciar sesión")
     @PostMapping("/login")
