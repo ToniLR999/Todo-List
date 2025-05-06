@@ -68,4 +68,11 @@ public class TaskListController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @Operation(summary = "Buscar listas de tareas por nombre")
+    @GetMapping("/search")
+    public ResponseEntity<?> searchTaskListsByName(@RequestParam String name) {
+        String username = securityService.getCurrentUsername();
+        return ResponseEntity.ok(taskListService.searchUserTaskListsByName(username, name));
+    }
 }

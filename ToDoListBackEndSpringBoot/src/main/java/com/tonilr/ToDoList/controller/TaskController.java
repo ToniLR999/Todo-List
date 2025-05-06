@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -72,5 +73,24 @@ public class TaskController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/priority/{priority}")
+    public ResponseEntity<?> getTasksByPriority(@PathVariable int priority) {
+        String username = securityService.getCurrentUsername();
+        return ResponseEntity.ok(taskService.getUserTasksByPriority(username, priority));
+    }
+
+    @GetMapping("/duedate")
+    public ResponseEntity<?> getTasksByDueDate(@RequestParam String dueDate) {
+        String username = securityService.getCurrentUsername();
+        LocalDateTime date = LocalDateTime.parse(dueDate); // Formato ISO
+        return ResponseEntity.ok(taskService.getUserTasksByDueDate(username, date));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchTasksByTitle(@RequestParam String title) {
+        String username = securityService.getCurrentUsername();
+        return ResponseEntity.ok(taskService.searchUserTasksByTitle(username, title));
     }
 }

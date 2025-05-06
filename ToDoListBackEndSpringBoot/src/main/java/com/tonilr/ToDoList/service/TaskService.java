@@ -71,6 +71,30 @@ public class TaskService {
             .collect(Collectors.toList());
     }
 
+    public List<TaskDTO> getUserTasksByPriority(String username, int priority) {
+        User user = userService.findByUsername(username);
+        return taskRepository.findByAssignedToAndPriority(user, priority)
+            .stream()
+            .map(dtoMapper::toTaskDTO)
+            .collect(Collectors.toList());
+    }
+
+    public List<TaskDTO> getUserTasksByDueDate(String username, LocalDateTime dueDate) {
+        User user = userService.findByUsername(username);
+        return taskRepository.findByAssignedToAndDueDateBefore(user, dueDate)
+            .stream()
+            .map(dtoMapper::toTaskDTO)
+            .collect(Collectors.toList());
+    }
+
+    public List<TaskDTO> searchUserTasksByTitle(String username, String title) {
+        User user = userService.findByUsername(username);
+        return taskRepository.findByAssignedToAndTitleContainingIgnoreCase(user, title)
+            .stream()
+            .map(dtoMapper::toTaskDTO)
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public TaskDTO updateTask(Long taskId, TaskDTO taskDetails) {
         Task task = taskRepository.findById(taskId)

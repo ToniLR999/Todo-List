@@ -89,4 +89,12 @@ public class TaskListService {
         auditLogService.logAction(taskList.getOwner(), "ELIMINAR_LISTA", "Lista eliminada: " + taskList.getName());
         taskListRepository.delete(taskList);
     }
+
+    public List<TaskListDTO> searchUserTaskListsByName(String username, String name) {
+        User owner = userService.findByUsername(username);
+        return taskListRepository.findByOwnerAndNameContainingIgnoreCase(owner, name)
+            .stream()
+            .map(dtoMapper::toTaskListDTO)
+            .collect(Collectors.toList());
+    }
 }

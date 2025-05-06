@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface TaskListRepository extends JpaRepository<TaskList, Long> {
     List<TaskList> findByOwner(User owner);
+    List<TaskList> findByOwnerAndNameContainingIgnoreCase(User owner, String name);
 }
