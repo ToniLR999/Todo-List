@@ -1,0 +1,14 @@
+logging:
+  level:
+    org.springdoc: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER

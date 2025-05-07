@@ -4,6 +4,8 @@ import com.tonilr.ToDoList.dto.TaskDTO;
 import com.tonilr.ToDoList.service.TaskService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.tonilr.ToDoList.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.time.LocalDateTime;
 
+@Tag(name = "Tasks", description = "API de gestión de tareas")
 @RestController
 @RequestMapping("/api/tasks")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -35,6 +38,7 @@ public class TaskController {
     }
 
     @Operation(summary = "Obtener las tareas del usuario")
+    @ApiResponse(responseCode = "200", description = "Lista de tareas encontrada")
     @GetMapping
     public ResponseEntity<?> getUserTasks(@RequestParam(required = false) Boolean completed) {
         try {
