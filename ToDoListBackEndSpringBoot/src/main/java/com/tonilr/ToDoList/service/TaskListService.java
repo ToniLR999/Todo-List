@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 public class TaskListService {
@@ -34,6 +36,7 @@ public class TaskListService {
     @Autowired
     private EmailService emailService;
 
+    @CacheEvict(value = "taskLists", allEntries = true)
     @Transactional
     public TaskListDTO createTaskList(TaskListDTO taskListDTO, String username) {
         User owner = userService.findByUsername(username);
@@ -52,6 +55,7 @@ public class TaskListService {
         return dtoMapper.toTaskListDTO(savedList);
     }
 
+    @Cacheable(value = "taskLists", key = "#username")
     public List<TaskListDTO> getUserTaskLists(String username) {
         User owner = userService.findByUsername(username);
         return taskListRepository.findByOwner(owner)
@@ -60,6 +64,7 @@ public class TaskListService {
             .collect(Collectors.toList());
     }
 
+    @CacheEvict(value = "taskLists", allEntries = true)
     @Transactional
     public TaskListDTO updateTaskList(Long listId, TaskListDTO taskListDetails) {
         TaskList taskList = taskListRepository.findById(listId)
@@ -79,6 +84,7 @@ public class TaskListService {
         return dtoMapper.toTaskListDTO(updatedList);
     }
 
+    @CacheEvict(value = "taskLists", allEntries = true)
     @Transactional
     public void deleteTaskList(Long listId) {
         TaskList taskList = taskListRepository.findById(listId)

@@ -9,6 +9,8 @@ import com.tonilr.ToDoList.model.Task;
 import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -35,6 +37,8 @@ public class TaskService {
     @Autowired
     private EmailService emailService;
 
+    @CacheEvict(value = "tasks", allEntries = true)
+    @Transactional
     public TaskDTO createTask(TaskDTO taskDTO, String username) {
         User user = userService.findByUsername(username);
         Task task = dtoMapper.toTask(taskDTO);
@@ -55,6 +59,7 @@ public class TaskService {
         return dtoMapper.toTaskDTO(savedTask);
     }
 
+    @Cacheable(value = "tasks", key = "#username")
     public List<TaskDTO> getUserTasks(String username) {
         User user = userService.findByUsername(username);
         return taskRepository.findByAssignedTo(user)
@@ -63,6 +68,7 @@ public class TaskService {
             .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "tasks", key = "#username + '_' + #completed")
     public List<TaskDTO> getUserTasksByStatus(String username, boolean completed) {
         User user = userService.findByUsername(username);
         return taskRepository.findByAssignedToAndCompleted(user, completed)
@@ -95,6 +101,7 @@ public class TaskService {
             .collect(Collectors.toList());
     }
 
+    @CacheEvict(value = "tasks", allEntries = true)
     @Transactional
     public TaskDTO updateTask(Long taskId, TaskDTO taskDetails) {
         Task task = taskRepository.findById(taskId)
@@ -122,6 +129,7 @@ public class TaskService {
         return dtoMapper.toTaskDTO(updatedTask);
     }
 
+    @CacheEvict(value = "tasks", allEntries = true)
     @Transactional
     public void deleteTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
