@@ -65,4 +65,16 @@ public class DTOMapper {
         taskList.setName(dto.getName());
         return taskList;
     }
+
+    public AuditLogDTO toAuditLogDTO(AuditLog auditLog) {
+        if (auditLog == null) return null;
+        
+        AuditLogDTO dto = new AuditLogDTO();
+        dto.setId(auditLog.getId());
+        dto.setUsername(auditLog.getUser().getUsername());
+        dto.setAction(auditLog.getAction());
+        dto.setDetails(auditLog.getDetails());
+        dto.setTimestamp(auditLog.getTimestamp());
+        return dto;
+    }
 }
