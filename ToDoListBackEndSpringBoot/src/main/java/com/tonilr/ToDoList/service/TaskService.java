@@ -40,6 +40,7 @@ public class TaskService {
     @CacheEvict(value = "tasks", allEntries = true)
     @Transactional
     public TaskDTO createTask(TaskDTO taskDTO, String username) {
+        System.out.println("Creando nueva tarea - Invalidando caché");
         User user = userService.findByUsername(username);
         Task task = dtoMapper.toTask(taskDTO);
         task.setAssignedTo(user);
@@ -61,6 +62,7 @@ public class TaskService {
 
     @Cacheable(value = "tasks", key = "#username")
     public List<TaskDTO> getUserTasks(String username) {
+        System.out.println("Obteniendo tareas de la base de datos para: " + username);
         User user = userService.findByUsername(username);
         return taskRepository.findByAssignedTo(user)
             .stream()
