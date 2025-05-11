@@ -1,0 +1,17 @@
+{
+  "name": "todolist-serverless",
+  "version": "1.0.0",
+  "description": "ToDoList Serverless API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "serverless deploy",
+    "start": "serverless offline"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "serverless-offline": "^14.4.0"
+  }
+}
