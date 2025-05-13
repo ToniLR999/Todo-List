@@ -1,4 +1,4 @@
-package main.java.com.tonilr.ToDoList.lambda;
+package com.tonilr.ToDoList.lambda;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -7,10 +7,14 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaskLambdaHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
     private final ObjectMapper objectMapper = new ObjectMapper();
+    // Lista temporal para almacenar tareas (en un caso real usaríamos una base de datos)
+    private static final List<Task> tasks = new ArrayList<>();
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
@@ -51,9 +55,8 @@ public class TaskLambdaHandler implements RequestHandler<APIGatewayProxyRequestE
     private APIGatewayProxyResponseEvent handleGetTasks(APIGatewayProxyRequestEvent input, Context context) {
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
         try {
-            // Aquí implementarías la lógica para obtener tareas
             response.setStatusCode(200);
-            response.setBody("{\"message\": \"Lista de tareas\"}");
+            response.setBody(objectMapper.writeValueAsString(tasks));
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setBody("{\"message\": \"Error al obtener tareas\"}");
@@ -64,9 +67,10 @@ public class TaskLambdaHandler implements RequestHandler<APIGatewayProxyRequestE
     private APIGatewayProxyResponseEvent handleCreateTask(APIGatewayProxyRequestEvent input, Context context) {
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
         try {
-            // Aquí implementarías la lógica para crear tareas
+            Task newTask = objectMapper.readValue(input.getBody(), Task.class);
+            tasks.add(newTask);
             response.setStatusCode(201);
-            response.setBody("{\"message\": \"Tarea creada\"}");
+            response.setBody(objectMapper.writeValueAsString(newTask));
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setBody("{\"message\": \"Error al crear tarea\"}");
@@ -74,3 +78,27 @@ public class TaskLambdaHandler implements RequestHandler<APIGatewayProxyRequestE
         return response;
     }
 }
+
+// Clase para representar una tarea
+class Task {
+    private String id;
+    private String title;
+    private String description;
+    private boolean completed;
+
+    // Constructor vacío necesario para Jackson
+    public Task() {}
+
+    // Getters y Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    
+    public boolean isCompleted() { return completed; }
+    public void setCompleted(boolean completed) { this.completed = completed; }
+} 
