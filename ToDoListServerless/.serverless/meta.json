@@ -106,7 +106,7 @@
               "Properties": {
                 "Code": {
                   "S3Bucket": "serverless-framework-deployments-us-east-1-8513a76f-2a9b",
-                  "S3Key": "serverless/todolist-api/dev/1747174568154-2025-05-13T22:16:08.154Z/todolist-api.zip"
+                  "S3Key": "serverless/todolist-api/dev/1747491988912-2025-05-17T14:26:28.912Z/todolist-api.zip"
                 },
                 "Handler": "com.tonilr.ToDoList.lambda.TaskLambdaHandler",
                 "Runtime": "java11",
@@ -124,14 +124,14 @@
                 "TaskHandlerLogGroup"
               ]
             },
-            "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA": {
+            "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk": {
               "Type": "AWS::Lambda::Version",
               "DeletionPolicy": "Retain",
               "Properties": {
                 "FunctionName": {
                   "Ref": "TaskHandlerLambdaFunction"
                 },
-                "CodeSha256": "ScSWghPENpPR6/qfTDyjt28Hjx/uBmL67qxLvBt0Hmc="
+                "CodeSha256": "f7mLAqMjH7jo/bRcBFA/DR5YQN1u72JnAQ258Oo21uk="
               }
             },
             "ApiGatewayRestApi": {
@@ -310,7 +310,7 @@
                 "TaskHandlerLambdaPermissionApiGateway"
               ]
             },
-            "ApiGatewayDeployment1747174555597": {
+            "ApiGatewayDeployment1747491976049": {
               "Type": "AWS::ApiGateway::Deployment",
               "Properties": {
                 "RestApiId": {
@@ -372,7 +372,7 @@
             "TaskHandlerLambdaFunctionQualifiedArn": {
               "Description": "Current Lambda function version",
               "Value": {
-                "Ref": "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA"
+                "Ref": "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk"
               },
               "Export": {
                 "Name": "sls-todolist-api-dev-TaskHandlerLambdaFunctionQualifiedArn"
@@ -467,7 +467,7 @@
           "timeout": 30,
           "runtime": "java11",
           "vpc": {},
-          "versionLogicalId": "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA"
+          "versionLogicalId": "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk"
         }
       },
       "plugins": [
@@ -575,7 +575,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-8513a76f-2a9b",
-                "S3Key": "serverless/todolist-api/dev/1747174568154-2025-05-13T22:16:08.154Z/todolist-api.zip"
+                "S3Key": "serverless/todolist-api/dev/1747491988912-2025-05-17T14:26:28.912Z/todolist-api.zip"
               },
               "Handler": "com.tonilr.ToDoList.lambda.TaskLambdaHandler",
               "Runtime": "java11",
@@ -593,14 +593,14 @@
               "TaskHandlerLogGroup"
             ]
           },
-          "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA": {
+          "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "TaskHandlerLambdaFunction"
               },
-              "CodeSha256": "ScSWghPENpPR6/qfTDyjt28Hjx/uBmL67qxLvBt0Hmc="
+              "CodeSha256": "f7mLAqMjH7jo/bRcBFA/DR5YQN1u72JnAQ258Oo21uk="
             }
           },
           "ApiGatewayRestApi": {
@@ -779,7 +779,7 @@
               "TaskHandlerLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1747174555597": {
+          "ApiGatewayDeployment1747491976049": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -841,7 +841,7 @@
           "TaskHandlerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA"
+              "Ref": "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk"
             },
             "Export": {
               "Name": "sls-todolist-api-dev-TaskHandlerLambdaFunctionQualifiedArn"
@@ -899,12 +899,12 @@
     "serviceProviderAwsCfStackName": "todolist-api-dev",
     "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:491192276292:stack/todolist-api-dev/c17ec500-3046-11f0-86c0-0affc29073cd",
     "serviceProviderAwsCfStackCreated": "2025-05-13T22:08:10.203Z",
-    "serviceProviderAwsCfStackUpdated": null,
-    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "serviceProviderAwsCfStackUpdated": "2025-05-13T22:14:52.389Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
         "OutputKey": "TaskHandlerLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:us-east-1:491192276292:function:todolist-api-dev-taskHandler:1",
+        "OutputValue": "arn:aws:lambda:us-east-1:491192276292:function:todolist-api-dev-taskHandler:2",
         "Description": "Current Lambda function version",
         "ExportName": "sls-todolist-api-dev-TaskHandlerLambdaFunctionQualifiedArn"
       },
@@ -1013,7 +1013,7 @@
           "Properties": {
             "Code": {
               "S3Bucket": "serverless-framework-deployments-us-east-1-8513a76f-2a9b",
-              "S3Key": "serverless/todolist-api/dev/1747174568154-2025-05-13T22:16:08.154Z/todolist-api.zip"
+              "S3Key": "serverless/todolist-api/dev/1747491988912-2025-05-17T14:26:28.912Z/todolist-api.zip"
             },
             "Handler": "com.tonilr.ToDoList.lambda.TaskLambdaHandler",
             "Runtime": "java11",
@@ -1031,14 +1031,14 @@
             "TaskHandlerLogGroup"
           ]
         },
-        "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA": {
+        "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk": {
           "Type": "AWS::Lambda::Version",
           "DeletionPolicy": "Retain",
           "Properties": {
             "FunctionName": {
               "Ref": "TaskHandlerLambdaFunction"
             },
-            "CodeSha256": "ScSWghPENpPR6/qfTDyjt28Hjx/uBmL67qxLvBt0Hmc="
+            "CodeSha256": "f7mLAqMjH7jo/bRcBFA/DR5YQN1u72JnAQ258Oo21uk="
           }
         },
         "ApiGatewayRestApi": {
@@ -1217,7 +1217,7 @@
             "TaskHandlerLambdaPermissionApiGateway"
           ]
         },
-        "ApiGatewayDeployment1747174555597": {
+        "ApiGatewayDeployment1747491976049": {
           "Type": "AWS::ApiGateway::Deployment",
           "Properties": {
             "RestApiId": {
@@ -1279,7 +1279,7 @@
         "TaskHandlerLambdaFunctionQualifiedArn": {
           "Description": "Current Lambda function version",
           "Value": {
-            "Ref": "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA"
+            "Ref": "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk"
           },
           "Export": {
             "Name": "sls-todolist-api-dev-TaskHandlerLambdaFunctionQualifiedArn"

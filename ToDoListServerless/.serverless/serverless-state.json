@@ -105,7 +105,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-8513a76f-2a9b",
-                "S3Key": "serverless/todolist-api/dev/1747174568154-2025-05-13T22:16:08.154Z/todolist-api.zip"
+                "S3Key": "serverless/todolist-api/dev/1747491988912-2025-05-17T14:26:28.912Z/todolist-api.zip"
               },
               "Handler": "com.tonilr.ToDoList.lambda.TaskLambdaHandler",
               "Runtime": "java11",
@@ -123,14 +123,14 @@
               "TaskHandlerLogGroup"
             ]
           },
-          "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA": {
+          "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "TaskHandlerLambdaFunction"
               },
-              "CodeSha256": "ScSWghPENpPR6/qfTDyjt28Hjx/uBmL67qxLvBt0Hmc="
+              "CodeSha256": "f7mLAqMjH7jo/bRcBFA/DR5YQN1u72JnAQ258Oo21uk="
             }
           },
           "ApiGatewayRestApi": {
@@ -309,7 +309,7 @@
               "TaskHandlerLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1747174555597": {
+          "ApiGatewayDeployment1747491976049": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -371,7 +371,7 @@
           "TaskHandlerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA"
+              "Ref": "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk"
             },
             "Export": {
               "Name": "sls-todolist-api-dev-TaskHandlerLambdaFunctionQualifiedArn"
@@ -470,7 +470,7 @@
         "timeout": 30,
         "runtime": "java11",
         "vpc": {},
-        "versionLogicalId": "TaskHandlerLambdaVersionPfVAlQEg57IM7MdyRDH8vJqpcZKPsUx9vZd1WkfUA"
+        "versionLogicalId": "TaskHandlerLambdaVersionuHDbdP6lz7ZaH3FzZGXXQPQ4FMQllCuwatXosOCk"
       }
     },
     "configValidationMode": "warn",
@@ -493,7 +493,7 @@
     "artifact": "C:\\aplicaciones\\ToDoList\\ToDoListServerless\\.serverless\\todolist-api.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/todolist-api/dev/1747174568154-2025-05-13T22:16:08.154Z",
+    "artifactDirectoryName": "serverless/todolist-api/dev/1747491988912-2025-05-17T14:26:28.912Z",
     "artifact": "todolist-api.zip"
   }
 }

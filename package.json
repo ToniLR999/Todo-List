@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "serverless-offline": "^14.4.0",
+    "serverless-plugin-warmup": "^8.3.0"
+  }
+}
