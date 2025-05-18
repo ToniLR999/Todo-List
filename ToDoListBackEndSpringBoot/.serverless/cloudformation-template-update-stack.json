@@ -91,10 +91,10 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-eu-north-1-45893714-c58d",
-          "S3Key": "serverless/todolist-backend/dev/1747508429546-2025-05-17T19:00:29.546Z/ToDoList-0.0.1-SNAPSHOT.jar"
+          "S3Key": "serverless/todolist-backend/dev/1747580759503-2025-05-18T15:05:59.503Z/ToDoList-0.0.1-SNAPSHOT.jar"
         },
-        "Handler": "com.tonilr.ToDoList.lambda.LambdaHandler",
-        "Runtime": "java11",
+        "Handler": "com.tonilr.ToDoList.lambda.LambdaHandler::handleRequest",
+        "Runtime": "java17",
         "FunctionName": "todolist-backend-dev-api",
         "MemorySize": 512,
         "Timeout": 30,
@@ -120,14 +120,14 @@
         "ApiLogGroup"
       ]
     },
-    "ApiLambdaVersionHhKifZRZtk0oFAZMCqcmvMl6amXInjkqjF4mk1jBZPs": {
+    "ApiLambdaVersionDKv74cPy7ZDGbviuu3cQ86luTqktoSNdC1XuW38rU": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ApiLambdaFunction"
         },
-        "CodeSha256": "cuDqUM3pZtENfAMYtdjSc6jG0ORRlfcMqpTqsmtZeY0="
+        "CodeSha256": "YgN13TZ6i3zncVRg1yDZmgdCCPxGDZZEr8ZEiTWIU+Y="
       }
     },
     "ApiGatewayRestApi": {
@@ -248,7 +248,7 @@
         "ApiLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1747508419668": {
+    "ApiGatewayDeployment1747580744287": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -309,7 +309,7 @@
     "ApiLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ApiLambdaVersionHhKifZRZtk0oFAZMCqcmvMl6amXInjkqjF4mk1jBZPs"
+        "Ref": "ApiLambdaVersionDKv74cPy7ZDGbviuu3cQ86luTqktoSNdC1XuW38rU"
       },
       "Export": {
         "Name": "sls-todolist-backend-dev-ApiLambdaFunctionQualifiedArn"

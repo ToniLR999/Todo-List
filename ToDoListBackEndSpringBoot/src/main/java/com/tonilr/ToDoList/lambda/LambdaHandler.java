@@ -1,34 +1,17 @@
 package com.tonilr.ToDoList.lambda;
 
-import com.amazonaws.serverless.proxy.spring.SpringBootProxyHandlerBuilder;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.tonilr.ToDoList.ToDoListApplication;
-import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
-import com.amazonaws.serverless.exceptions.ContainerInitializationException;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
-public class LambdaHandler implements RequestStreamHandler {
-    private static final SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-
-    static {
-        try {
-            handler = new SpringBootProxyHandlerBuilder<AwsProxyRequest>()
-                    .defaultProxy()
-                    .asyncInit()
-                    .springBootApplication(ToDoListApplication.class)
-                    .buildAndInitialize();
-        } catch (ContainerInitializationException e) {
-            throw new RuntimeException("Error inicializando el contenedor de Lambda", e);
-        }
-    }
-
+public class LambdaHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws java.io.IOException {
-        handler.proxyStream(inputStream, outputStream, context);
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+        // TODO: Implementar la lógica de manejo de la petición
+        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
+        response.setStatusCode(200);
+        response.setBody("Hello from Lambda!");
+        return response;
     }
 } 

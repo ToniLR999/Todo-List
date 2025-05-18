@@ -1,41 +1,49 @@
-service: todolist-backend
-
-frameworkVersion: '4'
+service: todolist-api
 
 provider:
   name: aws
   runtime: java11
-  region: eu-north-1
+  region: us-east-1
   memorySize: 512
   timeout: 30
-  environment:
-    SPRING_PROFILES_ACTIVE: prod
-    DB_HOST: ${ssm:/todolist/DB_HOST}
-    DB_NAME: ${ssm:/todolist/DB_NAME}
-    DB_USER: ${ssm:/todolist/DB_USER}
-    DB_PASSWORD: ${ssm:/todolist/DB_PASSWORD}
-    JWT_SECRET: ${ssm:/todolist/JWT_SECRET}
-    JWT_EXPIRATION: 86400000
+  stage: ${opt:stage, 'dev'}
 
 package:
   artifact: target/ToDoList-0.0.1-SNAPSHOT.jar
 
 functions:
-  api:
-    handler: com.tonilr.ToDoList.lambda.LambdaHandler
+  taskHandler:
+    handler: com.tonilr.ToDoList.lambda.TaskLambdaHandler
     events:
       - http:
-          path: /{proxy+}
-          method: any
+          path: /api/tasks
+          method: get
+          cors: true
+      - http:
+          path: /api/tasks
+          method: post
+          cors: true
+      - http:
+          path: /api/tasks/{id}
+          method: put
+          cors: true
+      - http:
+          path: /api/tasks/{id}
+          method: delete
+          cors: true
+      - http:
+          path: /api/tasks/{id}
+          method: options
           cors: true
 
 plugins:
   - serverless-offline
-  - serverless-plugin-warmup
+  - serverless-plugin-aws-alerts
 
 custom:
-  warmup:
-    enabled: true
-    events:
-      - schedule: rate(5 minutes)
-    prewarm: true 
+  alerts:
+    stages:
+      - dev
+    alarms:
+      - functionErrors
+      - functionThrottles 
