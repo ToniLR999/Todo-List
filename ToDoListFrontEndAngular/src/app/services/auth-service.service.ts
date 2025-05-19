@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -10,14 +11,15 @@ import { environment } from '../../environments/environment';
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/api/auth`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) { }
 
   login(username: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { username, password });
   }
 
-  logout(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/logout`, {});
+  logout(): void {
+    this.removeToken();
+    this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
@@ -34,5 +36,13 @@ export class AuthService {
 
   removeToken(): void {
     localStorage.removeItem('token');
+  }
+
+  register(username: string, email: string, password: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/users/register`, { 
+      username, 
+      email, 
+      password 
+    });
   }
 }

@@ -22,5 +22,48 @@ main {
   margin: 0 auto;
 }
 
+:host {
+  display: block;
+  height: 100%;
+}
+
+.router-container {
+  position: relative;
+  height: 100%;
+}
+
+.router-container > * {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* Animaciones */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 
 

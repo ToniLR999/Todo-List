@@ -3,6 +3,7 @@ import { TaskService } from '../../services/task.service';
 import { Task } from '../../models/task.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth-service.service';
 
 @Component({
   selector: 'app-task-list',
@@ -23,7 +24,7 @@ export class TaskListComponent implements OnInit {
   showCompleted = false;
   errorMessage: string = '';
 
-  constructor(private taskService: TaskService) { }
+  constructor(private taskService: TaskService, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.loadTasks();
@@ -106,5 +107,9 @@ export class TaskListComponent implements OnInit {
 
   getPriorityClass(priority: string): string {
     return `priority-${priority.toLowerCase()}`;
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 } 
