@@ -47,13 +47,13 @@ public class UserService {
             .ifPresent(role -> user.getRoles().add(role));
             
         User savedUser = userRepository.save(user);
-
-        // Notificación de bienvenida
+        
         emailService.sendSimpleEmail(
             savedUser.getEmail(),
             "¡Bienvenido a ToDoList!",
             "Hola " + savedUser.getUsername() + ", tu cuenta ha sido creada correctamente."
         );
+        
 
         auditLogService.logAction(savedUser, "REGISTRO_USUARIO", "Usuario registrado: " + savedUser.getUsername());
         return savedUser;
