@@ -11,6 +11,8 @@ import com.tonilr.ToDoList.dto.DTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.hibernate.Hibernate;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -43,7 +45,7 @@ public class UserController {
         try {
             String username = securityService.getCurrentUsername();
             var user = userService.findByUsername(username);
-            return ResponseEntity.ok(dtoMapper.toUserDTO(user));
+            return ResponseEntity.ok(dtoMapper.toUserProfileDTO(user));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -51,6 +53,7 @@ public class UserController {
 
     @Operation(summary = "Actualizar el perfil del usuario")
     @PutMapping("/profile")
+    @Transactional
     public ResponseEntity<?> updateProfile(@RequestBody UserDTO userDetails) {
         try {
             String username = securityService.getCurrentUsername();

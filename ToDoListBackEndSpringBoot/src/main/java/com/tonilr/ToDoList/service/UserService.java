@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 
 @Service
+@Transactional
 public class UserService {
     @Autowired
     private UserRepository userRepository;
@@ -59,10 +60,10 @@ public class UserService {
         return savedUser;
     }
 
-    @Cacheable(value = "users", key = "#username")
+    @Transactional(readOnly = true)
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     @CacheEvict(value = "users", key = "#userDetails.username")

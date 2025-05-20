@@ -1,6 +1,6 @@
 // src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
@@ -9,7 +9,9 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/api/auth`;
+  private apiUrl = `${environment.apiUrl}/api`;
+  private authUrl = `${this.apiUrl}/auth`;
+  private usersUrl = `${this.apiUrl}/users`;
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   private authMethod: 'jwt' | 'cookie' = 'jwt';
 
@@ -29,7 +31,7 @@ export class AuthService {
       ? { withCredentials: true }
       : {};
 
-    return this.http.post(`${this.apiUrl}/login`, { username, password }, options)
+    return this.http.post(`${this.authUrl}/login`, { username, password }, options)
       .pipe(
         tap((response: any) => {
           if (this.authMethod === 'jwt' && response.token) {
@@ -66,7 +68,7 @@ export class AuthService {
   }
 
   register(username: string, email: string, password: string): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/api/users/register`, { 
+    return this.http.post(`${this.apiUrl}/users/register`, { 
       username, 
       email, 
       password 
@@ -92,5 +94,15 @@ export class AuthService {
   checkToken(): void {
     const token = localStorage.getItem('token');
     console.log('Token actual:', token);
+  }
+
+  // Obtener perfil del usuario actual
+  getCurrentUser(): Observable<any> {
+    return this.http.get(`${this.usersUrl}/profile`);
+  }
+
+  // Actualizar perfil del usuario
+  updateProfile(userDetails: any): Observable<any> {
+    return this.http.put(`${this.usersUrl}/profile`, userDetails);
   }
 }

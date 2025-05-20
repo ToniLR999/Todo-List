@@ -4,6 +4,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { TaskListComponent } from './components/task-list/task-list.component';
 import { AuthGuard } from './guards/auth.guard';
+import { UserProfileComponent } from './components/user-profile/user-profile.component';
 
 const routes: Routes = [
   { 
@@ -21,6 +22,12 @@ const routes: Routes = [
     component: TaskListComponent,
     canActivate: [AuthGuard],
     data: { animation: 'tasks' }
+  },
+  { 
+    path: 'profile', 
+    component: UserProfileComponent,
+    canActivate: [AuthGuard],
+    data: { animation: 'profile' }
   },
   { 
     path: '', 

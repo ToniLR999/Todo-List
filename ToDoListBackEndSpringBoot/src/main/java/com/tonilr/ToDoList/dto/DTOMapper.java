@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 public class DTOMapper {
     
     public UserDTO toUserDTO(User user) {
+        if (user == null) return null;
+        
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
@@ -23,6 +25,14 @@ public class DTOMapper {
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword());
         return user;
+    }
+
+    public UserProfileDTO toUserProfileDTO(User user) {
+        UserProfileDTO dto = new UserProfileDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        return dto;
     }
 
     public TaskDTO toTaskDTO(Task task) {
