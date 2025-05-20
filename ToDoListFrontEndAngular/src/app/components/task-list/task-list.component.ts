@@ -24,7 +24,12 @@ export class TaskListComponent implements OnInit {
   showCompleted = false;
   errorMessage: string = '';
 
-  constructor(private taskService: TaskService, private authService: AuthService) { }
+  constructor(private taskService: TaskService, private authService: AuthService) {
+
+    this.authService.getAuthStatus().subscribe(isAuthenticated => {
+      console.log('Estado de autenticación cambiado:', isAuthenticated);
+    });
+  }
 
   ngOnInit(): void {
     this.loadTasks();
@@ -110,6 +115,7 @@ export class TaskListComponent implements OnInit {
   }
 
   logout(): void {
+    this.authService.checkToken(); // Debug
     this.authService.logout();
   }
 } 

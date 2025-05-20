@@ -27,12 +27,20 @@ export class LoginComponent {
   onSubmit(): void {
     if (this.loginForm.valid) {
       const { username, password } = this.loginForm.value;
+      this.authService.setAuthMethod('jwt');
       this.authService.login(username, password).subscribe({
         next: (response) => {
-          this.authService.setToken(response.token);
-          this.router.navigate(['/tasks']);
+          console.log('Login exitoso, token:', response.token);
+          if (response && response.token) {
+            window.localStorage.setItem('token', response.token);
+            console.log('Token guardado antes de navegar:', window.localStorage.getItem('token'));
+            setTimeout(() => {
+              this.router.navigate(['/tasks']);
+            }, 100); // Pequeño delay para asegurar que el token se guarde
+          }
         },
         error: (error) => {
+          console.error('Error login:', error);
           this.error = 'Error de autenticación. Por favor, verifica tus credenciales.';
         }
       });

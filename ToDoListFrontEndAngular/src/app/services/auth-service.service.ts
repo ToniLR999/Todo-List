@@ -1,41 +1,68 @@
 // src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/api/auth`;
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  private authMethod: 'jwt' | 'cookie' = 'jwt';
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router) {
+    this.isAuthenticatedSubject.next(this.isAuthenticated());
+  }
+
+  setAuthMethod(method: 'jwt' | 'cookie'): void {
+    console.log('🔐 Cambiando método de autenticación a:', method);
+    this.authMethod = method;
+    this.isAuthenticatedSubject.next(this.isAuthenticated());
+  }
 
   login(username: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, { username, password });
+    console.log('🔑 Iniciando sesión con método:', this.authMethod);
+    const options = this.authMethod === 'cookie' 
+      ? { withCredentials: true }
+      : {};
+
+    return this.http.post(`${this.apiUrl}/login`, { username, password }, options)
+      .pipe(
+        tap((response: any) => {
+          if (this.authMethod === 'jwt' && response.token) {
+            localStorage.setItem('token', response.token);
+            console.log('📝 Token JWT guardado');
+          } else if (this.authMethod === 'cookie') {
+            console.log('🍪 Autenticación por cookie establecida');
+          }
+          this.isAuthenticatedSubject.next(true);
+        })
+      );
   }
 
   logout(): void {
-    this.removeToken();
+    console.log('🚪 Cerrando sesión con método:', this.authMethod);
+    if (this.authMethod === 'jwt') {
+      localStorage.removeItem('token');
+      console.log('🗑️ Token JWT eliminado');
+    } else {
+      console.log('🍪 Cookie de sesión eliminada');
+    }
+    this.isAuthenticatedSubject.next(false);
     this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+    const token = window.localStorage.getItem('token');
+    console.log('Verificando autenticación. Token:', token);
+    return !!token;
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  setToken(token: string): void {
-    localStorage.setItem('token', token);
-  }
-
-  removeToken(): void {
-    localStorage.removeItem('token');
+  getAuthStatus(): Observable<boolean> {
+    return this.isAuthenticatedSubject.asObservable();
   }
 
   register(username: string, email: string, password: string): Observable<any> {
@@ -44,5 +71,26 @@ export class AuthService {
       email, 
       password 
     });
+  }
+
+  checkAuthStatus(): void {
+    const token = localStorage.getItem('token');
+    console.log('Token actual:', token);
+    console.log('¿Está autenticado?:', this.isAuthenticated());
+  }
+
+  setToken(token: string): void {
+    console.log('Guardando token:', token); // Debug
+    localStorage.setItem('token', token);
+    this.isAuthenticatedSubject.next(true);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  checkToken(): void {
+    const token = localStorage.getItem('token');
+    console.log('Token actual:', token);
   }
 }
