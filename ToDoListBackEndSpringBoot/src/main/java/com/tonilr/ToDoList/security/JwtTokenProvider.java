@@ -58,4 +58,22 @@ public class JwtTokenProvider {
             return false;
         }
     }
+
+    public String generatePasswordResetToken(String username) {
+        return Jwts.builder()
+            .setSubject(username)
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hora
+            .signWith(getSigningKey())
+            .compact();
+    }
+
+    public String getUsernameFromPasswordResetToken(String token) {
+        return Jwts.parserBuilder()
+            .setSigningKey(getSigningKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .getSubject();
+    }
 }

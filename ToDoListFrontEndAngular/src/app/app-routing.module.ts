@@ -5,6 +5,8 @@ import { RegisterComponent } from './components/register/register.component';
 import { TaskListComponent } from './components/task-list/task-list.component';
 import { AuthGuard } from './guards/auth.guard';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 const routes: Routes = [
   { 
@@ -28,6 +30,16 @@ const routes: Routes = [
     component: UserProfileComponent,
     canActivate: [AuthGuard],
     data: { animation: 'profile' }
+  },
+  { 
+    path: 'forgot-password', 
+    component: ForgotPasswordComponent,
+    data: { animation: 'forgot-password' }
+  },
+  { 
+    path: 'reset-password', 
+    component: ResetPasswordComponent,
+    data: { animation: 'reset-password' }
   },
   { 
     path: '', 

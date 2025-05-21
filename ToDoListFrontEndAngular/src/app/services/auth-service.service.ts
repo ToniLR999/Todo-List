@@ -1,7 +1,7 @@
 // src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, throwError, map, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
@@ -104,5 +104,33 @@ export class AuthService {
   // Actualizar perfil del usuario
   updateProfile(userDetails: any): Observable<any> {
     return this.http.put(`${this.usersUrl}/profile`, userDetails);
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.authUrl}/forgot-password`, { email })
+      .pipe(
+        map(response => response),
+        catchError(error => {
+          if (error.status === 200) {
+            // Si el status es 200 pero hay error de parsing, asumimos que fue exitoso
+            return of({ message: 'Email de restablecimiento enviado' });
+          }
+          return throwError(() => error);
+        })
+      );
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.authUrl}/reset-password`, { token, newPassword })
+      .pipe(
+        map(response => response),
+        catchError(error => {
+          if (error.status === 200) {
+            // Si el status es 200 pero hay error de parsing, asumimos que fue exitoso
+            return of({ message: 'Contraseña actualizada correctamente' });
+          }
+          return throwError(() => error);
+        })
+      );
   }
 }
