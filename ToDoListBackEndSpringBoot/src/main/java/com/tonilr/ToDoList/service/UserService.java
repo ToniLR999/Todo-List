@@ -84,10 +84,9 @@ public class UserService {
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
-    public void updatePassword(String username, String newPassword) {
-        User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public User updatePassword(String username, String newPassword) {
+        User user = findByUsername(username);
         user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 }

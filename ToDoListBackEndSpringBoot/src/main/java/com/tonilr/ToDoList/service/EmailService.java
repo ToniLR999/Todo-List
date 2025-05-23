@@ -75,4 +75,13 @@ public class EmailService {
             throw new RuntimeException("Error enviando email de restablecimiento");
         }
     }
+
+    public void sendPasswordChangedEmail(String to) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Contraseña Actualizada - ToDoList");
+        message.setText("Tu contraseña ha sido actualizada exitosamente. " +
+                       "Si no realizaste este cambio, por favor contacta con soporte inmediatamente.");
+        mailSender.send(message);
+    }
 }

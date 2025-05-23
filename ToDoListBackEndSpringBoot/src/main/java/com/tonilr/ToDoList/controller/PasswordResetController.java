@@ -21,14 +21,18 @@ import java.util.Map;
 @Slf4j
 public class PasswordResetController {
 
+    private final UserService userService;
+    private final JwtTokenProvider tokenProvider;
+    private final EmailService emailService;
+
     @Autowired
-    private UserService userService;
-    
-    @Autowired
-    private EmailService emailService;
-    
-    @Autowired
-    private JwtTokenProvider tokenProvider;
+    public PasswordResetController(UserService userService, 
+                                JwtTokenProvider tokenProvider,
+                                EmailService emailService) {
+        this.userService = userService;
+        this.tokenProvider = tokenProvider;
+        this.emailService = emailService;
+    }
 
     @Operation(summary = "Solicitar restablecimiento de contraseña")
     @PostMapping("/forgot-password")
@@ -49,6 +53,11 @@ public class PasswordResetController {
         try {
             String username = tokenProvider.getUsernameFromPasswordResetToken(request.getToken());
             userService.updatePassword(username, request.getNewPassword());
+            User user = userService.findByUsername(username);
+            
+            // Enviar email de confirmación
+            emailService.sendPasswordChangedEmail(user.getEmail());
+            
             return ResponseEntity.ok().body(Map.of("message", "Contraseña actualizada correctamente"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
