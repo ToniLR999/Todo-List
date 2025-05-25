@@ -3,6 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Task } from '../models/task.model';
 
+interface TaskInput {
+  priority: 1 | 2 | 3;
+  title: string;
+  description?: string;
+  dueDate?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -15,8 +22,8 @@ export class TaskService {
     return this.http.get<Task[]>(`${this.apiUrl}?completed=${showCompleted}`);
   }
 
-  createTask(task: Task): Observable<Task> {
-    return this.http.post<Task>(this.apiUrl, task);
+  createTask(task: TaskInput): Observable<any> {
+    return this.http.post(`${this.apiUrl}`, task);
   }
 
   updateTask(id: number, task: Task): Observable<Task> {
