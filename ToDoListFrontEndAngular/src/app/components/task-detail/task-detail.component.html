@@ -1,1 +1,59 @@
-<p>task-detail works!</p>
+<div class="task-detail-container">
+  <div class="header">
+    <button class="back-button" (click)="goBack()">← Volver</button>
+    <h2>Detalles de la Tarea</h2>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Cargando detalles de la tarea...
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="task && !loading" class="task-detail">
+    <div class="task-header">
+      <h1 [class.completed]="task.completed">{{ task.title }}</h1>
+      <div class="status-badge" [class.completed]="task.completed">
+        {{ task.completed ? 'Completada' : 'Pendiente' }}
+      </div>
+    </div>
+
+    <div class="task-content">
+      <div class="task-section">
+        <h3>Descripción</h3>
+        <p>{{ task.description || 'Sin descripción' }}</p>
+      </div>
+
+      <div class="task-section">
+        <h3>Detalles</h3>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="label">Prioridad:</span>
+            <span class="value" [ngClass]="getPriorityClass(task.priority)">
+              {{ getPriorityLabel(task.priority) }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Fecha de creación:</span>
+            <span class="value">{{ task.createdAt | date:'medium' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Fecha límite:</span>
+            <span class="value">{{ task.dueDate ? (task.dueDate | date:'medium') : 'No especificada' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-actions">
+      <button (click)="toggleComplete()" [class.completed]="task.completed" class="action-button">
+        {{ task.completed ? 'Marcar como pendiente' : 'Marcar como completada' }}
+      </button>
+      <button (click)="deleteTask()" class="action-button delete">
+        Eliminar tarea
+      </button>
+    </div>
+  </div>
+</div>

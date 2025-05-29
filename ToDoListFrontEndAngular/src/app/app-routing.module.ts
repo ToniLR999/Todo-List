@@ -7,6 +7,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { TaskDetailComponent } from './components/task-detail/task-detail.component';
 
 const routes: Routes = [
   { 
@@ -41,6 +42,7 @@ const routes: Routes = [
     component: ResetPasswordComponent,
     data: { animation: 'reset-password' }
   },
+  { path: 'tasks/:id', component: TaskDetailComponent },
   { 
     path: '', 
     redirectTo: '/tasks', 

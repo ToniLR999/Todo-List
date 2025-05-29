@@ -66,6 +66,7 @@
           Fecha límite: {{ task.dueDate | date:'short' }}
         </span>
       </div>
+      <a [routerLink]="['/tasks', task.id]" class="view-details">Ver detalles</a>
     </div>
   </div>
 </div> 

@@ -142,4 +142,15 @@ public class TaskService {
         auditLogService.logAction(task.getAssignedTo(), "ELIMINAR_TAREA", "Tarea eliminada: " + task.getTitle());
         taskRepository.delete(task);
     }
+
+    public TaskDTO getTaskDetails(Long taskId, String username) {
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada con ID: " + taskId));
+        
+        if (!securityService.isOwner(task.getAssignedTo().getId())) {
+            throw new UnauthorizedException("No tienes permiso para ver esta tarea");
+        }
+        
+        return dtoMapper.toTaskDTO(task);
+    }
 }

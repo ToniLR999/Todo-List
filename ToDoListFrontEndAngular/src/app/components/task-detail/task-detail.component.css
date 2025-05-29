@@ -1,0 +1,147 @@
+.task-detail-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.back-button {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.back-button:hover {
+  background: #e0e0e0;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.task-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.task-header h1.completed {
+  text-decoration: line-through;
+  color: #666;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #ff9800;
+  color: white;
+  font-size: 14px;
+}
+
+.status-badge.completed {
+  background: #4CAF50;
+}
+
+.task-content {
+  margin: 20px 0;
+}
+
+.task-section {
+  margin-bottom: 30px;
+}
+
+.task-section h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.details-grid {
+  display: grid;
+  gap: 15px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  font-weight: bold;
+  color: #666;
+  min-width: 120px;
+}
+
+.value {
+  color: #333;
+}
+
+.priority-high {
+  color: #f44336;
+}
+
+.priority-medium {
+  color: #ff9800;
+}
+
+.priority-low {
+  color: #4CAF50;
+}
+
+.task-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.action-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.action-button.completed {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.action-button.delete {
+  background-color: #f44336;
+  color: white;
+}
+
+.action-button:hover {
+  opacity: 0.9;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.error-message {
+  color: #f44336;
+  padding: 10px;
+  margin: 10px 0;
+  background: #ffebee;
+  border-radius: 4px;
+}

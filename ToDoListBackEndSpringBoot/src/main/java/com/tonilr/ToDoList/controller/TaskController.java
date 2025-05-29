@@ -103,4 +103,16 @@ public class TaskController {
         String username = securityService.getCurrentUsername();
         return ResponseEntity.ok(taskService.searchUserTasksByTitle(username, title));
     }
+
+    @Operation(summary = "Obtener detalles de una tarea")
+    @GetMapping("/{taskId}")
+    public ResponseEntity<?> getTaskDetails(@PathVariable Long taskId) {
+        try {
+            String username = securityService.getCurrentUsername();
+            TaskDTO task = taskService.getTaskDetails(taskId, username);
+            return ResponseEntity.ok(task);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

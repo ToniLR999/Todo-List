@@ -45,4 +45,8 @@ export class TaskService {
   searchTasks(title: string): Observable<Task[]> {
     return this.http.get<Task[]>(`${this.apiUrl}/search?title=${title}`);
   }
+
+  getTaskDetails(taskId: number): Observable<Task> {
+    return this.http.get<Task>(`${this.apiUrl}/${taskId}`);
+  }
 } 
