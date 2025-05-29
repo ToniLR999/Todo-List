@@ -13,7 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +44,7 @@ public class TaskService {
         User user = userService.findByUsername(username);
         Task task = dtoMapper.toTask(taskDTO);
         task.setAssignedTo(user);
-        task.setCreatedAt(LocalDateTime.now());
+        task.setCreatedAt(new Date());
         Task savedTask = taskRepository.save(task);
 
         // Notificación si la tarea es de alta prioridad
@@ -87,7 +87,7 @@ public class TaskService {
             .collect(Collectors.toList());
     }
 
-    public List<TaskDTO> getUserTasksByDueDate(String username, LocalDateTime dueDate) {
+    public List<TaskDTO> getUserTasksByDueDate(String username, Date dueDate) {
         User user = userService.findByUsername(username);
         return taskRepository.findByAssignedToAndDueDateBefore(user, dueDate)
             .stream()

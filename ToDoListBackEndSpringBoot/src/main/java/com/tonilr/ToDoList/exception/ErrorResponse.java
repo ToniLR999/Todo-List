@@ -3,6 +3,7 @@ package com.tonilr.ToDoList.exception;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 
 public class ErrorResponse {
     private int status;
@@ -20,6 +21,13 @@ public class ErrorResponse {
         this.details = details;
         this.timestamp = LocalDateTime.now();
         this.path = path;
+        this.errors = new ArrayList<>();
+    }
+
+    public ErrorResponse(String message) {
+        this.status = HttpStatus.INTERNAL_SERVER_ERROR.value();
+        this.message = message;
+        this.timestamp = LocalDateTime.now();
         this.errors = new ArrayList<>();
     }
 

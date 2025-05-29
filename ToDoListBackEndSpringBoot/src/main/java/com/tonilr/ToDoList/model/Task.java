@@ -10,7 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.CascadeType;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,8 +29,8 @@ public class Task {
 
     private int priority; // 1=alta, 2=media, 3=baja
 
-    private LocalDateTime createdAt;
-    private LocalDateTime dueDate;
+    private Date createdAt;
+    private Date dueDate;
 
     @ManyToOne
     @JoinColumn(name = "task_list_id")
@@ -83,19 +83,19 @@ public class Task {
         this.priority = priority;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getDueDate() {
+    public Date getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(LocalDateTime dueDate) {
+    public void setDueDate(Date dueDate) {
         this.dueDate = dueDate;
     }
 

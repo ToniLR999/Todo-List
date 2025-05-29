@@ -1,6 +1,7 @@
 package com.tonilr.ToDoList.dto;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
 
 import lombok.Data;
 
@@ -12,8 +13,10 @@ public class TaskDTO {
     private String description;
     private boolean completed;
     private int priority;
-    private LocalDateTime createdAt;
-    private LocalDateTime dueDate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private Date createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private Date dueDate;
     private Long taskListId;
     private String assignedToUsername;
 }

@@ -1,6 +1,7 @@
 package com.tonilr.ToDoList.controller;
 
 import com.tonilr.ToDoList.dto.TaskDTO;
+import com.tonilr.ToDoList.exception.ErrorResponse;
 import com.tonilr.ToDoList.service.TaskService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.time.LocalDateTime;
+import org.springframework.http.HttpStatus;
+import java.time.ZoneId;
+import java.util.Date;
 
 @Tag(name = "Tasks", description = "API de gestión de tareas")
 @RestController
@@ -43,15 +47,16 @@ public class TaskController {
     public ResponseEntity<?> getUserTasks(@RequestParam(required = false) Boolean completed) {
         try {
             String username = securityService.getCurrentUsername();
-            List<TaskDTO> tasks;
-            if (completed != null) {
-                tasks = taskService.getUserTasksByStatus(username, completed);
-            } else {
-                tasks = taskService.getUserTasks(username);
-            }
+            List<TaskDTO> tasks = taskService.getUserTasksByStatus(username, completed != null ? completed : false);
             return ResponseEntity.ok(tasks);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse(
+                    String.format("Error al obtener las tareas: %s - %s", 
+                        e.getClass().getName(), 
+                        e.getMessage())
+                ));
         }
     }
 
@@ -88,7 +93,8 @@ public class TaskController {
     @GetMapping("/duedate")
     public ResponseEntity<?> getTasksByDueDate(@RequestParam String dueDate) {
         String username = securityService.getCurrentUsername();
-        LocalDateTime date = LocalDateTime.parse(dueDate); // Formato ISO
+        LocalDateTime dateTime = LocalDateTime.parse(dueDate);
+        Date date = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
         return ResponseEntity.ok(taskService.getUserTasksByDueDate(username, date));
     }
 
