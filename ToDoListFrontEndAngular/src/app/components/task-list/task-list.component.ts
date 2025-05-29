@@ -98,10 +98,8 @@ export class TaskListComponent implements OnInit {
     const updatedTask = { ...task, completed: !task.completed };
     this.taskService.updateTask(task.id!, updatedTask).subscribe({
       next: (updatedTask) => {
-        const index = this.tasks.findIndex(t => t.id === updatedTask.id);
-        if (index !== -1) {
-          this.tasks[index] = updatedTask;
-        }
+        // Recargar las tareas para actualizar la lista filtrada
+        this.loadTasks();
         this.errorMessage = '';
       },
       error: (error) => {
