@@ -40,6 +40,8 @@ export class TaskListComponent implements OnInit {
   dateFilter: string = 'all';
   private searchSubject = new Subject<string>();
   loading = false;
+  sortField: string = 'dueDate';  // Campo por defecto para ordenar
+  sortDirection: 'asc' | 'desc' = 'asc';  // Dirección de ordenación
 
   taskForm = this.fb.group({
     title: ['', Validators.required],
@@ -192,15 +194,13 @@ export class TaskListComponent implements OnInit {
 
   applyFilters(): void {
     if (this.statusFilter === 'all') {
-      // Para 'all' necesitamos tanto las completadas como las pendientes
       this.taskService.getTasks(true).subscribe({
         next: (completedTasks) => {
           this.taskService.getTasks(false).subscribe({
             next: (pendingTasks) => {
-              // Combinamos ambas listas
               let filteredTasks = [...completedTasks, ...pendingTasks];
               
-              // Aplicamos el filtro de búsqueda si hay término de búsqueda
+              // Aplicamos filtros existentes...
               if (this.searchTerm.trim()) {
                 const searchTermLower = this.searchTerm.toLowerCase().trim();
                 filteredTasks = filteredTasks.filter(task => 
@@ -209,7 +209,6 @@ export class TaskListComponent implements OnInit {
                 );
               }
               
-              // Aplicamos el resto de filtros
               if (this.priorityFilter !== 'all') {
                 filteredTasks = filteredTasks.filter(task => 
                   task.priority.toString() === this.priorityFilter
@@ -241,19 +240,19 @@ export class TaskListComponent implements OnInit {
                 });
               }
 
-              this.tasks = filteredTasks;
+              // Aplicamos la ordenación
+              this.tasks = this.sortTasks(filteredTasks);
               this.errorMessage = '';
             }
           });
         }
       });
     } else {
-      // Para 'pending' o 'completed' usamos el filtro normal
       this.taskService.getTasks(this.statusFilter === 'completed').subscribe({
         next: (tasks) => {
           let filteredTasks = tasks;
           
-          // Aplicamos el filtro de búsqueda si hay término de búsqueda
+          // Aplicamos filtros existentes...
           if (this.searchTerm.trim()) {
             const searchTermLower = this.searchTerm.toLowerCase().trim();
             filteredTasks = filteredTasks.filter(task => 
@@ -293,7 +292,8 @@ export class TaskListComponent implements OnInit {
             });
           }
 
-          this.tasks = filteredTasks;
+          // Aplicamos la ordenación
+          this.tasks = this.sortTasks(filteredTasks);
           this.errorMessage = '';
         }
       });
@@ -360,5 +360,59 @@ export class TaskListComponent implements OnInit {
       '3': 'Baja'
     };
     return labels[priority] || priority;
+  }
+
+  // Método para cambiar el campo de ordenación
+  changeSort(field: string): void {
+    if (this.sortField === field) {
+      // Si ya estamos ordenando por este campo, cambiamos la dirección
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Si es un campo nuevo, lo establecemos y la dirección por defecto es ascendente
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+    this.applyFilters();
+  }
+
+  // Método para ordenar las tareas
+  private sortTasks(tasks: Task[]): Task[] {
+    return tasks.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (this.sortField) {
+        case 'dueDate':
+          // Para fechas, manejamos el caso de fechas nulas
+          if (!a.dueDate && !b.dueDate) return 0;
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          comparison = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+          break;
+          
+        case 'priority':
+          // Para prioridad, 1 es alta, 2 media, 3 baja
+          comparison = a.priority - b.priority;
+          break;
+          
+        case 'title':
+          // Para títulos, ordenación alfabética
+          comparison = a.title.localeCompare(b.title);
+          break;
+          
+        case 'createdAt':
+          // Para fecha de creación, manejamos el caso de fechas nulas
+          if (!a.createdAt && !b.createdAt) return 0;
+          if (!a.createdAt) return 1;
+          if (!b.createdAt) return -1;
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+          
+        default:
+          comparison = 0;
+      }
+      
+      // Aplicamos la dirección de ordenación
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
   }
 }

@@ -285,4 +285,52 @@
 
 .clear-all:hover {
   background: #e0e0e0;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: white;
+  color: #666;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.btn-sort:hover {
+  background-color: #f5f5f5;
+  border-color: #d0d0d0;
+  transform: translateY(-1px);
+}
+
+.btn-sort.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+.btn-sort i {
+  font-size: 1.1em;
+}
+
+.sort-icon {
+  margin-left: 4px;
+  font-weight: bold;
+}
+
+/* Estilo para el botón activo al pasar el mouse */
+.btn-sort.active:hover {
+  background-color: #0056b3;
+  border-color: #004494;
 } 

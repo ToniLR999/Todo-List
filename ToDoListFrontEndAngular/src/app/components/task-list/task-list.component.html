@@ -79,6 +79,37 @@
       </div>
     </div>
 
+    <div class="sort-buttons">
+      <button class="btn btn-sort" (click)="changeSort('dueDate')" [class.active]="sortField === 'dueDate'">
+        <i class="fas fa-calendar"></i>
+        Fecha límite
+        <span class="sort-icon" *ngIf="sortField === 'dueDate'">
+          {{ sortDirection === 'asc' ? '↑' : '↓' }}
+        </span>
+      </button>
+      <button class="btn btn-sort" (click)="changeSort('priority')" [class.active]="sortField === 'priority'">
+        <i class="fas fa-flag"></i>
+        Prioridad
+        <span class="sort-icon" *ngIf="sortField === 'priority'">
+          {{ sortDirection === 'asc' ? '↑' : '↓' }}
+        </span>
+      </button>
+      <button class="btn btn-sort" (click)="changeSort('title')" [class.active]="sortField === 'title'">
+        <i class="fas fa-font"></i>
+        Título
+        <span class="sort-icon" *ngIf="sortField === 'title'">
+          {{ sortDirection === 'asc' ? '↑' : '↓' }}
+        </span>
+      </button>
+      <button class="btn btn-sort" (click)="changeSort('createdAt')" [class.active]="sortField === 'createdAt'">
+        <i class="fas fa-clock"></i>
+        Fecha creación
+        <span class="sort-icon" *ngIf="sortField === 'createdAt'">
+          {{ sortDirection === 'asc' ? '↑' : '↓' }}
+        </span>
+      </button>
+    </div>
+
     <div class="active-filters" *ngIf="hasActiveFilters()">
       <span class="filter-tag" *ngIf="searchTerm">
         Búsqueda: {{ searchTerm }}
