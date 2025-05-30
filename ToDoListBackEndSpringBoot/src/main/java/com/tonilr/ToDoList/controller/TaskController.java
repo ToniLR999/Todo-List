@@ -115,4 +115,19 @@ public class TaskController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<?> getFilteredTasks(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) String dateFilter) {
+        try {
+            String username = securityService.getCurrentUsername();
+            List<TaskDTO> tasks = taskService.getFilteredTasks(username, search, status, priority, dateFilter);
+            return ResponseEntity.ok(tasks);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

@@ -36,11 +36,68 @@
     </form>
   </div>
 
-  <!-- Filtros -->
-  <div class="filters">
-    <button (click)="toggleShowCompleted()" class="btn btn-secondary">
-      {{ showCompleted ? 'Mostrar Pendientes' : 'Mostrar Completadas' }}
-    </button>
+  <!-- Filtros y Búsqueda -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearch()"
+        placeholder="Buscar tareas..."
+        class="search-input">
+    </div>
+
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>Estado:</label>
+        <select class="form-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+          <option value="pending">Pendientes</option>
+          <option value="completed">Completadas</option>
+          <option value="all">Todas</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Prioridad:</label>
+        <select [(ngModel)]="priorityFilter" (change)="applyFilters()">
+          <option value="all">Todas</option>
+          <option value="1">Alta</option>
+          <option value="2">Media</option>
+          <option value="3">Baja</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Fecha límite:</label>
+        <select [(ngModel)]="dateFilter" (change)="applyFilters()">
+          <option value="all">Todas</option>
+          <option value="today">Hoy</option>
+          <option value="week">Esta semana</option>
+          <option value="month">Este mes</option>
+          <option value="overdue">Vencidas</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="active-filters" *ngIf="hasActiveFilters()">
+      <span class="filter-tag" *ngIf="searchTerm">
+        Búsqueda: {{ searchTerm }}
+        <button (click)="clearSearch()">×</button>
+      </span>
+      <span class="filter-tag" *ngIf="statusFilter !== 'all'">
+        Estado: {{ getStatusLabel(statusFilter) }}
+        <button (click)="clearStatusFilter()">×</button>
+      </span>
+      <span class="filter-tag" *ngIf="priorityFilter !== 'all'">
+        Prioridad: {{ getPriorityLabel(priorityFilter) }}
+        <button (click)="clearPriorityFilter()">×</button>
+      </span>
+      <span class="filter-tag" *ngIf="dateFilter !== 'all'">
+        Fecha: {{ getDateFilterLabel(dateFilter) }}
+        <button (click)="clearDateFilter()">×</button>
+      </span>
+      <button class="clear-all" (click)="clearAllFilters()">Limpiar filtros</button>
+    </div>
   </div>
 
   <!-- Lista de tareas -->

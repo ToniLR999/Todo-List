@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Task } from '../models/task.model';
 
@@ -8,6 +8,13 @@ interface TaskInput {
   title: string;
   description?: string;
   dueDate?: string;
+}
+
+interface TaskFilters {
+  search?: string;
+  status?: string;
+  priority?: string;
+  dateFilter?: string;
 }
 
 @Injectable({
@@ -48,5 +55,25 @@ export class TaskService {
 
   getTaskDetails(taskId: number): Observable<Task> {
     return this.http.get<Task>(`${this.apiUrl}/${taskId}`);
+  }
+
+  getFilteredTasks(filters: TaskFilters): Observable<Task[]> {
+    let url = `${this.apiUrl}/filter?`;
+    const params = new HttpParams();
+
+    if (filters.search) {
+      params.set('search', filters.search);
+    }
+    if (filters.status && filters.status !== 'all') {
+      params.set('status', filters.status);
+    }
+    if (filters.priority && filters.priority !== 'all') {
+      params.set('priority', filters.priority);
+    }
+    if (filters.dateFilter && filters.dateFilter !== 'all') {
+      params.set('dateFilter', filters.dateFilter);
+    }
+
+    return this.http.get<Task[]>(url, { params });
   }
 } 
