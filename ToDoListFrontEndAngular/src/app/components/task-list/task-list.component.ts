@@ -8,6 +8,8 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { ToastrModule } from 'ngx-toastr';
 
 interface TaskInput {
   priority: 1 | 2 | 3;  // En lugar de 'HIGH' | 'MEDIUM' | 'LOW'
@@ -19,7 +21,13 @@ interface TaskInput {
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ReactiveFormsModule, 
+    RouterModule,
+    ToastrModule
+  ],
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.css']
 })
@@ -59,7 +67,8 @@ export class TaskListComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private taskService: TaskService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) {
     this.authService.getAuthStatus().subscribe(isAuthenticated => {
       console.log('Estado de autenticación cambiado:', isAuthenticated);
@@ -80,17 +89,17 @@ export class TaskListComponent implements OnInit {
   }
 
   loadTasks(): void {
-    // Si todos los filtros están en 'all', cargar tareas pendientes
     if (this.statusFilter === 'pending' && this.priorityFilter === 'all' && this.dateFilter === 'all') {
-      this.showCompleted = false;  // Forzamos que sea false cuando los filtros están en 'all'
+      this.showCompleted = false;
       this.taskService.getTasks(this.showCompleted).subscribe({
         next: (tasks) => {
           this.tasks = tasks;
           this.errorMessage = '';
+          this.checkUpcomingTasks(tasks);
         },
         error: (error) => {
           console.error('Error loading tasks:', error);
-          this.errorMessage = 'Error al cargar las tareas. Por favor, intente nuevamente.';
+          this.showErrorMessage('Error al cargar las tareas. Por favor, intente nuevamente.');
         }
       });
     } else {
@@ -129,15 +138,12 @@ export class TaskListComponent implements OnInit {
 
   // Método auxiliar para mostrar mensaje de éxito
   private showSuccessMessage(message: string) {
-    // Aquí puedes implementar tu lógica de notificación
-    // Por ejemplo, usando un servicio de notificaciones o un toast
-    console.log(message);
+    this.toastr.success(message, 'Éxito');
   }
 
   // Método auxiliar para mostrar mensaje de error
   private showErrorMessage(message: string) {
-    // Aquí puedes implementar tu lógica de notificación
-    console.error(message);
+    this.toastr.error(message, 'Error');
   }
 
   updateTask(task: Task): void {
@@ -414,5 +420,31 @@ export class TaskListComponent implements OnInit {
       // Aplicamos la dirección de ordenación
       return this.sortDirection === 'asc' ? comparison : -comparison;
     });
+  }
+
+  // Añadir método para notificaciones de tareas próximas
+  private checkUpcomingTasks(tasks: Task[]) {
+    const now = new Date();
+    const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    tasks.forEach(task => {
+      if (!task.completed && task.dueDate) {
+        const dueDate = new Date(task.dueDate);
+        if (dueDate <= oneDayFromNow && dueDate > now) {
+          this.toastr.warning(
+            `La tarea "${task.title}" vence en menos de 24 horas`,
+            'Tarea próxima a vencer'
+          );
+        }
+      }
+    });
+  }
+
+  // Añadir método de prueba
+  testToastr(): void {
+    this.toastr.success('Mensaje de éxito', 'Éxito');
+    this.toastr.error('Mensaje de error', 'Error');
+    this.toastr.warning('Mensaje de advertencia', 'Advertencia');
+    this.toastr.info('Mensaje informativo', 'Info');
   }
 }

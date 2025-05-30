@@ -9,7 +9,7 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { TaskDetailComponent } from './components/task-detail/task-detail.component';
 
-const routes: Routes = [
+export const routes: Routes = [
   { 
     path: 'login', 
     component: LoginComponent,

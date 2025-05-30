@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Task } from '../models/task.model';
 
@@ -25,36 +25,57 @@ export class TaskService {
 
   constructor(private http: HttpClient) { }
 
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
+
   getTasks(showCompleted: boolean = false): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}?completed=${showCompleted}`);
+    return this.http.get<Task[]>(`${this.apiUrl}?completed=${showCompleted}`, {
+      headers: this.getHeaders()
+    });
   }
 
   createTask(task: TaskInput): Observable<any> {
-    return this.http.post(`${this.apiUrl}`, task);
+    return this.http.post(`${this.apiUrl}`, task, {
+      headers: this.getHeaders()
+    });
   }
 
   updateTask(id: number, task: Task): Observable<Task> {
-    return this.http.put<Task>(`${this.apiUrl}/${id}`, task);
+    return this.http.put<Task>(`${this.apiUrl}/${id}`, task, {
+      headers: this.getHeaders()
+    });
   }
 
   deleteTask(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders()
+    });
   }
 
   getTasksByPriority(priority: string): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}/priority/${priority}`);
+    return this.http.get<Task[]>(`${this.apiUrl}/priority/${priority}`, {
+      headers: this.getHeaders()
+    });
   }
 
   getTasksByDueDate(date: string): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}/due-date/${date}`);
+    return this.http.get<Task[]>(`${this.apiUrl}/due-date/${date}`, {
+      headers: this.getHeaders()
+    });
   }
 
   searchTasks(title: string): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}/search?title=${title}`);
+    return this.http.get<Task[]>(`${this.apiUrl}/search?title=${title}`, {
+      headers: this.getHeaders()
+    });
   }
 
   getTaskDetails(taskId: number): Observable<Task> {
-    return this.http.get<Task>(`${this.apiUrl}/${taskId}`);
+    return this.http.get<Task>(`${this.apiUrl}/${taskId}`, {
+      headers: this.getHeaders()
+    });
   }
 
   getFilteredTasks(filters: TaskFilters): Observable<Task[]> {
@@ -74,6 +95,6 @@ export class TaskService {
       params.set('dateFilter', filters.dateFilter);
     }
 
-    return this.http.get<Task[]>(url, { params });
+    return this.http.get<Task[]>(url, { params, headers: this.getHeaders() });
   }
 } 
