@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/api`;
+  private apiUrl = 'http://localhost:8080/api/auth';
   private authUrl = `${this.apiUrl}/auth`;
   private usersUrl = `${this.apiUrl}/users`;
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
@@ -31,11 +31,12 @@ export class AuthService {
       ? { withCredentials: true }
       : {};
 
-    return this.http.post(`${this.authUrl}/login`, { username, password }, options)
+    return this.http.post(`${this.apiUrl}/login`, { username, password }, options)
       .pipe(
         tap((response: any) => {
           if (this.authMethod === 'jwt' && response.token) {
             localStorage.setItem('token', response.token);
+            localStorage.setItem('username', username);
             console.log('📝 Token JWT guardado');
           } else if (this.authMethod === 'cookie') {
             console.log('🍪 Autenticación por cookie establecida');
@@ -49,6 +50,7 @@ export class AuthService {
     console.log('🚪 Cerrando sesión con método:', this.authMethod);
     if (this.authMethod === 'jwt') {
       localStorage.removeItem('token');
+      localStorage.removeItem('username');
       console.log('🗑️ Token JWT eliminado');
     } else {
       console.log('🍪 Cookie de sesión eliminada');
@@ -132,5 +134,9 @@ export class AuthService {
           return throwError(() => error);
         })
       );
+  }
+
+  getUsername(): string | null {
+    return localStorage.getItem('username');
   }
 }

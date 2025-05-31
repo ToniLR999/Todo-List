@@ -3,7 +3,7 @@ import { TaskService } from '../../services/task.service';
 import { Task } from '../../models/task.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../services/auth-service.service';
+import { AuthService } from '../../services/auth.service';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -51,6 +51,11 @@ export class TaskListComponent implements OnInit {
   sortField: string = 'dueDate';  // Campo por defecto para ordenar
   sortDirection: 'asc' | 'desc' = 'asc';  // Dirección de ordenación
 
+  // Añadir propiedades para controlar estados de carga
+  isLoading: boolean = false;
+  isSubmitting: boolean = false;
+  isDeleting: boolean = false;
+
   taskForm = this.fb.group({
     title: ['', Validators.required],
     description: [''],
@@ -89,17 +94,22 @@ export class TaskListComponent implements OnInit {
   }
 
   loadTasks(): void {
+    this.isLoading = true;
+    this.toastr.info('Cargando tareas...', 'Cargando', { timeOut: 1000 });
+
     if (this.statusFilter === 'pending' && this.priorityFilter === 'all' && this.dateFilter === 'all') {
       this.showCompleted = false;
       this.taskService.getTasks(this.showCompleted).subscribe({
         next: (tasks) => {
           this.tasks = tasks;
           this.errorMessage = '';
-          this.checkUpcomingTasks(tasks);
+          this.checkTasksStatus(tasks);
+          this.isLoading = false;
         },
         error: (error) => {
           console.error('Error loading tasks:', error);
           this.showErrorMessage('Error al cargar las tareas. Por favor, intente nuevamente.');
+          this.isLoading = false;
         }
       });
     } else {
@@ -109,6 +119,7 @@ export class TaskListComponent implements OnInit {
 
   onSubmit() {
     if (this.taskForm.valid) {
+      this.isSubmitting = true;
       const taskData: TaskInput = {
         title: this.taskForm.value.title || '',
         priority: this.taskForm.value.priority as 1 | 2 | 3,
@@ -116,23 +127,65 @@ export class TaskListComponent implements OnInit {
         dueDate: this.taskForm.value.dueDate || undefined
       };
 
+      this.toastr.info('Creando tarea...', 'Procesando', { timeOut: 1000 });
+
       this.taskService.createTask(taskData).subscribe({
         next: (response) => {
-          // Resetear el formulario
           this.taskForm.reset({ priority: 2 });
-          
-          // Recargar la lista de tareas
           this.loadTasks();
+          this.isSubmitting = false;
           
-          // Opcional: Mostrar mensaje de éxito
-          this.showSuccessMessage('Tarea creada exitosamente');
+          this.toastr.success(
+            `Tarea "${response.title}" creada exitosamente`,
+            'Nueva Tarea',
+            {
+              timeOut: 3000,
+              progressBar: true,
+              closeButton: true
+            }
+          );
         },
         error: (error) => {
+          this.isSubmitting = false;
           console.error('Error al crear la tarea:', error);
-          // Opcional: Mostrar mensaje de error
-          this.showErrorMessage('Error al crear la tarea');
+          let errorMessage = 'No se pudo crear la tarea.';
+          
+          if (error.status === 400) {
+            errorMessage = 'Por favor, verifica los datos ingresados.';
+          } else if (error.status === 401) {
+            errorMessage = 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.';
+          } else if (error.status === 403) {
+            errorMessage = 'No tienes permisos para crear tareas.';
+          }
+          
+          this.toastr.error(
+            errorMessage,
+            'Error',
+            {
+              timeOut: 5000,
+              progressBar: true,
+              closeButton: true
+            }
+          );
         }
       });
+    } else {
+      // Notificar errores de validación
+      if (this.taskForm.get('title')?.errors?.['required']) {
+        this.toastr.warning(
+          'El título de la tarea es obligatorio',
+          'Campo requerido',
+          { timeOut: 3000 }
+        );
+      }
+      
+      if (this.taskForm.get('priority')?.errors?.['required']) {
+        this.toastr.warning(
+          'La prioridad de la tarea es obligatoria',
+          'Campo requerido',
+          { timeOut: 3000 }
+        );
+      }
     }
   }
 
@@ -148,29 +201,89 @@ export class TaskListComponent implements OnInit {
 
   updateTask(task: Task): void {
     const updatedTask = { ...task, completed: !task.completed };
+    
     this.taskService.updateTask(task.id!, updatedTask).subscribe({
       next: (updatedTask) => {
-        // Recargar las tareas para actualizar la lista filtrada
         this.loadTasks();
         this.errorMessage = '';
+        
+        if (updatedTask.completed) {
+          this.toastr.success(
+            `¡Tarea "${updatedTask.title}" completada!`,
+            '¡Felicidades!',
+            {
+              timeOut: 3000,
+              progressBar: true,
+              closeButton: true
+            }
+          );
+        } else {
+          this.toastr.info(
+            `Tarea "${updatedTask.title}" marcada como pendiente`,
+            'Estado actualizado',
+            {
+              timeOut: 3000,
+              progressBar: true,
+              closeButton: true
+            }
+          );
+        }
       },
       error: (error) => {
         console.error('Error updating task:', error);
-        this.errorMessage = 'Error al actualizar la tarea. Por favor, intente nuevamente.';
+        let errorMessage = 'Error al actualizar la tarea.';
+        
+        if (error.status === 401) {
+          errorMessage = 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.';
+        } else if (error.status === 403) {
+          errorMessage = 'No tienes permisos para actualizar esta tarea.';
+        }
+        
+        this.toastr.error(
+          errorMessage,
+          'Error',
+          {
+            timeOut: 5000,
+            progressBar: true,
+            closeButton: true
+          }
+        );
       }
     });
   }
 
   deleteTask(id: number): void {
-    if (confirm('¿Está seguro de que desea eliminar esta tarea?')) {
+    const taskToDelete = this.tasks.find(t => t.id === id);
+    if (taskToDelete && confirm('¿Está seguro de que desea eliminar esta tarea?')) {
+      this.isDeleting = true;
+      this.toastr.info('Eliminando tarea...', 'Procesando', { timeOut: 1000 });
+
       this.taskService.deleteTask(id).subscribe({
         next: () => {
           this.tasks = this.tasks.filter(task => task.id !== id);
-          this.errorMessage = '';
+          this.isDeleting = false;
+          this.toastr.info(
+            `Tarea "${taskToDelete.title}" eliminada`,
+            'Tarea Eliminada',
+            {
+              timeOut: 3000,
+              progressBar: true,
+              closeButton: true
+            }
+          );
         },
         error: (error) => {
+          this.isDeleting = false;
           console.error('Error deleting task:', error);
-          this.errorMessage = 'Error al eliminar la tarea. Por favor, intente nuevamente.';
+          this.toastr.error(
+            'No se pudo eliminar la tarea. Por favor, intente nuevamente.',
+            'Error',
+            {
+              timeOut: 5000,
+              progressBar: true,
+              closeButton: true
+            }
+          );
         }
       });
     }
@@ -206,7 +319,7 @@ export class TaskListComponent implements OnInit {
             next: (pendingTasks) => {
               let filteredTasks = [...completedTasks, ...pendingTasks];
               
-              // Aplicamos filtros existentes...
+              // Aplicar filtros existentes...
               if (this.searchTerm.trim()) {
                 const searchTermLower = this.searchTerm.toLowerCase().trim();
                 filteredTasks = filteredTasks.filter(task => 
@@ -246,9 +359,22 @@ export class TaskListComponent implements OnInit {
                 });
               }
 
-              // Aplicamos la ordenación
               this.tasks = this.sortTasks(filteredTasks);
-              this.errorMessage = '';
+              
+              // Notificar resultados
+              if (filteredTasks.length === 0) {
+                this.toastr.info(
+                  'No se encontraron tareas con los filtros actuales',
+                  'Sin resultados',
+                  { timeOut: 3000 }
+                );
+              } else if (this.hasActiveFilters()) {
+                this.toastr.success(
+                  `Se encontraron ${filteredTasks.length} tareas`,
+                  'Filtros aplicados',
+                  { timeOut: 2000 }
+                );
+              }
             }
           });
         }
@@ -316,21 +442,25 @@ export class TaskListComponent implements OnInit {
   clearSearch(): void {
     this.searchTerm = '';
     this.applyFilters();
+    this.toastr.info('Búsqueda limpiada', 'Filtro limpiado', { timeOut: 2000 });
   }
 
   clearStatusFilter(): void {
     this.statusFilter = 'pending';
     this.applyFilters();
+    this.toastr.info('Filtro de estado restablecido', 'Filtro limpiado', { timeOut: 2000 });
   }
 
   clearPriorityFilter(): void {
     this.priorityFilter = 'all';
     this.applyFilters();
+    this.toastr.info('Filtro de prioridad restablecido', 'Filtro limpiado', { timeOut: 2000 });
   }
 
   clearDateFilter(): void {
     this.dateFilter = 'all';
     this.applyFilters();
+    this.toastr.info('Filtro de fecha restablecido', 'Filtro limpiado', { timeOut: 2000 });
   }
 
   clearAllFilters(): void {
@@ -339,6 +469,12 @@ export class TaskListComponent implements OnInit {
     this.priorityFilter = 'all';
     this.dateFilter = 'all';
     this.applyFilters();
+    
+    this.toastr.info(
+      'Todos los filtros han sido restablecidos',
+      'Filtros limpiados',
+      { timeOut: 2000 }
+    );
   }
 
   getStatusLabel(status: string): string {
@@ -422,22 +558,50 @@ export class TaskListComponent implements OnInit {
     });
   }
 
-  // Añadir método para notificaciones de tareas próximas
-  private checkUpcomingTasks(tasks: Task[]) {
+  // Método para verificar tareas próximas y vencidas
+  private checkTasksStatus(tasks: Task[]): void {
     const now = new Date();
     const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    let hasOverdueTasks = false;
+    let hasUpcomingTasks = false;
 
     tasks.forEach(task => {
       if (!task.completed && task.dueDate) {
         const dueDate = new Date(task.dueDate);
-        if (dueDate <= oneDayFromNow && dueDate > now) {
-          this.toastr.warning(
-            `La tarea "${task.title}" vence en menos de 24 horas`,
-            'Tarea próxima a vencer'
-          );
+        
+        if (dueDate < now) {
+          hasOverdueTasks = true;
+        } else if (dueDate <= oneDayFromNow) {
+          hasUpcomingTasks = true;
         }
       }
     });
+
+    // Notificar tareas vencidas
+    if (hasOverdueTasks) {
+      this.toastr.error(
+        'Tienes tareas vencidas. Por favor, revísalas.',
+        'Tareas Vencidas',
+        {
+          timeOut: 6000,
+          progressBar: true,
+          closeButton: true
+        }
+      );
+    }
+
+    // Notificar tareas próximas
+    if (hasUpcomingTasks) {
+      this.toastr.warning(
+        'Tienes tareas que vencen en las próximas 24 horas.',
+        'Tareas Próximas',
+        {
+          timeOut: 5000,
+          progressBar: true,
+          closeButton: true
+        }
+      );
+    }
   }
 
   // Añadir método de prueba

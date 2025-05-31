@@ -8,6 +8,7 @@ import { UserProfileComponent } from './components/user-profile/user-profile.com
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { TaskDetailComponent } from './components/task-detail/task-detail.component';
+import { NotificationPreferencesComponent } from './components/notification-preferences/notification-preferences.component';
 
 export const routes: Routes = [
   { 
@@ -42,7 +43,9 @@ export const routes: Routes = [
     component: ResetPasswordComponent,
     data: { animation: 'reset-password' }
   },
+  { path: 'notifications', component: NotificationPreferencesComponent },
   { path: 'tasks/:id', component: TaskDetailComponent },
+
   { 
     path: '', 
     redirectTo: '/tasks', 
