@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NotificationPreferences } from '../../models/notification-preferences.model';
 import { NotificationService } from 'src/app/services/notification.service';
+import { catchError, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-notification-preferences',
