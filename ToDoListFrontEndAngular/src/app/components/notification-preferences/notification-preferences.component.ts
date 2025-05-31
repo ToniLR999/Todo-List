@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ToastrModule } from 'ngx-toastr';
 import { NotificationPreferences } from '../../models/notification-preferences.model';
 import { NotificationService } from 'src/app/services/notification.service';
 
@@ -12,8 +11,7 @@ import { NotificationService } from 'src/app/services/notification.service';
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    ToastrModule
+    ReactiveFormsModule
   ],
   templateUrl: './notification-preferences.component.html',
   styleUrl: './notification-preferences.component.css'

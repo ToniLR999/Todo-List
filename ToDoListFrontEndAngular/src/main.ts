@@ -12,6 +12,12 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimations(),
-    provideToastr()
+    provideToastr({
+      positionClass: 'toast-top-right',
+      timeOut: 3000,
+      preventDuplicates: true,
+      closeButton: true,
+      progressBar: true
+    })
   ]
 }).catch(err => console.error(err));
