@@ -1,0 +1,50 @@
+.notif-card {
+  max-width: 420px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 2rem 2.5rem 1.5rem 2.5rem;
+}
+
+h3 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #0d6efd;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-control {
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.form-check {
+  margin-bottom: 1rem;
+}
+
+.form-check-label {
+  margin-left: 0.5rem;
+  font-size: 1rem;
+}
+
+.btn {
+  width: 100%;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  border-radius: 6px;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}

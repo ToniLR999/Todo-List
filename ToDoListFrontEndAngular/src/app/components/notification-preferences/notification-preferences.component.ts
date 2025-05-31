@@ -29,12 +29,17 @@ export class NotificationPreferencesComponent implements OnInit {
   ) {
     this.preferencesForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
+      notificationType: ['both'],
+      reminderTime: ['1h'],
+      summaryFrequency: ['weekly'],
+      minPriority: ['2'],
       dailyReminders: [true],
       weeklySummary: [true]
     });
   }
 
   ngOnInit() {
+    this.showInfo('Cargando preferencias de notificación...');
     this.loadPreferences();
   }
 
@@ -44,7 +49,7 @@ export class NotificationPreferencesComponent implements OnInit {
         this.preferencesForm.patchValue(preferences);
       },
       error: (_: any) => {
-        this.toastr.error('Error al cargar las preferencias', 'Error');
+        this.showError('Error al cargar las preferencias');
       }
     });
   }
@@ -52,16 +57,35 @@ export class NotificationPreferencesComponent implements OnInit {
   onSubmit() {
     if (this.preferencesForm.valid) {
       this.isSubmitting = true;
+      this.showInfo('Enviando preferencias al backend...');
       this.notificationService.updateNotificationPreferences(this.preferencesForm.value).subscribe({
         next: () => {
-          this.toastr.success('Preferencias guardadas correctamente', 'Éxito');
+          this.showSuccess('Preferencias guardadas correctamente');
           this.isSubmitting = false;
         },
-        error: (_: any) => {
-          this.toastr.error('Error al guardar las preferencias', 'Error');
+        error: (err: any) => {
+          this.showError('Error al guardar las preferencias: ' + (err?.message || err));
           this.isSubmitting = false;
         }
       });
+    } else {
+      this.showError('Formulario inválido. Revisa los campos.');
+      this.preferencesForm.markAllAsTouched();
     }
+  }
+
+  // Para mensajes informativos
+  showInfo(msg: string) {
+    this.toastr.info(msg, 'Info');
+  }
+
+  // Para mensajes de éxito
+  showSuccess(msg: string) {
+    this.toastr.success(msg, 'Éxito');
+  }
+
+  // Para mensajes de error
+  showError(msg: string) {
+    this.toastr.error(msg, 'Error');
   }
 }

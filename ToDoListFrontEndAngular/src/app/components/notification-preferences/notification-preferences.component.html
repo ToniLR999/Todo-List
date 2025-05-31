@@ -1,1 +1,65 @@
-<p>notification-preferences works!</p>
+<div class="notif-card">
+  <h3>Preferencias de Notificaciones</h3>
+  <form [formGroup]="preferencesForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label>Email para notificaciones</label>
+      <input type="email" class="form-control" formControlName="email" placeholder="tucorreo@ejemplo.com">
+      <div class="error" *ngIf="preferencesForm.get('email')?.invalid && preferencesForm.get('email')?.touched">
+        Introduce un email válido.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Tipo de notificación</label>
+      <select class="form-control" formControlName="notificationType">
+        <option value="browser">Navegador</option>
+        <option value="email">Email</option>
+        <option value="both">Ambos</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Tiempo de anticipación</label>
+      <select class="form-control" formControlName="reminderTime">
+        <option value="1h">1 hora antes</option>
+        <option value="6h">6 horas antes</option>
+        <option value="12h">12 horas antes</option>
+        <option value="1d">1 día antes</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Frecuencia de resúmenes</label>
+      <select class="form-control" formControlName="summaryFrequency">
+        <option value="none">No enviar</option>
+        <option value="daily">Diario</option>
+        <option value="weekly">Semanal</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Prioridad mínima para notificar</label>
+      <select class="form-control" formControlName="minPriority">
+        <option value="1">Alta</option>
+        <option value="2">Media</option>
+        <option value="3">Baja</option>
+      </select>
+    </div>
+
+    <div class="form-check">
+      <input type="checkbox" class="form-check-input" formControlName="dailyReminders" id="dailyReminders">
+      <label class="form-check-label" for="dailyReminders">
+        Recibir recordatorio diario de tareas vencidas y próximas a vencer
+      </label>
+    </div>
+    <div class="form-check">
+      <input type="checkbox" class="form-check-input" formControlName="weeklySummary" id="weeklySummary">
+      <label class="form-check-label" for="weeklySummary">
+        Recibir resumen semanal de tareas importantes pendientes
+      </label>
+    </div>
+    <button type="submit" class="btn btn-primary" [disabled]="!preferencesForm.valid || isSubmitting">
+      {{ isSubmitting ? 'Guardando...' : 'Guardar Preferencias' }}
+    </button>
+  </form>
+</div>
