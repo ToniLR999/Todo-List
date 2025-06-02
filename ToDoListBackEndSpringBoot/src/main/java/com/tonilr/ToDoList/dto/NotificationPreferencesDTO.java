@@ -1,8 +1,10 @@
 package com.tonilr.ToDoList.dto;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString
 public class NotificationPreferencesDTO {
     private String email;
     private String notificationType;

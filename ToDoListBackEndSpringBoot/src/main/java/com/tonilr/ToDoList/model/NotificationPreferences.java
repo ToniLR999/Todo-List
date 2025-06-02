@@ -8,12 +8,17 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Index;
+import jakarta.persistence.Column;
+import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Table(name = "notification_preferences", indexes = {
     @Index(name = "idx_notif_prefs_user", columnList = "user_id"),
     @Index(name = "idx_notif_prefs_type", columnList = "notification_type")
 })
+@Data
+@ToString
 public class NotificationPreferences {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +49,9 @@ public class NotificationPreferences {
     // Configuración general
     private Integer minPriority;
     private boolean weekendNotifications;
+
+    @Column(name = "daily_reminders")
+    private boolean dailyReminders = false;  // Valor por defecto
 
     public Long getId() {
         return id;
@@ -155,6 +163,14 @@ public class NotificationPreferences {
 
     public void setWeekendNotifications(boolean weekendNotifications) {
         this.weekendNotifications = weekendNotifications;
+    }
+
+    public boolean isDailyReminders() {
+        return dailyReminders;
+    }
+
+    public void setDailyReminders(boolean dailyReminders) {
+        this.dailyReminders = dailyReminders;
     }
 
     public User getUser() {
