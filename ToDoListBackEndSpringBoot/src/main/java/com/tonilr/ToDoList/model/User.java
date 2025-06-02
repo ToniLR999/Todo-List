@@ -13,21 +13,24 @@ import jakarta.persistence.Table;
 import jakarta.persistence.FetchType;
 import java.util.Set;
 import java.util.HashSet;
+import jakarta.persistence.Index;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "idx_users_username", columnList = "username", unique = true),
+    @Index(name = "idx_users_email", columnList = "email", unique = true)
+})
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String username;
 
-    @Column(nullable = false)
-    private String password; // Encriptada con bcrypt
-
-    @Column(nullable = false)
+    @Column(unique = true)
     private String email;
+
+    private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

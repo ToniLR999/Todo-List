@@ -1,10 +1,31 @@
 .notif-card {
-  max-width: 420px;
-  margin: 2rem auto;
+  padding: 20px;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  padding: 2rem 2.5rem 1.5rem 2.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #f8f9fa;
+}
+
+.section {
+  margin: 20px 0;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.section h4 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-check {
+  margin-bottom: 10px;
 }
 
 h3 {
@@ -13,17 +34,14 @@ h3 {
   color: #0d6efd;
 }
 
-.form-group {
-  margin-bottom: 1.2rem;
+.form-group h4 {
+  margin-bottom: 1rem;
+  color: #333;
 }
 
 .form-control {
   border-radius: 6px;
   font-size: 1rem;
-}
-
-.form-check {
-  margin-bottom: 1rem;
 }
 
 .form-check-label {
@@ -47,4 +65,10 @@ h3 {
 .form-group label {
   font-weight: 500;
   margin-bottom: 0.3rem;
+}
+
+input[type="time"] {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }

@@ -10,24 +10,34 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "task_lists")
+@Table(name = "task_lists", indexes = {
+    @Index(name = "idx_tasklist_user", columnList = "user_id"),
+    @Index(name = "idx_tasklist_name", columnList = "name")
+})
 public class TaskList {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User owner;
+    private String description;
 
     @OneToMany(mappedBy = "taskList", cascade = CascadeType.ALL)
     private List<Task> tasks = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     // Getters y Setters
     public Long getId() {
@@ -38,6 +48,14 @@ public class TaskList {
         this.id = id;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public String getName() {
         return name;
     }
@@ -46,12 +64,12 @@ public class TaskList {
         this.name = name;
     }
 
-    public User getOwner() {
-        return owner;
+    public String getDescription() {
+        return description;
     }
 
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<Task> getTasks() {
@@ -60,5 +78,13 @@ public class TaskList {
 
     public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 }

@@ -61,7 +61,7 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     const token = window.localStorage.getItem('token');
-    console.log('Verificando autenticación. Token:', token);
+    //console.log('Verificando autenticación. Token:', token);
     return !!token;
   }
 

@@ -5,23 +5,45 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 
 @Entity
+@Table(name = "notification_preferences", indexes = {
+    @Index(name = "idx_notif_prefs_user", columnList = "user_id"),
+    @Index(name = "idx_notif_prefs_type", columnList = "notification_type")
+})
 public class NotificationPreferences {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     private String email;
     private String notificationType;
-    private String reminderTime;
-    private String summaryFrequency;
-    private String minPriority;
-    private boolean dailyReminders;
+    
+    // Recordatorios de vencimiento
+    private boolean dueDateReminder;
+    private String dueDateReminderTime;
+    
+    // Recordatorios de seguimiento
+    private boolean followUpReminder;
+    private Integer followUpDays;
+    
+    // Resúmenes
+    private boolean dailySummary;
+    private String dailySummaryTime;
     private boolean weeklySummary;
-
-    @OneToOne
-    private User user;
+    private String weeklySummaryDay;
+    private String weeklySummaryTime;
+    
+    // Configuración general
+    private Integer minPriority;
+    private boolean weekendNotifications;
 
     public Long getId() {
         return id;
@@ -47,36 +69,76 @@ public class NotificationPreferences {
         this.notificationType = notificationType;
     }
 
-    public String getReminderTime() {
-        return reminderTime;
+    public String getDueDateReminderTime() {
+        return dueDateReminderTime;
     }
 
-    public void setReminderTime(String reminderTime) {
-        this.reminderTime = reminderTime;
+    public void setDueDateReminderTime(String dueDateReminderTime) {
+        this.dueDateReminderTime = dueDateReminderTime;
     }
 
-    public String getSummaryFrequency() {
-        return summaryFrequency;
+    public Integer getFollowUpDays() {
+        return followUpDays;
     }
 
-    public void setSummaryFrequency(String summaryFrequency) {
-        this.summaryFrequency = summaryFrequency;
+    public void setFollowUpDays(Integer followUpDays) {
+        this.followUpDays = followUpDays;
     }
 
-    public String getMinPriority() {
+    public String getDailySummaryTime() {
+        return dailySummaryTime;
+    }
+
+    public void setDailySummaryTime(String dailySummaryTime) {
+        this.dailySummaryTime = dailySummaryTime;
+    }
+
+    public String getWeeklySummaryDay() {
+        return weeklySummaryDay;
+    }
+
+    public void setWeeklySummaryDay(String weeklySummaryDay) {
+        this.weeklySummaryDay = weeklySummaryDay;
+    }
+
+    public String getWeeklySummaryTime() {
+        return weeklySummaryTime;
+    }
+
+    public void setWeeklySummaryTime(String weeklySummaryTime) {
+        this.weeklySummaryTime = weeklySummaryTime;
+    }
+
+    public Integer getMinPriority() {
         return minPriority;
     }
 
-    public void setMinPriority(String minPriority) {
+    public void setMinPriority(Integer minPriority) {
         this.minPriority = minPriority;
     }
 
-    public boolean isDailyReminders() {
-        return dailyReminders;
+    public boolean isDueDateReminder() {
+        return dueDateReminder;
     }
 
-    public void setDailyReminders(boolean dailyReminders) {
-        this.dailyReminders = dailyReminders;
+    public void setDueDateReminder(boolean dueDateReminder) {
+        this.dueDateReminder = dueDateReminder;
+    }
+
+    public boolean isFollowUpReminder() {
+        return followUpReminder;
+    }
+
+    public void setFollowUpReminder(boolean followUpReminder) {
+        this.followUpReminder = followUpReminder;
+    }
+
+    public boolean isDailySummary() {
+        return dailySummary;
+    }
+
+    public void setDailySummary(boolean dailySummary) {
+        this.dailySummary = dailySummary;
     }
 
     public boolean isWeeklySummary() {
@@ -85,6 +147,14 @@ public class NotificationPreferences {
 
     public void setWeeklySummary(boolean weeklySummary) {
         this.weeklySummary = weeklySummary;
+    }
+
+    public boolean isWeekendNotifications() {
+        return weekendNotifications;
+    }
+
+    public void setWeekendNotifications(boolean weekendNotifications) {
+        this.weekendNotifications = weekendNotifications;
     }
 
     public User getUser() {

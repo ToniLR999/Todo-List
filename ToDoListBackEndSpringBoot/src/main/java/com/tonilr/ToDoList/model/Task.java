@@ -13,12 +13,26 @@ import jakarta.persistence.CascadeType;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.Index;
 
 @Entity
-@Table(name = "tasks")
+@Table(name = "tasks", indexes = {
+    @Index(name = "idx_tasks_user_completed", columnList = "user_id, completed"),
+    @Index(name = "idx_tasks_due_date", columnList = "due_date"),
+    @Index(name = "idx_tasks_priority", columnList = "priority"),
+    @Index(name = "idx_tasks_list", columnList = "task_list_id")
+})
 public class Task {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "task_list_id")
+    private TaskList taskList;
 
     @Column(nullable = false)
     private String title;
@@ -29,19 +43,18 @@ public class Task {
 
     private int priority; // 1=alta, 2=media, 3=baja
 
-    private Date createdAt;
+    @Column(name = "due_date")
     private Date dueDate;
 
     @ManyToOne
-    @JoinColumn(name = "task_list_id")
-    private TaskList taskList;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "assigned_to_id")
     private User assignedTo;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
+
+    @Column(name = "created_at")
+    private Date createdAt;
 
     public Long getId() {
         return id;
@@ -83,14 +96,6 @@ public class Task {
         this.priority = priority;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public Date getDueDate() {
         return dueDate;
     }
@@ -121,5 +126,13 @@ public class Task {
 
     public void setComments(List<Comment> comments) {
         this.comments = comments;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 }

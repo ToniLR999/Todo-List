@@ -30,11 +30,20 @@ export class NotificationPreferencesComponent implements OnInit {
     this.preferencesForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       notificationType: ['both'],
-      reminderTime: ['1h'],
-      summaryFrequency: ['weekly'],
-      minPriority: ['2'],
-      dailyReminders: [true],
-      weeklySummary: [true]
+      globalReminders: this.fb.group({
+        dueDateReminder: [true],
+        dueDateReminderTime: ['1d'],
+        followUpReminder: [true],
+        followUpDays: ['3'],
+        dailySummary: [true],
+        dailySummaryTime: ['09:00'],
+        weeklySummary: [true],
+        weeklySummaryDay: ['monday'],
+        weeklySummaryTime: ['10:00'],
+        assignmentNotification: [true],
+        minPriority: ['2'],
+        weekendNotifications: [false]
+      })
     });
   }
 
