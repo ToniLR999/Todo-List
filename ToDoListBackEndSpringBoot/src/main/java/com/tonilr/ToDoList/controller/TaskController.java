@@ -38,6 +38,7 @@ public class TaskController {
             TaskDTO newTask = taskService.createTask(taskDTO, username);
             return ResponseEntity.ok(newTask);
         } catch (RuntimeException e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

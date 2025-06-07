@@ -93,4 +93,9 @@ public class UserService {
     public User save(User user) {
         return userRepository.save(user);
     }
+
+    public User setTimezone(User user, String timezone) {
+        user.setTimezone(timezone);
+        return userRepository.save(user);
+    }
 }

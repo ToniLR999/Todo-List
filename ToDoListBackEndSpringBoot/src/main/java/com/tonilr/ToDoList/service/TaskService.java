@@ -48,6 +48,18 @@ public class TaskService {
         task.setAssignedTo(user);
         task.setUser(user);
         task.setCreatedAt(new Date());
+        
+        // Convertir la fecha a la zona horaria del usuario
+        if (taskDTO.getDueDate() != null) {
+            String timezone = user.getTimezone();
+            if (timezone == null || timezone.isEmpty()) {
+                timezone = "Europe/Madrid"; // O la que prefieras por defecto
+            }
+            ZoneId userZone = ZoneId.of(timezone);
+            LocalDateTime dueDate = task.getDueDate();
+            task.setDueDate(dueDate);
+        }
+        
         Task savedTask = taskRepository.save(task);
 
         // Notificación si la tarea es de alta prioridad

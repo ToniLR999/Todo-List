@@ -17,6 +17,8 @@ import java.time.LocalDateTime;
 import java.time.Duration;
 import java.util.List;
 import java.time.DayOfWeek;
+import java.time.ZoneId;
+import java.util.Date;
 
 @Service
 @Slf4j
@@ -53,8 +55,6 @@ public class GlobalReminderService {
                 if (pref.isDueDateReminder()) {
                     log.info("Enviando recordatorios de vencimiento...");
                     sendDueDateReminders(pref);
-                    log.info("Enviando recordatorios de tareas vencidas...");
-                    sendOverdueReminders(pref);
                 }
                 if (pref.isDailySummary()) {
                     LocalTime horaActual = LocalTime.now().withSecond(0).withNano(0);
@@ -82,8 +82,9 @@ public class GlobalReminderService {
 
     private void sendDueDateReminders(NotificationPreferences preferences) {
         try {
-            LocalDateTime now = LocalDateTime.now();
-            log.info("Hora actual backend: {}", now);
+            ZoneId userZone = ZoneId.of(preferences.getUser().getTimezone());
+            LocalDateTime now = LocalDateTime.now(userZone);
+            log.info("Hora actual backend (zona usuario): {}", now);
 
             // Duración configurada (ej: "1d", "1h")
             String durationStr = preferences.getDueDateReminderTime();
@@ -99,41 +100,45 @@ public class GlobalReminderService {
                 return;
             }
 
-            LocalDateTime reminderTime = now.plus(reminderDuration);
+            LocalDateTime reminderStart = now.minus(reminderDuration);
 
-            // Tareas vencidas
-            List<Task> overdueTasks = taskRepository.findByAssignedToAndDueDateBeforeAndCompletedFalse(
-                preferences.getUser(), now
-            );
+            log.warn("Parámetros enviados al repo:");
+            log.warn("Usuario: {}", preferences.getUser().getId());
+            log.warn("Start: {}", reminderStart);
+            log.warn("End: {}", now);
 
-            // Tareas próximas a vencer
+            log.warn("Buscando tareas próximas entre {} y {}", reminderStart, now);
+
+            List<Task> allUserTasks = taskRepository.findByAssignedToAndCompletedFalse(preferences.getUser());
+            log.warn("Tareas del usuario {} (no completadas): {}", preferences.getUser().getId(), allUserTasks.size());
+            for (Task t : allUserTasks) {
+                log.warn("Tarea BD - ID: {}, Título: {}, due_date: {}, assigned_to_id: {}", 
+                    t.getId(), t.getTitle(), t.getDueDate(), 
+                    t.getAssignedTo() != null ? t.getAssignedTo().getId() : null);
+            }
+
             List<Task> upcomingTasks = taskRepository.findByAssignedToAndDueDateBetweenAndCompletedFalse(
-                preferences.getUser(), now, reminderTime
+                preferences.getUser(), reminderStart, now
             );
-
-            // Unir ambas listas, evitando duplicados
-            List<Task> allTasks = new java.util.ArrayList<>(overdueTasks);
-            for (Task t : upcomingTasks) {
-                if (!allTasks.contains(t)) {
-                    allTasks.add(t);
-                }
+            if (upcomingTasks.isEmpty()) {
+                log.warn("El repositorio NO ha devuelto ninguna tarea próxima. Revisa los parámetros enviados y las fechas en la BD.");
+            } else {
+                log.warn("Tareas próximas encontradas: {}", upcomingTasks.size());
+                upcomingTasks.forEach(task ->
+                    log.warn("Tarea encontrada - ID: {}, Fecha en BD: {}, Asignado a: {}", 
+                        task.getId(), task.getDueDate(), task.getAssignedTo() != null ? task.getAssignedTo().getId() : null)
+                );
             }
 
-            // Log de depuración
-            log.info("Tareas a notificar (vencidas + próximas): {}", allTasks.size());
-            for (Task t : allTasks) {
-                log.info("Tarea: {} - Fecha límite: {}", t.getTitle(), t.getDueDate());
-            }
-
-            if (!allTasks.isEmpty()) {
+            if (!upcomingTasks.isEmpty()) {
                 emailService.sendTaskReminderEmail(
                     preferences.getEmail(),
-                    "Recordatorio: Tareas vencidas o próximas a vencer",
-                    allTasks,
+                    "Recordatorio: Tareas próximas a vencer",
+                    upcomingTasks,
                     preferences.getUser()
                 );
             } else {
-                log.info("No hay tareas para enviar recordatorio");
+                log.warn("No hay tareas para enviar recordatorio");
             }
         } catch (Exception e) {
             log.error("Error en sendDueDateReminders: ", e);
@@ -143,7 +148,8 @@ public class GlobalReminderService {
     private void sendDailySummary(NotificationPreferences preferences) {
         try {
             log.info("Enviando resumen diario a: {}", preferences.getEmail());
-            LocalDate today = LocalDate.now();
+            ZoneId userZone = ZoneId.of(preferences.getUser().getTimezone());
+            LocalDate today = LocalDate.now(userZone);
             LocalDateTime startOfDay = today.atStartOfDay();
             LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
@@ -171,15 +177,18 @@ public class GlobalReminderService {
     private void sendWeeklySummary(NotificationPreferences preferences) {
         try {
             log.info("Enviando resumen semanal a: {}", preferences.getEmail());
-            LocalDate today = LocalDate.now();
-            // Suponiendo que la semana empieza el lunes
+            ZoneId userZone = ZoneId.of(preferences.getUser().getTimezone());
+            LocalDate today = LocalDate.now(userZone);
             LocalDate startOfWeek = today.with(DayOfWeek.MONDAY);
             LocalDate endOfWeek = startOfWeek.plusDays(7);
 
+            LocalDateTime startOfWeekDateTime = startOfWeek.atStartOfDay();
+            LocalDateTime endOfWeekDateTime = endOfWeek.atStartOfDay();
+
             List<Task> tasks = taskRepository.findByAssignedToAndDueDateBetweenAndCompletedFalse(
                 preferences.getUser(),
-                startOfWeek.atStartOfDay(),
-                endOfWeek.atStartOfDay()
+                startOfWeekDateTime,
+                endOfWeekDateTime
             );
 
             log.info("Tareas encontradas para el resumen semanal: {}", tasks.size());
@@ -197,24 +206,9 @@ public class GlobalReminderService {
         }
     }
 
-    private void sendOverdueReminders(NotificationPreferences preferences) {
-        try {
-            LocalDateTime now = LocalDateTime.now();
-            List<Task> overdueTasks = taskRepository.findByAssignedToAndDueDateBeforeAndCompletedFalse(
-                preferences.getUser(), now
-            );
-            log.info("Tareas vencidas encontradas: {}", overdueTasks.size());
-
-            if (!overdueTasks.isEmpty()) {
-                emailService.sendTaskReminderEmail(
-                    preferences.getEmail(),
-                    "Aviso: Tareas vencidas",
-                    overdueTasks,    
-                    preferences.getUser()
-                );
-            }
-        } catch (Exception e) {
-            log.error("Error en sendOverdueReminders: ", e);
-        }
+    private Date truncateToSeconds(Date date) {
+        long time = date.getTime();
+        return new Date((time / 1000) * 1000);
     }
+
 }

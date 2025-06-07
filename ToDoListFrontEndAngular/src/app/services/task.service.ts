@@ -35,6 +35,7 @@ export class TaskService {
   }
 
   createTask(task: TaskInput): Observable<any> {
+    console.log("Task a guardar: " + task);
     return this.http.post(`${this.apiUrl}`, task, {
       headers: this.getHeaders()
     });

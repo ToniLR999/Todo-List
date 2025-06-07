@@ -5,8 +5,10 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.tonilr.ToDoList.model.NotificationPreferences;
 import com.tonilr.ToDoList.model.Task;
 import com.tonilr.ToDoList.model.User;
+import com.tonilr.ToDoList.repository.TaskRepository;
 
 import jakarta.mail.internet.MimeMessage;
 
@@ -15,9 +17,10 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.time.format.DateTimeFormatter;
-import java.time.LocalDateTime;
+
 import java.time.ZoneId;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @Slf4j
@@ -26,12 +29,15 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Autowired
+    private TaskRepository taskRepository;
+
     @Value("${spring.mail.username}")
     private String fromEmail;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
-
+    
     public void sendSimpleEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("TU_CORREO@gmail.com"); // Cambia por tu correo
@@ -40,7 +46,7 @@ public class EmailService {
         message.setText(text);
         mailSender.send(message);
     }
-
+    
     public void sendPasswordResetEmail(String to, String token) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -83,7 +89,7 @@ public class EmailService {
             throw new RuntimeException("Error enviando email de restablecimiento");
         }
     }
-
+    
     public void sendPasswordChangedEmail(String to) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -92,45 +98,48 @@ public class EmailService {
                        "Si no realizaste este cambio, por favor contacta con soporte inmediatamente.");
         mailSender.send(message);
     }
-
+    
     public void sendTaskReminderEmail(String to, String subject, List<Task> tasks, User user) {
         try {
             log.info("Preparando email de recordatorio para: {}", to);
+            log.info("Número de tareas a enviar: {}", tasks.size());
+            log.info("Zona horaria del usuario: {}", user.getTimezone());
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             
+            helper.setFrom(fromEmail);
             helper.setTo(to);
             helper.setSubject(subject);
             
             String content = buildEmailContent(tasks, subject, user);
             helper.setText(content, true);
             
-            log.info("Enviando email...");
+            log.info("Enviando email a: {}", to);
             mailSender.send(message);
-            log.info("Email enviado exitosamente");
+            log.info("Email enviado exitosamente a: {}", to);
         } catch (Exception e) {
             log.error("Error al enviar email: ", e);
             throw new RuntimeException("Error al enviar email", e);
         }
     }
-
+    
     private String buildEmailContent(List<Task> tasks, String subject, User user) {
         StringBuilder content = new StringBuilder();
         content.append("<html><body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>");
         content.append("<div style='max-width: 600px; margin: 0 auto; padding: 20px;'>");
         content.append("<h2 style='color: #007bff;'>").append(subject).append("</h2>");
-        
-        String userTimezone = user.getTimezone();
-        ZoneId zoneId = ZoneId.of(userTimezone);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(zoneId);
-        
+
+        // Usar la zona horaria del usuario
+        ZoneId userZone = ZoneId.of(user.getTimezone());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
         tasks.forEach(task -> {
             String fechaFormateada = "";
             if (task.getDueDate() != null) {
-                LocalDateTime dueDateTime = task.getDueDate().toInstant()
-                    .atZone(zoneId)
-                    .toLocalDateTime();
-                fechaFormateada = dueDateTime.format(formatter);
+                // Convertir directamente a la zona horaria del usuario
+                LocalDateTime localDateTime = task.getDueDate();
+                fechaFormateada = formatter.format(localDateTime);
             }
             content.append("<div style='margin: 15px 0; padding: 10px; border-left: 4px solid #007bff;'>");
             content.append("<h3 style='margin: 0;'>").append(task.getTitle()).append("</h3>");
@@ -141,11 +150,11 @@ public class EmailService {
             }
             content.append("</div>");
         });
-        
+
         content.append("</div></body></html>");
         return content.toString();
     }
-
+    
     private String getPriorityLabel(int priority) {
         switch (priority) {
             case 1: return "Alta";

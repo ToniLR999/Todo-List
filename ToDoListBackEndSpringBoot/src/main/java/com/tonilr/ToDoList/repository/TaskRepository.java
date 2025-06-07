@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -42,11 +43,20 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
         @Param("endDate") LocalDateTime endDate
     );
 
+    List<Task> findByAssignedToAndCompletedFalse(User user);
+
+    @Query("SELECT t FROM Task t WHERE t.assignedTo = :user AND t.dueDate BETWEEN :start AND :end AND t.completed = false")
     List<Task> findByAssignedToAndDueDateBetweenAndCompletedFalse(
-        User user,
-        LocalDateTime start,
-        LocalDateTime end
+        @Param("user") User user,
+        @Param("start") LocalDateTime start,
+        @Param("end") LocalDateTime end
     );
 
-    List<Task> findByAssignedToAndDueDateBeforeAndCompletedFalse(User user, LocalDateTime now);
+    @Query("SELECT t FROM Task t WHERE t.assignedTo = :user " +
+           "AND t.dueDate < :dateTime " +
+           "AND t.completed = false")
+    List<Task> findByAssignedToAndDueDateBeforeAndCompletedFalse(
+        @Param("user") User user,
+        @Param("dateTime") LocalDateTime dateTime
+    );
 }

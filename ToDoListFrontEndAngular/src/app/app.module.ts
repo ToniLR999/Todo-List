@@ -8,15 +8,15 @@ import { ToastrModule } from 'ngx-toastr';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './components/login/login.component';
-import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { NavComponent } from './components/nav/nav.component';
 import { NotificationPreferencesComponent } from './components/notification-preferences/notification-preferences.component';
+import { authInterceptor } from './interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
-    NavComponent
+    // NavComponent <-- quítalo de aquí
   ],
   imports: [
     BrowserModule,
@@ -29,10 +29,11 @@ import { NotificationPreferencesComponent } from './components/notification-pref
     LoginComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
-    NotificationPreferencesComponent
+    NotificationPreferencesComponent,
+    NavComponent // <-- añádelo aquí
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useValue: authInterceptor, multi: true }
   ],
   bootstrap: []
 })

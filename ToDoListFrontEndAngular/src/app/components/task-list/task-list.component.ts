@@ -16,6 +16,7 @@ interface TaskInput {
   title: string;
   description?: string;
   dueDate?: string;
+  completed: boolean;
 }
 
 @Component({
@@ -119,7 +120,8 @@ export class TaskListComponent implements OnInit {
         title: this.taskForm.value.title || '',
         priority: this.taskForm.value.priority as 1 | 2 | 3,
         description: this.taskForm.value.description || undefined,
-        dueDate: this.taskForm.value.dueDate || undefined
+        dueDate: this.taskForm.value.dueDate || undefined,
+        completed: false
       };
 
       this.toastr.info('Creando tarea...', 'Procesando', { timeOut: 1000 });

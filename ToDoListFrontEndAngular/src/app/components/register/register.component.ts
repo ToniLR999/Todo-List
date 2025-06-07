@@ -14,6 +14,19 @@ import { AuthService } from '../../services/auth.service';
 export class RegisterComponent {
   registerForm: FormGroup;
   error: string = '';
+  timezones = [
+    'Europe/Madrid',
+    'Europe/London',
+    'America/New_York',
+    'America/Argentina/Buenos_Aires',
+    'America/Mexico_City',
+    'Asia/Tokyo',
+    'Asia/Shanghai',
+    'Europe/Paris',
+    'Europe/Berlin',
+    'UTC'
+    // ...añade las que quieras
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -24,7 +37,8 @@ export class RegisterComponent {
       username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
+      confirmPassword: ['', [Validators.required]],
+      timezone: ['', Validators.required]
     }, { validator: this.passwordMatchValidator });
   }
 

@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/auth/users")
@@ -32,6 +34,9 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationDTO userDTO) {
         try {
+            if (userDTO.getTimezone() == null || userDTO.getTimezone().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La zona horaria es obligatoria");
+            }
             var user = dtoMapper.toUser(userDTO);
             var newUser = userService.registerUser(user);
             return ResponseEntity.ok(dtoMapper.toUserDTO(newUser));
