@@ -32,6 +32,7 @@ public class DTOMapper {
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
+        dto.setTimezone(user.getTimezone());
         return dto;
     }
 

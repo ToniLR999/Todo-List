@@ -2,6 +2,7 @@ package com.tonilr.ToDoList.controller;
 
 import com.tonilr.ToDoList.dto.UserDTO;
 import com.tonilr.ToDoList.dto.UserRegistrationDTO;
+import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,11 +12,11 @@ import com.tonilr.ToDoList.dto.DTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.hibernate.Hibernate;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/auth/users")
 @CrossOrigin(origins = "http://localhost:4200") // Para Angular
 public class UserController {
     @Autowired
@@ -59,10 +60,19 @@ public class UserController {
             String username = securityService.getCurrentUsername();
             var user = userService.findByUsername(username);
             user.setEmail(userDetails.getEmail());
+            user.setTimezone(userDetails.getTimezone());
             var updatedUser = userService.updateUser(user.getId(), user);
             return ResponseEntity.ok(dtoMapper.toUserDTO(updatedUser));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PutMapping("/users/timezone")
+    public ResponseEntity<?> updateTimezone(@RequestParam String timezone, Authentication auth) {
+        User user = userService.findByUsername(auth.getName());
+        user.setTimezone(timezone);
+        userService.save(user);
+        return ResponseEntity.ok().build();
     }
 }

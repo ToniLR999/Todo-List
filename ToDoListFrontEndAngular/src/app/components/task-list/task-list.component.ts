@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { TaskService } from '../../services/task.service';
+import { TaskService, TaskFilters } from '../../services/task.service';
 import { Task } from '../../models/task.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -97,24 +97,19 @@ export class TaskListComponent implements OnInit {
     this.isLoading = true;
     this.toastr.info('Cargando tareas...', 'Cargando', { timeOut: 1000 });
 
-    if (this.statusFilter === 'pending' && this.priorityFilter === 'all' && this.dateFilter === 'all') {
-      this.showCompleted = false;
-      this.taskService.getTasks(this.showCompleted).subscribe({
-        next: (tasks) => {
-          this.tasks = tasks;
-          this.errorMessage = '';
-          this.checkTasksStatus(tasks);
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Error loading tasks:', error);
-          this.showErrorMessage('Error al cargar las tareas. Por favor, intente nuevamente.');
-          this.isLoading = false;
-        }
-      });
-    } else {
-      this.applyFilters();
-    }
+    this.taskService.getTasks(this.showCompleted).subscribe({
+      next: (tasks) => {
+        this.tasks = tasks;
+        this.errorMessage = '';
+        this.checkTasksStatus(tasks);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading tasks:', error);
+        this.showErrorMessage('Error al cargar las tareas. Por favor, intente nuevamente.');
+        this.isLoading = false;
+      }
+    });
   }
 
   onSubmit() {
@@ -312,124 +307,33 @@ export class TaskListComponent implements OnInit {
   }
 
   applyFilters(): void {
-    if (this.statusFilter === 'all') {
-      this.taskService.getTasks(true).subscribe({
-        next: (completedTasks) => {
-          this.taskService.getTasks(false).subscribe({
-            next: (pendingTasks) => {
-              let filteredTasks = [...completedTasks, ...pendingTasks];
-              
-              // Aplicar filtros existentes...
-              if (this.searchTerm.trim()) {
-                const searchTermLower = this.searchTerm.toLowerCase().trim();
-                filteredTasks = filteredTasks.filter(task => 
-                  task.title.toLowerCase().includes(searchTermLower) ||
-                  (task.description && task.description.toLowerCase().includes(searchTermLower))
-                );
-              }
-              
-              if (this.priorityFilter !== 'all') {
-                filteredTasks = filteredTasks.filter(task => 
-                  task.priority.toString() === this.priorityFilter
-                );
-              }
+    this.isLoading = true;
+    console.log('Estado del filtro:', this.statusFilter); // Debug
 
-              if (this.dateFilter !== 'all') {
-                const now = new Date();
-                filteredTasks = filteredTasks.filter(task => {
-                  if (!task.dueDate) return false;
-                  const dueDate = new Date(task.dueDate);
-                  
-                  switch (this.dateFilter) {
-                    case 'today':
-                      return dueDate.toDateString() === now.toDateString();
-                    case 'week':
-                      const weekFromNow = new Date(now);
-                      weekFromNow.setDate(now.getDate() + 7);
-                      return dueDate >= now && dueDate <= weekFromNow;
-                    case 'month':
-                      const monthFromNow = new Date(now);
-                      monthFromNow.setMonth(now.getMonth() + 1);
-                      return dueDate >= now && dueDate <= monthFromNow;
-                    case 'overdue':
-                      return dueDate < now;
-                    default:
-                      return true;
-                  }
-                });
-              }
+    const filters: TaskFilters = {
+      search: this.searchTerm,
+      status: this.statusFilter === 'all' ? undefined : 
+              this.statusFilter === 'completed' ? 'true' : 
+              this.statusFilter === 'pending' ? 'false' : undefined,
+      priority: this.priorityFilter,
+      dateFilter: this.dateFilter
+    };
+    console.log('Filtros enviados:', filters); // Debug
 
-              this.tasks = this.sortTasks(filteredTasks);
-              
-              // Notificar resultados
-              if (filteredTasks.length === 0) {
-                this.toastr.info(
-                  'No se encontraron tareas con los filtros actuales',
-                  'Sin resultados',
-                  { timeOut: 3000 }
-                );
-              } else if (this.hasActiveFilters()) {
-                this.toastr.success(
-                  `Se encontraron ${filteredTasks.length} tareas`,
-                  'Filtros aplicados',
-                  { timeOut: 2000 }
-                );
-              }
-            }
-          });
-        }
-      });
-    } else {
-      this.taskService.getTasks(this.statusFilter === 'completed').subscribe({
-        next: (tasks) => {
-          let filteredTasks = tasks;
-          
-          // Aplicamos filtros existentes...
-          if (this.searchTerm.trim()) {
-            const searchTermLower = this.searchTerm.toLowerCase().trim();
-            filteredTasks = filteredTasks.filter(task => 
-              task.title.toLowerCase().includes(searchTermLower) ||
-              (task.description && task.description.toLowerCase().includes(searchTermLower))
-            );
-          }
-          
-          if (this.priorityFilter !== 'all') {
-            filteredTasks = filteredTasks.filter(task => 
-              task.priority.toString() === this.priorityFilter
-            );
-          }
-
-          if (this.dateFilter !== 'all') {
-            const now = new Date();
-            filteredTasks = filteredTasks.filter(task => {
-              if (!task.dueDate) return false;
-              const dueDate = new Date(task.dueDate);
-              
-              switch (this.dateFilter) {
-                case 'today':
-                  return dueDate.toDateString() === now.toDateString();
-                case 'week':
-                  const weekFromNow = new Date(now);
-                  weekFromNow.setDate(now.getDate() + 7);
-                  return dueDate >= now && dueDate <= weekFromNow;
-                case 'month':
-                  const monthFromNow = new Date(now);
-                  monthFromNow.setMonth(now.getMonth() + 1);
-                  return dueDate >= now && dueDate <= monthFromNow;
-                case 'overdue':
-                  return dueDate < now;
-                default:
-                  return true;
-              }
-            });
-          }
-
-          // Aplicamos la ordenación
-          this.tasks = this.sortTasks(filteredTasks);
-          this.errorMessage = '';
-        }
-      });
-    }
+    this.taskService.getFilteredTasks(filters).subscribe({
+      next: (tasks) => {
+        console.log('Tareas recibidas:', tasks); // Debug
+        this.tasks = tasks;
+        this.errorMessage = '';
+        this.checkTasksStatus(tasks);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error applying filters:', error);
+        this.showErrorMessage('Error al aplicar los filtros. Por favor, intente nuevamente.');
+        this.isLoading = false;
+      }
+    });
   }
 
   hasActiveFilters(): boolean {

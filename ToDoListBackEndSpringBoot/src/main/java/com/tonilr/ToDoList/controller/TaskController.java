@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import org.springframework.http.HttpStatus;
 import java.time.ZoneId;
 import java.util.Date;
+import org.springframework.security.core.Authentication;
 
 @Tag(name = "Tasks", description = "API de gestión de tareas")
 @RestController
@@ -117,17 +118,27 @@ public class TaskController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<?> getFilteredTasks(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String priority,
-            @RequestParam(required = false) String dateFilter) {
-        try {
-            String username = securityService.getCurrentUsername();
-            List<TaskDTO> tasks = taskService.getFilteredTasks(username, search, status, priority, dateFilter);
-            return ResponseEntity.ok(tasks);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<List<TaskDTO>> getFilteredTasks(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String completed,
+        @RequestParam(required = false) String priority,
+        @RequestParam(required = false) String dateFilter,
+        Authentication authentication
+    ) {
+        System.out.println("Filtros recibidos en el backend:"); // Debug
+        System.out.println("completed: " + completed); // Debug
+        System.out.println("priority: " + priority); // Debug
+        System.out.println("dateFilter: " + dateFilter); // Debug
+
+        List<TaskDTO> tasks = taskService.getFilteredTasks(
+            search, 
+            completed != null ? Boolean.parseBoolean(completed) : null,
+            priority,
+            dateFilter,
+            authentication.getName()
+        );
+
+        System.out.println("Número de tareas encontradas: " + tasks.size()); // Debug
+        return ResponseEntity.ok(tasks);
     }
 }

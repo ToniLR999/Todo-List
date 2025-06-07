@@ -46,6 +46,7 @@ public class TaskService {
         User user = userService.findByUsername(username);
         Task task = dtoMapper.toTask(taskDTO);
         task.setAssignedTo(user);
+        task.setUser(user);
         task.setCreatedAt(new Date());
         Task savedTask = taskRepository.save(task);
 
@@ -159,59 +160,21 @@ public class TaskService {
         return dtoMapper.toTaskDTO(task);
     }
 
-    public List<TaskDTO> getFilteredTasks(String username, String search, String status, String priority, String dateFilter) {
+    public List<TaskDTO> getFilteredTasks(String search, Boolean completed, String priority, String dateFilter, String username) {
+        System.out.println("Filtros recibidos - completed: " + completed); // Debug
+        
         User user = userService.findByUsername(username);
-        List<Task> tasks = taskRepository.findByAssignedTo(user);
-
-        // Aplicar filtros
-        if (search != null && !search.isEmpty()) {
-            tasks = tasks.stream()
-                .filter(task -> task.getTitle().toLowerCase().contains(search.toLowerCase()) ||
-                              (task.getDescription() != null && 
-                               task.getDescription().toLowerCase().contains(search.toLowerCase())))
-                .collect(Collectors.toList());
+        List<Task> tasks;
+        
+        if (completed == null) {
+            // Si es null, obtener todas las tareas
+            tasks = taskRepository.findByAssignedTo(user);
+        } else {
+            // Si tiene valor, filtrar por completed
+            tasks = taskRepository.findByAssignedToAndCompleted(user, completed);
         }
-
-        if (status != null && !status.equals("all")) {
-            boolean completed = status.equals("completed");
-            tasks = tasks.stream()
-                .filter(task -> task.isCompleted() == completed)
-                .collect(Collectors.toList());
-        }
-
-        if (priority != null && !priority.equals("all")) {
-            int priorityValue = Integer.parseInt(priority);
-            tasks = tasks.stream()
-                .filter(task -> task.getPriority() == priorityValue)
-                .collect(Collectors.toList());
-        }
-
-        if (dateFilter != null && !dateFilter.equals("all")) {
-            LocalDateTime now = LocalDateTime.now();
-            tasks = tasks.stream()
-                .filter(task -> {
-                    if (task.getDueDate() == null) return false;
-                    LocalDateTime taskDate = task.getDueDate().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                    switch (dateFilter) {
-                        case "today":
-                            return taskDate.toLocalDate().equals(now.toLocalDate());
-                        case "week":
-                            return taskDate.isAfter(now) && 
-                                   taskDate.isBefore(now.plusWeeks(1));
-                        case "month":
-                            return taskDate.isAfter(now) && 
-                                   taskDate.isBefore(now.plusMonths(1));
-                        case "overdue":
-                            return taskDate.isBefore(now);
-                        default:
-                            return true;
-                    }
-                })
-                .collect(Collectors.toList());
-        }
-
+        
+        System.out.println("Tareas encontradas: " + tasks.size()); // Debug
         return tasks.stream()
             .map(dtoMapper::toTaskDTO)
             .collect(Collectors.toList());

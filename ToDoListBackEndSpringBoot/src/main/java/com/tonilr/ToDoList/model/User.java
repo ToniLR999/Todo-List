@@ -40,6 +40,9 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @Column(name = "timezone")
+    private String timezone; // Valor por defecto
+
     // ... otros campos como fecha de registro, estado, etc.
 
     public Long getId() {
@@ -80,5 +83,13 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
     }
 }

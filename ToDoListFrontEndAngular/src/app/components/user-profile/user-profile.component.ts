@@ -22,6 +22,7 @@ export class UserProfileComponent implements OnInit {
   profileForm: FormGroup;
   success: string = '';
   error: string = '';
+  timezones = ['Europe/Madrid', 'Europe/London', 'Europe/Paris', 'America/New_York', 'America/Argentina/Buenos_Aires', 'America/Los_Angeles', 'Asia/Tokyo', 'Asia/Shanghai', 'Asia/Kolkata', 'Australia/Sydney', 'UTC'];
 
   constructor(
     private authService: AuthService,
@@ -29,21 +30,25 @@ export class UserProfileComponent implements OnInit {
   ) {
     this.profileForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
+      timezone: ['Europe/Madrid', Validators.required]
     });
   }
 
   ngOnInit(): void {
     this.loadProfile();
+    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   }
 
   loadProfile(): void {
     this.authService.getCurrentUser().subscribe({
-      next: (profile) => {
-        this.userProfile = profile;
+      next: (user) => {
+        console.log('Usuario recibido:', user);
+        this.userProfile = user;
         this.profileForm.patchValue({
-          username: profile.username,
-          email: profile.email
+          username: user.username,
+          email: user.email,
+          timezone: user.timezone
         });
       },
       error: (error) => {
@@ -61,7 +66,8 @@ export class UserProfileComponent implements OnInit {
     if (this.profileForm.valid) {
       const formData = {
         username: this.profileForm.get('username')?.value,
-        email: this.profileForm.get('email')?.value
+        email: this.profileForm.get('email')?.value,
+        timezone: this.profileForm.get('timezone')?.value
       };
       
       this.authService.updateProfile(formData).subscribe({

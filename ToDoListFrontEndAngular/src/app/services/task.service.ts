@@ -10,7 +10,7 @@ interface TaskInput {
   dueDate?: string;
 }
 
-interface TaskFilters {
+export interface TaskFilters {
   search?: string;
   status?: string;
   priority?: string;
@@ -30,10 +30,8 @@ export class TaskService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  getTasks(showCompleted: boolean = false): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}?completed=${showCompleted}`, {
-      headers: this.getHeaders()
-    });
+  getTasks(showCompleted: boolean): Observable<Task[]> {
+    return this.http.get<Task[]>(`${this.apiUrl}?showCompleted=${showCompleted}`);
   }
 
   createTask(task: TaskInput): Observable<any> {
@@ -79,22 +77,26 @@ export class TaskService {
   }
 
   getFilteredTasks(filters: TaskFilters): Observable<Task[]> {
-    let url = `${this.apiUrl}/filter?`;
-    const params = new HttpParams();
-
+    let params = new HttpParams();
+    
     if (filters.search) {
-      params.set('search', filters.search);
+      params = params.set('search', filters.search);
     }
-    if (filters.status && filters.status !== 'all') {
-      params.set('status', filters.status);
+    if (filters.status) {
+      console.log('Valor de status recibido:', filters.status); // Debug
+      params = params.set('completed', filters.status);
     }
     if (filters.priority && filters.priority !== 'all') {
-      params.set('priority', filters.priority);
+      params = params.set('priority', filters.priority);
     }
     if (filters.dateFilter && filters.dateFilter !== 'all') {
-      params.set('dateFilter', filters.dateFilter);
+      params = params.set('dateFilter', filters.dateFilter);
     }
 
-    return this.http.get<Task[]>(url, { params, headers: this.getHeaders() });
+    console.log('Parámetros finales:', params.toString()); // Debug
+    return this.http.get<Task[]>(`${this.apiUrl}/filter`, { 
+      params, 
+      headers: this.getHeaders() 
+    });
   }
 } 

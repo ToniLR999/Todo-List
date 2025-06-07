@@ -45,6 +45,7 @@ export const routes: Routes = [
   },
   { path: 'notifications', component: NotificationPreferencesComponent },
   { path: 'tasks/:id', component: TaskDetailComponent },
+  { path: 'perfil', component: UserProfileComponent },
 
   { 
     path: '', 
