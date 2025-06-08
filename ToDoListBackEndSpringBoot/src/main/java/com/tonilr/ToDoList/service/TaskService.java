@@ -104,7 +104,6 @@ public class TaskService {
         return dtoMapper.toTaskDTO(savedTask);
     }
 
-    @Cacheable(value = "tasks", key = "#username")
     public List<TaskDTO> getUserTasks(String username) {
         User user = userService.findByUsername(username);
         return taskRepository.findByAssignedTo(user)
@@ -113,22 +112,23 @@ public class TaskService {
                 TaskDTO dto = dtoMapper.toTaskDTO(task);
                 if (task.getTaskList() != null) {
                     dto.setTaskListId(task.getTaskList().getId());
+                    dto.setTaskListName(task.getTaskList().getName()); // <-- Añade esto
                 }
                 return dto;
             })
             .collect(Collectors.toList());
     }
-
-    @Cacheable(value = "tasks", key = "#username + '_' + #showCompleted")
+    
     public List<TaskDTO> getUserTasksByStatus(String username, boolean showCompleted) {
         User user = userService.findByUsername(username);
         List<Task> tasks = taskRepository.findByAssignedToAndCompleted(user, showCompleted);
-        
+    
         return tasks.stream()
             .map(task -> {
                 TaskDTO dto = dtoMapper.toTaskDTO(task);
                 if (task.getTaskList() != null) {
                     dto.setTaskListId(task.getTaskList().getId());
+                    dto.setTaskListName(task.getTaskList().getName()); // <-- Añade esto también aquí
                 }
                 return dto;
             })
