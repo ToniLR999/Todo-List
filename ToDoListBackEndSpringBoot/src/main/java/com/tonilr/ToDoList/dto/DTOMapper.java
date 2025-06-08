@@ -45,8 +45,11 @@ public class DTOMapper {
         dto.setPriority(task.getPriority());
         dto.setCreatedAt(task.getCreatedAt());
         dto.setDueDate(task.getDueDate());
-        dto.setTaskListId(task.getTaskList() != null ? task.getTaskList().getId() : null);
-        dto.setAssignedToUsername(task.getAssignedTo() != null ? task.getAssignedTo().getUsername() : null);
+        if (task.getTaskList() != null) {
+            dto.setTaskListId(task.getTaskList().getId());
+            dto.setTaskListName(task.getTaskList().getName());
+        }
+        dto.setAssignedTo(task.getAssignedTo() != null ? task.getAssignedTo().getUsername() : null);
         return dto;
     }
 

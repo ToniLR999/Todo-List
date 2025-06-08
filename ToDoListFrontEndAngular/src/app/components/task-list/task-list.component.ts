@@ -6,10 +6,12 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { ToastrModule } from 'ngx-toastr';
+import { TaskListService } from '../../services/task-list.service';
+import { TaskList } from '../../models/task-list.model';
 
 interface TaskInput {
   priority: 1 | 2 | 3;  // En lugar de 'HIGH' | 'MEDIUM' | 'LOW'
@@ -17,6 +19,7 @@ interface TaskInput {
   description?: string;
   dueDate?: string;
   completed: boolean;
+  taskListId?: number;
 }
 
 @Component({
@@ -51,6 +54,7 @@ export class TaskListComponent implements OnInit {
   loading = false;
   sortField: string = 'dueDate';  // Campo por defecto para ordenar
   sortDirection: 'asc' | 'desc' = 'asc';  // Dirección de ordenación
+  currentListId: number | null = null;
 
   // Añadir propiedades para controlar estados de carga
   isLoading: boolean = false;
@@ -70,11 +74,20 @@ export class TaskListComponent implements OnInit {
     { value: 3, label: 'Baja' }
   ];
 
+  taskLists: TaskList[] = [];
+  selectedListId: number | null = null;
+  showListForm = false;
+  newList = {
+    name: '',
+    description: ''
+  };
+
   constructor(
     private fb: FormBuilder,
     private taskService: TaskService,
     private authService: AuthService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private route: ActivatedRoute,
   ) {
     this.authService.getAuthStatus().subscribe(isAuthenticated => {
       console.log('Estado de autenticación cambiado:', isAuthenticated);
@@ -90,28 +103,50 @@ export class TaskListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.showCompleted = false;  // Aseguramos que sea false al inicio
-    this.loadTasks();
-  }
-
-  loadTasks(): void {
-    this.isLoading = true;
-    this.toastr.info('Cargando tareas...', 'Cargando', { timeOut: 1000 });
-
-    this.taskService.getTasks(this.showCompleted).subscribe({
-      next: (tasks) => {
-        this.tasks = tasks;
-        this.errorMessage = '';
-        this.checkTasksStatus(tasks);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading tasks:', error);
-        this.showErrorMessage('Error al cargar las tareas. Por favor, intente nuevamente.');
-        this.isLoading = false;
-      }
+    this.route.params.subscribe(params => {
+      this.currentListId = params['id'] ? Number(params['id']) : null;
+      console.log('Frontend - currentListId:', this.currentListId); // Añadir este log
+      this.loadTasks();
     });
   }
+  loadTasks(): void {
+    this.isLoading = true;
+    console.log('Cargando tareas con listId:', this.currentListId); // Log para debug
+
+    // Si estamos en una lista específica, usamos ese listId
+    if (this.currentListId) {
+        this.taskService.getTasks(this.showCompleted, this.currentListId).subscribe({
+            next: (tasks) => {
+                this.tasks = tasks;
+                this.errorMessage = '';
+                this.checkTasksStatus(tasks);
+                this.isLoading = false;
+                console.log('Tareas cargadas para la lista:', this.currentListId, tasks); // Log para debug
+            },
+            error: (error) => {
+                console.error('Error loading tasks:', error);
+                this.showErrorMessage('Error al cargar las tareas');
+                this.isLoading = false;
+            }
+        });
+    } else {
+        // Si no estamos en una lista específica, usamos los filtros normales
+        this.taskService.getTasks(this.showCompleted).subscribe({
+            next: (tasks) => {
+                this.tasks = tasks;
+                this.errorMessage = '';
+                this.checkTasksStatus(tasks);
+                this.isLoading = false;
+                console.log('Tareas cargadas sin lista específica:', tasks); // Log para debug
+            },
+            error: (error) => {
+                console.error('Error loading tasks:', error);
+                this.showErrorMessage('Error al cargar las tareas');
+                this.isLoading = false;
+            }
+        });
+    }
+}
 
   onSubmit() {
     if (this.taskForm.valid) {
@@ -121,8 +156,11 @@ export class TaskListComponent implements OnInit {
         priority: this.taskForm.value.priority as 1 | 2 | 3,
         description: this.taskForm.value.description || undefined,
         dueDate: this.taskForm.value.dueDate || undefined,
-        completed: false
+        completed: false,
+        taskListId: this.currentListId || undefined  // Añadimos el taskListId
       };
+
+      console.log('Creando tarea con taskListId:', this.currentListId); // Log para debug
 
       this.toastr.info('Creando tarea...', 'Procesando', { timeOut: 1000 });
 
@@ -311,6 +349,7 @@ export class TaskListComponent implements OnInit {
   applyFilters(): void {
     this.isLoading = true;
     console.log('Estado del filtro:', this.statusFilter); // Debug
+    console.log('Lista actual:', this.currentListId); // Debug
 
     const filters: TaskFilters = {
       search: this.searchTerm,
@@ -318,7 +357,8 @@ export class TaskListComponent implements OnInit {
               this.statusFilter === 'completed' ? 'true' : 
               this.statusFilter === 'pending' ? 'false' : undefined,
       priority: this.priorityFilter,
-      dateFilter: this.dateFilter
+      dateFilter: this.dateFilter,
+      tasklistId: this.currentListId || undefined  // Añadimos el listId actual
     };
     console.log('Filtros enviados:', filters); // Debug
 
@@ -336,7 +376,7 @@ export class TaskListComponent implements OnInit {
         this.isLoading = false;
       }
     });
-  }
+}
 
   hasActiveFilters(): boolean {
     return this.searchTerm !== '' || 

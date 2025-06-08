@@ -9,6 +9,7 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { TaskDetailComponent } from './components/task-detail/task-detail.component';
 import { NotificationPreferencesComponent } from './components/notification-preferences/notification-preferences.component';
+import { TaskListListComponent } from './components/task-list-list/task-list-list.component';
 
 export const routes: Routes = [
   { 
@@ -28,6 +29,16 @@ export const routes: Routes = [
     data: { animation: 'tasks' }
   },
   { 
+    path: 'tasks/list/:id',
+    component: TaskListComponent,
+    canActivate: [AuthGuard]
+  },
+  { 
+    path: 'tasks/:id',
+    component: TaskDetailComponent,
+    canActivate: [AuthGuard]
+  },
+  { 
     path: 'profile', 
     component: UserProfileComponent,
     canActivate: [AuthGuard],
@@ -44,9 +55,13 @@ export const routes: Routes = [
     data: { animation: 'reset-password' }
   },
   { path: 'notifications', component: NotificationPreferencesComponent },
-  { path: 'tasks/:id', component: TaskDetailComponent },
   { path: 'perfil', component: UserProfileComponent },
-
+  {
+    path: 'lists',
+    children: [
+      { path: 'new', component: TaskListListComponent }
+    ]
+  },
   { 
     path: '', 
     redirectTo: '/tasks', 

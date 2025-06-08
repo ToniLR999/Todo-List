@@ -29,6 +29,8 @@ public class TaskDTO {
 
     private Long taskListId;
 
-    private String assignedToUsername;
+    private String taskListName;
+
+    private String assignedTo;
     
 }

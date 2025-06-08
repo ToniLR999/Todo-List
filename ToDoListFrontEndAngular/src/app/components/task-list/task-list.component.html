@@ -154,18 +154,20 @@
           </button>
         </div>
       </div>
-
-      <p class="task-description">{{ task.description }}</p>
-      
       <div class="task-details">
-        <span class="priority" [ngClass]="getPriorityClass(task.priority)">
-          Prioridad: {{ task.priority === 1 ? 'Alta' : task.priority === 2 ? 'Media' : 'Baja' }}
-        </span>
-        <span class="due-date" *ngIf="task.dueDate">
-          Fecha límite: {{ task.dueDate | date:'short' }}
+        <div class="task-list-priority">
+          <span *ngIf="task.taskListName" class="task-list-badge">
+            📋 {{ task.taskListName }}
+          </span>
+          <span class="priority-badge" [ngClass]="getPriorityClass(task.priority)">
+            {{ getPriorityLabel(task.priority.toString()) }}
+          </span>
+        </div>
+        <span *ngIf="task.dueDate" class="due-date">
+          📅 {{ task.dueDate | date:'short' }}
         </span>
       </div>
-      <a [routerLink]="['/tasks', task.id]" class="view-details">Ver detalles</a>
+      <a [routerLink]="['/tasks', task.id]" class="details-link">Ver detalles</a>
     </div>
   </div>
 

@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.time.LocalDateTime;
-import org.springframework.http.HttpStatus;
 import java.time.ZoneId;
 import java.util.Date;
 import org.springframework.security.core.Authentication;
@@ -46,20 +45,21 @@ public class TaskController {
     @Operation(summary = "Obtener las tareas del usuario")
     @ApiResponse(responseCode = "200", description = "Lista de tareas encontrada")
     @GetMapping
-    public ResponseEntity<?> getUserTasks(@RequestParam(required = false) Boolean completed) {
-        try {
-            String username = securityService.getCurrentUsername();
-            List<TaskDTO> tasks = taskService.getUserTasksByStatus(username, completed != null ? completed : false);
-            return ResponseEntity.ok(tasks);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(
-                    String.format("Error al obtener las tareas: %s - %s", 
-                        e.getClass().getName(), 
-                        e.getMessage())
-                ));
+    public ResponseEntity<?> getTasks(
+        @RequestParam(required = false) Boolean showCompleted,
+        @RequestParam(required = false) Long listId) {
+        
+        String username = securityService.getCurrentUsername();
+        List<TaskDTO> tasks;
+        
+        if (listId != null) {
+            tasks = taskService.getTasksByList(listId, username);
+        } else {
+            boolean showCompletedValue = showCompleted != null ? showCompleted : false;
+            tasks = taskService.getUserTasksByStatus(username, showCompletedValue);
         }
+        
+        return ResponseEntity.ok(tasks);
     }
 
     @Operation(summary = "Actualizar una tarea")
@@ -124,19 +124,22 @@ public class TaskController {
         @RequestParam(required = false) String completed,
         @RequestParam(required = false) String priority,
         @RequestParam(required = false) String dateFilter,
+        @RequestParam(required = false) Long taskListId,
         Authentication authentication
     ) {
         System.out.println("Filtros recibidos en el backend:"); // Debug
         System.out.println("completed: " + completed); // Debug
         System.out.println("priority: " + priority); // Debug
         System.out.println("dateFilter: " + dateFilter); // Debug
+        System.out.println("listId: " + taskListId); // Debug
 
         List<TaskDTO> tasks = taskService.getFilteredTasks(
             search, 
             completed != null ? Boolean.parseBoolean(completed) : null,
             priority,
             dateFilter,
-            authentication.getName()
+            authentication.getName(),
+            taskListId
         );
 
         System.out.println("Número de tareas encontradas: " + tasks.size()); // Debug

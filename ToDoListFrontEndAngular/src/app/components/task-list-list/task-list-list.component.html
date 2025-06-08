@@ -1,0 +1,46 @@
+<div class="task-lists-container">
+    <!-- Header con botón de nueva lista -->
+    <div class="lists-header">
+      <h2>Mis Listas</h2>
+      <button class="btn btn-primary" (click)="showNewListForm()">
+        <i class="fas fa-plus"></i> Nueva Lista
+      </button>
+    </div>
+
+    <!-- Formulario para crear nueva lista (oculto por defecto) -->
+    <div *ngIf="isCreatingList" class="new-list-form">
+      <form [formGroup]="listForm" (ngSubmit)="createList()">
+        <div class="form-group">
+          <input formControlName="name" placeholder="Nombre de la lista" class="form-control">
+        </div>
+        <div class="form-group">
+          <textarea formControlName="description" placeholder="Descripción (opcional)" class="form-control"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-success" [disabled]="!listForm.valid">Crear</button>
+          <button type="button" class="btn btn-secondary" (click)="cancelCreate()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Grid de listas -->
+    <div class="lists-grid">
+      <div *ngFor="let list of taskLists" class="list-card" (click)="selectList(list)">
+        <div class="list-header">
+          <h3>{{list.name}}</h3>
+          <span class="task-count">{{list.tasks?.length || 0}} tareas</span>
+        </div>
+        <p class="list-description">{{list.description || 'Sin descripción'}}</p>
+        <div class="list-actions">
+          <button class="btn btn-sm btn-outline-primary" (click)="editList(list); $event.stopPropagation()">
+            <i class="fas fa-edit"></i>
+            Editar
+          </button>
+          <button class="btn btn-sm btn-outline-danger" (click)="deleteList(list); $event.stopPropagation()">
+            <i class="fas fa-trash"></i>
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

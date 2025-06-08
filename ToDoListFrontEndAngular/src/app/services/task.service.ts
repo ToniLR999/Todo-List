@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Task } from '../models/task.model';
+import { tap } from 'rxjs/operators';
 
 interface TaskInput {
   priority: 1 | 2 | 3;
@@ -15,6 +16,7 @@ export interface TaskFilters {
   status?: string;
   priority?: string;
   dateFilter?: string;
+  tasklistId?: number;  // Añadimos el listId
 }
 
 @Injectable({
@@ -30,8 +32,28 @@ export class TaskService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  getTasks(showCompleted: boolean): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}?showCompleted=${showCompleted}`);
+  getTasks(showCompleted: boolean, listId?: number): Observable<Task[]> {
+    let params = new HttpParams()
+        .set('showCompleted', showCompleted.toString());
+    
+    if (listId) {
+        params = params.set('listId', listId.toString());
+    }
+
+    console.log('Frontend - Enviando petición con parámetros:', {
+        showCompleted,
+        listId
+    });
+
+    return this.http.get<Task[]>(this.apiUrl, {
+        headers: this.getHeaders(),
+        params: params
+    }).pipe(
+        tap(tasks => {
+            console.log('Frontend - Tareas recibidas:', tasks);
+            console.log('Frontend - TaskListIds de las tareas:', tasks.map(t => t.taskListId));
+        })
+    );
   }
 
   createTask(task: TaskInput): Observable<any> {
@@ -92,6 +114,10 @@ export class TaskService {
     }
     if (filters.dateFilter && filters.dateFilter !== 'all') {
       params = params.set('dateFilter', filters.dateFilter);
+    }
+    if (filters.tasklistId) {
+      console.log('Añadiendo listId a los parámetros:', filters.tasklistId); // Debug
+      params = params.set('taskListId', filters.tasklistId.toString());
     }
 
     console.log('Parámetros finales:', params.toString()); // Debug

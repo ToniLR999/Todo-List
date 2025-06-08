@@ -2,6 +2,7 @@ package com.tonilr.ToDoList.repository;
 
 import com.tonilr.ToDoList.model.Task;
 import com.tonilr.ToDoList.model.User;
+import com.tonilr.ToDoList.model.TaskList;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -59,4 +60,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
         @Param("user") User user,
         @Param("dateTime") LocalDateTime dateTime
     );
+
+    List<Task> findByTaskList(TaskList taskList);
 }

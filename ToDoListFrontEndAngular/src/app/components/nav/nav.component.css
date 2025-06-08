@@ -194,3 +194,26 @@
 .user-menu.open .user-label i.bi-caret-down-fill {
   transform: rotate(180deg);
 }
+
+.lists-menu {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+.lists-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: white;
+}
+
+.task-count {
+  font-size: 0.8em;
+  background: rgba(255,255,255,0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 5px;
+}

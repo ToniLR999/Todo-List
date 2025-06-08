@@ -1,0 +1,30 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+      <h3>Mis Listas</h3>
+    </div>
+    
+    <div class="lists-menu">
+      <div class="list-item" 
+           [class.active]="selectedListId === null" 
+           (click)="selectList(null)">
+        <i class="bi bi-tasks"></i>
+        <span>Todas las tareas</span>
+      </div>
+      
+      <div *ngFor="let list of taskLists" 
+           class="list-item" 
+           [class.active]="selectedListId === list.id"
+           (click)="selectList(list.id || null)">
+        <i class="bi bi-list"></i>
+        <span>{{list.name}}</span>
+        <span class="task-count">({{list.tasks?.length || 0}})</span>
+      </div>
+
+      <div class="new-list-button">
+        <button (click)="createNewList()">
+          <i class="bi bi-plus-circle"></i>
+          Nueva Lista
+        </button>
+      </div>
+    </div>
+  </div>
