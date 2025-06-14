@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthService } from './services/auth.service';
+import { Component, OnInit } from '@angular/core';
+import { Router, NavigationEnd, Event } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NavComponent } from './components/nav/nav.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -17,9 +18,9 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
   ],
   template: `
     <div class="app-container">
-      <app-nav></app-nav>
+      <app-nav *ngIf="showNavbar"></app-nav>
       <div class="main-content">
-        <app-sidebar></app-sidebar>
+        <app-sidebar *ngIf="showSidebar"></app-sidebar>
         <main class="content">
           <router-outlet></router-outlet>
         </main>
@@ -46,13 +47,32 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  showSidebar = false;
+  showNavbar = false;
+
   constructor(
-    private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
-  isLoggedIn(): boolean {
-    return this.authService.isAuthenticated();
+  ngOnInit() {
+    this.router.events.pipe(
+      filter((event: Event): event is NavigationEnd => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      const currentRoute = event.urlAfterRedirects;
+      this.showSidebar = this.shouldShowSidebar(currentRoute);
+      this.showNavbar = this.shouldShowNavbar(currentRoute);
+    });
+  }
+
+  private shouldShowSidebar(route: string): boolean {
+    const publicRoutes = ['/login', '/register', '/profile', '/notification-preferences'];
+    return !publicRoutes.some(r => route.startsWith(r)) && this.authService.isAuthenticated();
+  }
+
+  private shouldShowNavbar(route: string): boolean {
+    const publicRoutes = ['/login', '/register'];
+    return !publicRoutes.some(r => route.startsWith(r));
   }
 }

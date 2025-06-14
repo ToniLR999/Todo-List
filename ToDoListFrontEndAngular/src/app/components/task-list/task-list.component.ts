@@ -6,12 +6,14 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { ToastrModule } from 'ngx-toastr';
 import { TaskListService } from '../../services/task-list.service';
 import { TaskList } from '../../models/task-list.model';
+import { TaskDetailComponent } from '../task-detail/task-detail.component';
+
 
 interface TaskInput {
   priority: 1 | 2 | 3;  // En lugar de 'HIGH' | 'MEDIUM' | 'LOW'
@@ -30,7 +32,8 @@ interface TaskInput {
     FormsModule, 
     ReactiveFormsModule, 
     RouterModule,
-    ToastrModule
+    ToastrModule,
+    TaskDetailComponent
   ],
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.css']
@@ -82,12 +85,15 @@ export class TaskListComponent implements OnInit {
     description: ''
   };
 
+  selectedTask: Task | null = null;
+
   constructor(
     private fb: FormBuilder,
     private taskService: TaskService,
     private authService: AuthService,
     private toastr: ToastrService,
     private route: ActivatedRoute,
+    private router: Router,
   ) {
     this.authService.getAuthStatus().subscribe(isAuthenticated => {
       console.log('Estado de autenticación cambiado:', isAuthenticated);
@@ -237,7 +243,7 @@ export class TaskListComponent implements OnInit {
   updateTask(task: Task): void {
     const updatedTask = { ...task, completed: !task.completed };
     
-    this.taskService.updateTask(task.id!, updatedTask).subscribe({
+    this.taskService.updateTask(task.id!.toString(), updatedTask).subscribe({
       next: (updatedTask) => {
         this.loadTasks();
         this.errorMessage = '';
@@ -556,5 +562,34 @@ export class TaskListComponent implements OnInit {
     this.toastr.error('Mensaje de error', 'Error');
     this.toastr.warning('Mensaje de advertencia', 'Advertencia');
     this.toastr.info('Mensaje informativo', 'Info');
+  }
+
+  navigateToTaskDetails(taskId: number) {
+    this.router.navigate(['/tasks', taskId]);
+  }
+
+  openTaskDetail(task: Task) {
+    this.selectedTask = task;
+  }
+
+  closeTaskDetail() {
+    this.selectedTask = null;
+  }
+
+  saveTask(updatedTask: Task) {
+    this.taskService.updateTask(updatedTask.id!.toString(), updatedTask).subscribe({
+      next: (response) => {
+        const index = this.tasks.findIndex(t => t.id === response.id);
+        if (index !== -1) {
+          this.tasks[index] = response;
+        }
+        this.selectedTask = null;
+        this.toastr.success('Tarea actualizada correctamente');
+      },
+      error: (error) => {
+        console.error('Error al actualizar la tarea:', error);
+        this.toastr.error('Error al actualizar la tarea');
+      }
+    });
   }
 }

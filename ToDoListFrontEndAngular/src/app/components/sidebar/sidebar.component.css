@@ -19,12 +19,31 @@
 
   .list-item {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     padding: 10px;
-    margin: 5px 0;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+
+  .list-item.selected {
+    background-color: #0d6efd;
+    color: white;
+  }
+
+  .list-item.selected .list-info i,
+  .list-item.selected .btn-icon {
+    color: white;
+  }
+
+  .list-item.selected .btn-icon:hover {
+    color: #f8f9fa;
+  }
+
+  .list-item.selected .btn-icon.btn-danger:hover {
+    color: #ff6b6b;
   }
 
   .list-item:hover {
@@ -68,5 +87,59 @@
   }
 
   .new-list-button button:hover {
-    background: #0b5ed7;
+    background: #0d6efd;
+  }
+
+  .sidebar {
+    padding: 20px;
+    background-color: #f8f9fa;
+    height: 100%;
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .list-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .list-info:hover {
+    color: #0d6efd;
+  }
+
+  .list-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-icon {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    color: #6c757d;
+    transition: all 0.3s ease;
+  }
+
+  .btn-icon:hover {
+    color: #0d6efd;
+    transform: scale(1.1);
+  }
+
+  .btn-icon.btn-danger:hover {
+    color: #dc3545;
   }

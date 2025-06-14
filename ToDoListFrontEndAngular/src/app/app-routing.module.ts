@@ -59,7 +59,7 @@ export const routes: Routes = [
   {
     path: 'lists',
     children: [
-      { path: 'new', component: TaskListListComponent }
+      { path: 'manage', component: TaskListListComponent }
     ]
   },
   { 

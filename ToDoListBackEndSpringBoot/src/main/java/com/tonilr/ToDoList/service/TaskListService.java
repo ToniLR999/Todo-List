@@ -79,6 +79,8 @@ public class TaskListService {
         }
 
         taskList.setName(taskListDetails.getName());
+        taskList.setDescription(taskListDetails.getDescription());
+        
         TaskList updatedList = taskListRepository.save(taskList);
         auditLogService.logAction(taskList.getOwner(), "ACTUALIZAR_LISTA", "Lista actualizada: " + updatedList.getName());
         return dtoMapper.toTaskListDTO(updatedList);

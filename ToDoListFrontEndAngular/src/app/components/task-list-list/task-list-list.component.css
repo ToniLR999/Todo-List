@@ -1,65 +1,194 @@
-.task-lists-container {
-    padding: 20px;
-  }
+.task-list-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-  .lists-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
 
-  .lists-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-  }
+.new-list-form {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
-  .list-card {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
+.form-group {
+  margin-bottom: 20px;
+}
 
-  .list-card:hover {
-    transform: translateY(-2px);
-  }
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: 500;
+}
 
-  .list-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
 
-  .task-count {
-    background: #e9ecef;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.9em;
-  }
+.form-control:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  outline: none;
+}
 
-  .list-description {
-    color: #6c757d;
-    margin-bottom: 15px;
-  }
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
 
-  .list-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-  }
+.lists-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
 
-  .list-actions button {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 10px;
-  }
+.list-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
 
-  .list-actions button i {
-    font-size: 0.9em;
-  }
+.list-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.list-header h3 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.list-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #6c757d;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+}
+
+.btn-icon:hover {
+  color: #4a90e2;
+  transform: scale(1.1);
+}
+
+.btn-icon.btn-danger:hover {
+  color: #dc3545;
+}
+
+.list-description {
+  color: #6c757d;
+  margin-bottom: 15px;
+  min-height: 40px;
+}
+
+.list-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.task-count {
+  font-size: 0.8rem;
+}
+
+.task-count i {
+  margin-right: 5px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #357abd;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.list-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  min-width: 80px;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}

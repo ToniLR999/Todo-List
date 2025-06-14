@@ -1,59 +1,56 @@
-<div class="task-detail-container">
-  <div class="header">
-    <button class="back-button" (click)="goBack()">← Volver</button>
-    <h2>Detalles de la Tarea</h2>
-  </div>
-
-  <div *ngIf="loading" class="loading">
-    Cargando detalles de la tarea...
-  </div>
-
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
-
-  <div *ngIf="task && !loading" class="task-detail">
-    <div class="task-header">
-      <h1 [class.completed]="task.completed">{{ task.title }}</h1>
-      <div class="status-badge" [class.completed]="task.completed">
-        {{ task.completed ? 'Completada' : 'Pendiente' }}
-      </div>
-    </div>
-
-    <div class="task-content">
-      <div class="task-section">
-        <h3>Descripción</h3>
-        <p>{{ task.description || 'Sin descripción' }}</p>
-      </div>
-
-      <div class="task-section">
-        <h3>Detalles</h3>
-        <div class="details-grid">
-          <div class="detail-item">
-            <span class="label">Prioridad:</span>
-            <span class="value" [ngClass]="getPriorityClass(task.priority)">
-              {{ getPriorityLabel(task.priority) }}
-            </span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Fecha de creación:</span>
-            <span class="value">{{ task.createdAt | date:'medium' }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Fecha límite:</span>
-            <span class="value">{{ task.dueDate ? (task.dueDate | date:'medium') : 'No especificada' }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
+<div class="task-details-container">
+  <div class="task-header">
+    <h2>{{ task?.title }}</h2>
     <div class="task-actions">
-      <button (click)="toggleComplete()" [class.completed]="task.completed" class="action-button">
-        {{ task.completed ? 'Marcar como pendiente' : 'Marcar como completada' }}
+      <button *ngIf="!isEditing" class="btn btn-primary" (click)="toggleEdit()">
+        <i class="fas fa-edit"></i> Editar
       </button>
-      <button (click)="deleteTask()" class="action-button delete">
-        Eliminar tarea
+      <button class="btn btn-danger" (click)="deleteTask()">
+        <i class="fas fa-trash"></i> Eliminar
       </button>
+      <button class="btn btn-secondary" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Volver
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isEditing">
+    <!-- Formulario de edición -->
+    <form (ngSubmit)="taskForm && saveTask(taskForm)">
+      <div class="form-group">
+        <label for="title">Título</label>
+        <input type="text" id="title" [(ngModel)]="taskForm.title" name="title" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="description">Descripción</label>
+        <textarea id="description" [(ngModel)]="taskForm.description" name="description" class="form-control"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="dueDate">Fecha de vencimiento</label>
+        <input type="datetime-local" id="dueDate" [(ngModel)]="taskForm.dueDate" name="dueDate" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="priority">Prioridad</label>
+        <select id="priority" [(ngModel)]="taskForm.priority" name="priority" class="form-control">
+          <option [ngValue]="1">Alta</option>
+          <option [ngValue]="2">Media</option>
+          <option [ngValue]="3">Baja</option>
+        </select>
+      </div>
+      <div class="form-actions">  
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-secondary" (click)="toggleEdit()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="!isEditing">
+    <!-- Vista de detalles -->
+    <div class="task-info">
+      <p><strong>Descripción:</strong> {{ task?.description }}</p>
+      <p><strong>Fecha de vencimiento:</strong> {{ task?.dueDate | date:'short' }}</p>
+      <p><strong>Prioridad:</strong> {{ getPriorityText(task?.priority) }}</p>
+      <p><strong>Estado:</strong> {{ task?.completed ? 'Completada' : 'Pendiente' }}</p>
     </div>
   </div>
 </div>

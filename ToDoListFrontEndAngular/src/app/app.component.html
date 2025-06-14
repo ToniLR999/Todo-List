@@ -1,2 +1,9 @@
-  <app-nav *ngIf="isLoggedIn()"></app-nav>
-  <router-outlet></router-outlet>
+<div class="app-container">
+  <app-nav *ngIf="showNavbar"></app-nav>
+  <div class="content-container">
+    <app-sidebar *ngIf="showSidebar"></app-sidebar>
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

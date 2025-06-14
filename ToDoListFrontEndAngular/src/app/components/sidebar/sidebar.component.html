@@ -1,30 +1,28 @@
 <div class="sidebar">
     <div class="sidebar-header">
       <h3>Mis Listas</h3>
+      <button class="btn btn-primary" (click)="openListManager()">
+        <i class="fas fa-cog"></i> Gestionar Listas
+      </button>
     </div>
-    
-    <div class="lists-menu">
-      <div class="list-item" 
-           [class.active]="selectedListId === null" 
-           (click)="selectList(null)">
-        <i class="bi bi-tasks"></i>
-        <span>Todas las tareas</span>
-      </div>
-      
-      <div *ngFor="let list of taskLists" 
-           class="list-item" 
-           [class.active]="selectedListId === list.id"
-           (click)="selectList(list.id || null)">
-        <i class="bi bi-list"></i>
-        <span>{{list.name}}</span>
-        <span class="task-count">({{list.tasks?.length || 0}})</span>
+
+    <div class="list-container">
+      <!-- Opción "Todas las Tareas" -->
+      <div class="list-item" [class.selected]="selectedListId === null" (click)="selectList(null)">
+        <div class="list-info">
+          <i class="fas fa-tasks"></i>
+          <span>Todas las Tareas</span>
+        </div>
       </div>
 
-      <div class="new-list-button">
-        <button (click)="createNewList()">
-          <i class="bi bi-plus-circle"></i>
-          Nueva Lista
-        </button>
+      <!-- Listas personalizadas -->
+      <div *ngFor="let list of taskLists" 
+           class="list-item" 
+           [class.selected]="selectedListId === list.id">
+        <div class="list-info" (click)="selectList(list.id!)">
+          <i class="fas fa-list"></i>
+          <span>{{ list.name }}</span>
+        </div>
       </div>
     </div>
   </div>

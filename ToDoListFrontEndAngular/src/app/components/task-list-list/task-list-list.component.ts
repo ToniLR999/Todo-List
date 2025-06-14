@@ -1,39 +1,32 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { TaskListService } from '../../services/task-list.service';
+import { TaskList } from '../../models/task-list.model';
 import { Router } from '@angular/router';
-import { TaskList } from 'src/app/models/task-list.model';
-import { TaskListService } from 'src/app/services/task-list.service';
-import {   ToastrService } from 'ngx-toastr';
+import { ToastrService } from 'ngx-toastr';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-task-list-list',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule
-  ],
   templateUrl: './task-list-list.component.html',
-  styleUrl: './task-list-list.component.css'
+  styleUrls: ['./task-list-list.component.css'],
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule]
 })
 export class TaskListListComponent implements OnInit {
   taskLists: TaskList[] = [];
-  isCreatingList = false;
-  listForm: FormGroup;
+  showNewListForm = false;
+  newList: TaskList = {
+    name: '',
+    description: ''
+  };
+  editingList: TaskList | null = null;
 
   constructor(
     private taskListService: TaskListService,
-    private fb: FormBuilder,
-    private toastr: ToastrService,
-    private router: Router
-  ) {
-    this.listForm = this.fb.group({
-      name: ['', Validators.required],
-      description: ['']
-    });
-  }
+    private router: Router,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit() {
     this.loadTaskLists();
@@ -41,43 +34,89 @@ export class TaskListListComponent implements OnInit {
 
   loadTaskLists() {
     this.taskListService.getTaskLists().subscribe({
-      next: (lists) => this.taskLists = lists,
-      error: (error) => this.toastr.error('Error al cargar las listas')
+      next: (lists) => {
+        this.taskLists = lists;
+      },
+      error: (error) => {
+        console.error('Error al cargar las listas:', error);
+        this.toastr.error('Error al cargar las listas');
+      }
     });
   }
 
-  showNewListForm() {
-    this.isCreatingList = true;
-  }
-
-  cancelCreate() {
-    this.isCreatingList = false;
-    this.listForm.reset();
-  }
-
   createList() {
-    if (this.listForm.valid) {
-      this.taskListService.createTaskList(this.listForm.value).subscribe({
-        next: (list) => {
-          this.taskLists.push(list);
-          this.isCreatingList = false;
-          this.listForm.reset();
-          this.toastr.success('Lista creada exitosamente');
+    if (this.editingList) {
+      console.log('Editando lista. Datos a enviar:', this.newList);
+      this.taskListService.updateTaskList(this.editingList.id!, this.newList).subscribe({
+        next: (updatedList) => {
+          console.log('Lista actualizada recibida:', updatedList);
+          const index = this.taskLists.findIndex(l => l.id === updatedList.id);
+          if (index !== -1) {
+            this.taskLists[index] = updatedList;
+          }
+          this.showNewListForm = false;
+          this.newList = { name: '', description: '' };
+          this.editingList = null;
+          this.taskListService.listUpdated.next();
+          this.toastr.success('Lista actualizada correctamente');
         },
-        error: (error) => this.toastr.error('Error al crear la lista')
+        error: (error) => {
+          console.error('Error al actualizar la lista:', error);
+          this.toastr.error('Error al actualizar la lista');
+        }
+      });
+    } else {
+      this.taskListService.createTaskList(this.newList).subscribe({
+        next: (list) => {
+          this.taskLists = [...this.taskLists, list];
+          this.showNewListForm = false;
+          this.newList = { name: '', description: '' };
+          this.taskListService.listUpdated.next();
+          this.toastr.success('Lista creada correctamente');
+        },
+        error: (error) => {
+          console.error('Error al crear la lista:', error);
+          this.toastr.error('Error al crear la lista');
+        }
       });
     }
   }
 
-  selectList(list: TaskList) {
-    this.router.navigate(['/tasks', list.id]);
-  }
-
   editList(list: TaskList) {
-    // Implementar edición
+    console.log('Lista a editar:', list);
+    this.editingList = { ...list };
+    this.newList = {
+      name: list.name,
+      description: list.description || ''
+    };
+    console.log('Nueva lista preparada:', this.newList);
+    this.showNewListForm = true;
   }
 
   deleteList(list: TaskList) {
-    // Implementar eliminación
+    if (confirm(`¿Estás seguro de que deseas eliminar la lista "${list.name}"? Esta acción eliminará también todas las tareas asociadas.`)) {
+      this.taskListService.deleteTaskList(list.id!).subscribe({
+        next: () => {
+          this.taskLists = this.taskLists.filter(l => l.id !== list.id);
+          this.toastr.success('Lista eliminada correctamente');
+        },
+        error: (error) => {
+          console.error('Error al eliminar la lista:', error);
+          this.toastr.error('Error al eliminar la lista');
+        }
+      });
+    }
+  }
+
+  viewList(list: TaskList) {
+    this.router.navigate(['/tasks/list', list.id]).then(() => {
+      this.taskListService.listUpdated.next();
+    });
+  }
+
+  cancelForm() {
+    this.showNewListForm = false;
+    this.newList = { name: '', description: '' };
+    this.editingList = null;
   }
 }

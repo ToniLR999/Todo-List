@@ -67,6 +67,7 @@ public class DTOMapper {
         TaskListDTO dto = new TaskListDTO();
         dto.setId(taskList.getId());
         dto.setName(taskList.getName());
+        dto.setDescription(taskList.getDescription());
         dto.setOwnerUsername(taskList.getOwner() != null ? taskList.getOwner().getUsername() : null);
         dto.setTasks(taskList.getTasks().stream()
                 .map(this::toTaskDTO)
@@ -77,6 +78,7 @@ public class DTOMapper {
     public TaskList toTaskList(TaskListDTO dto) {
         TaskList taskList = new TaskList();
         taskList.setName(dto.getName());
+        taskList.setDescription(dto.getDescription());
         return taskList;
     }
 

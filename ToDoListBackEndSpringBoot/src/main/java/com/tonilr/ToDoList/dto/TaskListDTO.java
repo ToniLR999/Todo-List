@@ -10,6 +10,7 @@ import lombok.Data;
 public class TaskListDTO {
     private Long id;
     private String name;
+    private String description;
     private String ownerUsername;
     private List<TaskDTO> tasks;
 }

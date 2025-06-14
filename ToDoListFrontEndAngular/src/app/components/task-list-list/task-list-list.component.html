@@ -1,46 +1,65 @@
-<div class="task-lists-container">
-    <!-- Header con botón de nueva lista -->
-    <div class="lists-header">
-      <h2>Mis Listas</h2>
-      <button class="btn btn-primary" (click)="showNewListForm()">
-        <i class="fas fa-plus"></i> Nueva Lista
-      </button>
-    </div>
+<div class="task-list-container">
+  <div class="header">
+    <h2>Gestionar Listas de Tareas</h2>
+    <button class="btn btn-primary" (click)="showNewListForm = !showNewListForm">
+      <i class="fas" [class.fa-plus]="!showNewListForm" [class.fa-times]="showNewListForm"></i>
+      {{ showNewListForm ? 'Cancelar' : 'Nueva Lista' }}
+    </button>
+  </div>
 
-    <!-- Formulario para crear nueva lista (oculto por defecto) -->
-    <div *ngIf="isCreatingList" class="new-list-form">
-      <form [formGroup]="listForm" (ngSubmit)="createList()">
-        <div class="form-group">
-          <input formControlName="name" placeholder="Nombre de la lista" class="form-control">
-        </div>
-        <div class="form-group">
-          <textarea formControlName="description" placeholder="Descripción (opcional)" class="form-control"></textarea>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-success" [disabled]="!listForm.valid">Crear</button>
-          <button type="button" class="btn btn-secondary" (click)="cancelCreate()">Cancelar</button>
-        </div>
-      </form>
-    </div>
+  <!-- Formulario de nueva lista/edición -->
+  <div class="new-list-form" *ngIf="showNewListForm">
+    <form (ngSubmit)="createList()" #listForm="ngForm">
+      <div class="form-group">
+        <label for="name">Nombre de la Lista</label>
+        <input type="text" id="name" [(ngModel)]="newList.name" name="name" 
+               class="form-control" required placeholder="Ej: Trabajo, Personal, etc.">
+      </div>
+      <div class="form-group">
+        <label for="description">Descripción</label>
+        <textarea id="description" [(ngModel)]="newList.description" name="description" 
+                  class="form-control" rows="3" placeholder="Describe el propósito de esta lista"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success" [disabled]="!listForm.form.valid">
+          <i class="fas" [class.fa-save]="!editingList" [class.fa-edit]="editingList"></i>
+          {{ editingList ? 'Actualizar Lista' : 'Crear Lista' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancelForm()">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
 
-    <!-- Grid de listas -->
-    <div class="lists-grid">
-      <div *ngFor="let list of taskLists" class="list-card" (click)="selectList(list)">
-        <div class="list-header">
-          <h3>{{list.name}}</h3>
-          <span class="task-count">{{list.tasks?.length || 0}} tareas</span>
-        </div>
-        <p class="list-description">{{list.description || 'Sin descripción'}}</p>
+  <!-- Lista de listas -->
+  <div class="lists-grid">
+    <div *ngFor="let list of taskLists" class="list-card">
+      <div class="list-header">
+        <h3>{{ list.name }}</h3>
         <div class="list-actions">
-          <button class="btn btn-sm btn-outline-primary" (click)="editList(list); $event.stopPropagation()">
+          <button class="btn-icon" (click)="editList(list)" title="Editar lista">
             <i class="fas fa-edit"></i>
-            Editar
           </button>
-          <button class="btn btn-sm btn-outline-danger" (click)="deleteList(list); $event.stopPropagation()">
+          <button class="btn-icon btn-danger" (click)="deleteList(list)" title="Eliminar lista">
             <i class="fas fa-trash"></i>
-            Eliminar
+          </button>
+        </div>
+      </div>
+      <p class="list-description">{{ list.description || 'Sin descripción' }}</p>
+      <div class="list-footer">
+        <div class="list-buttons">
+          <button class="btn btn-sm btn-primary" (click)="viewList(list)">
+            <i class="fas fa-eye"></i> Ver Tareas
+          </button>
+          <button class="btn btn-sm btn-secondary" (click)="editList(list)">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="deleteList(list)">
+            <i class="fas fa-trash"></i> Eliminar
           </button>
         </div>
       </div>
     </div>
   </div>
+</div>

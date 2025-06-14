@@ -105,8 +105,10 @@
 
 .task-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 30px;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
 }
 
 .action-button {
@@ -144,4 +146,242 @@
   margin: 10px 0;
   background: #ffebee;
   border-radius: 4px;
+}
+
+.task-details-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: #333333;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.task-header h2 {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 100px;
+}
+
+.btn-primary {
+  background-color: #4a90e2;
+  color: white;
+  box-shadow: 0 2px 4px rgba(74, 144, 226, 0.2);
+}
+
+.btn-primary:hover {
+  background-color: #357abd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #333333;
+  font-size: 0.9rem;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.task-info {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+
+.task-info p {
+  margin: 10px 0;
+  line-height: 1.5;
+  color: #333333;
+}
+
+.task-info strong {
+  color: #2c3e50;
+  margin-right: 8px;
+}
+
+/* Estilos para los estados de prioridad */
+.priority-high {
+  color: #dc3545;
+}
+
+.priority-medium {
+  color: #ffc107;
+}
+
+.priority-low {
+  color: #28a745;
+}
+
+/* Estilos para el estado completado */
+.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Estilos para el modo de edición */
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+select.form-control {
+  cursor: pointer;
+}
+
+/* Animaciones */
+.btn, .form-control {
+  transition: all 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .task-details-container {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .task-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .task-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+/* Efecto de click */
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Estado deshabilitado */
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.priority-value {
+  display: inline-block;
+  min-width: 30px;
+  text-align: center;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  margin-right: 8px;
+}
+
+.priority-high .priority-value {
+  color: #dc3545;
+  background-color: #fff5f5;
+}
+
+.priority-medium .priority-value {
+  color: #ffc107;
+  background-color: #fff9e6;
+}
+
+.priority-low .priority-value {
+  color: #28a745;
+  background-color: #f0fff4;
 }

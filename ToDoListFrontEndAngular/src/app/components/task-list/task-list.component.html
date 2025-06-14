@@ -141,7 +141,10 @@
         <span class="visually-hidden">Cargando...</span>
       </div>
     </div>
-    <div *ngFor="let task of tasks" class="task-item" [ngClass]="getPriorityClass(task.priority)">
+    <div *ngFor="let task of tasks" 
+         class="task-item" 
+         [ngClass]="getPriorityClass(task.priority)"
+         (dblclick)="navigateToTaskDetails(task.id!)">
       <div class="task-header">
         <h3>{{ task.title }}</h3>
         <div class="task-actions">
@@ -173,4 +176,13 @@
 
   <!-- Añadir donde quieras probar -->
   <button class="btn btn-primary" (click)="testToastr()">Probar Notificaciones</button>
+
+  <!-- Modal de detalle/edición -->
+  <app-task-detail 
+    *ngIf="selectedTask" 
+    [task]="selectedTask"
+    [taskLists]="taskLists"
+    (close)="closeTaskDetail()"
+    (save)="saveTask($event)">
+  </app-task-detail>
 </div> 
