@@ -40,7 +40,6 @@ export class ForgotPasswordComponent {
       this.authService.forgotPassword(this.forgotPasswordForm.value.email)
         .subscribe({
           next: (response) => {
-            console.log('Respuesta del servidor:', response); // Debug
             this.success = 'Se han enviado las instrucciones a tu correo electrónico';
             this.error = '';
             this.forgotPasswordForm.reset();
@@ -48,7 +47,6 @@ export class ForgotPasswordComponent {
             this.isLoading = false;
           },
           error: (err) => {
-            console.error('Error completo:', err); // Debug
             this.error = 'Error al procesar la solicitud';
             this.success = '';
             this.forgotPasswordForm.enable();

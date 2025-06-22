@@ -74,17 +74,20 @@ export class SidebarComponent implements OnInit {
 
   deleteList(list: TaskList) {
     if (confirm(`¿Estás seguro de que deseas eliminar la lista "${list.name}"? Esta acción eliminará también todas las tareas asociadas.`)) {
-      this.taskListService.deleteTaskList(list.id!).subscribe({
-        next: () => {
-          this.taskLists = this.taskLists.filter(l => l.id !== list.id);
-          this.toastr.success('Lista eliminada correctamente');
-        },
-        error: (error) => {
-          console.error('Error al eliminar la lista:', error);
-          this.toastr.error('Error al eliminar la lista');
-        }
-      });
+      this.confirmDeleteList(list);
     }
+  }
+
+  private confirmDeleteList(list: TaskList): void {
+    this.taskListService.deleteTaskList(list.id!).subscribe({
+      next: () => {
+        this.taskLists = this.taskLists.filter(l => l.id !== list.id);
+        this.toastr.success(`Lista "${list.name}" eliminada correctamente`);
+      },
+      error: (error) => {
+        this.toastr.error('Error al eliminar la lista');
+      }
+    });
   }
 
   openListManager() {

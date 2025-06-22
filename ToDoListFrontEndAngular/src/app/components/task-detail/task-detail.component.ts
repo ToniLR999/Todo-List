@@ -102,15 +102,21 @@ export class TaskDetailComponent implements OnInit {
     }
   }
 
-  deleteTask(): void {
-    if (this.task && confirm('¿Está seguro de que desea eliminar esta tarea?')) {
+  deleteTask() {
+    if (this.task && confirm(`¿Estás seguro de que deseas eliminar la tarea "${this.task.title}"?`)) {
+      this.confirmDeleteTask();
+    }
+  }
+
+  private confirmDeleteTask(): void {
+    if (this.task) {
       this.taskService.deleteTask(this.task.id!).subscribe({
         next: () => {
+          this.toastr.success(`Tarea "${this.task!.title}" eliminada correctamente`);
           this.router.navigate(['/tasks']);
         },
         error: (error) => {
-          console.error('Error deleting task:', error);
-          this.errorMessage = 'Error al eliminar la tarea';
+          this.toastr.error('Error al eliminar la tarea');
         }
       });
     }

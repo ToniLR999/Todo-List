@@ -96,7 +96,7 @@ export class TaskListComponent implements OnInit {
     private router: Router,
   ) {
     this.authService.getAuthStatus().subscribe(isAuthenticated => {
-      console.log('Estado de autenticación cambiado:', isAuthenticated);
+      //console.log('Estado de autenticación cambiado:', isAuthenticated);
     });
 
     // Configurar el debounce para la búsqueda
@@ -111,13 +111,13 @@ export class TaskListComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.currentListId = params['id'] ? Number(params['id']) : null;
-      console.log('Frontend - currentListId:', this.currentListId); // Añadir este log
+      //console.log('Frontend - currentListId:', this.currentListId); // Añadir este log
       this.loadTasks();
     });
   }
   loadTasks(): void {
     this.isLoading = true;
-    console.log('Cargando tareas con listId:', this.currentListId); // Log para debug
+    //console.log('Cargando tareas con listId:', this.currentListId); // Log para debug
 
     // Si estamos en una lista específica, usamos ese listId
     if (this.currentListId) {
@@ -127,10 +127,10 @@ export class TaskListComponent implements OnInit {
                 this.errorMessage = '';
                 this.checkTasksStatus(tasks);
                 this.isLoading = false;
-                console.log('Tareas cargadas para la lista:', this.currentListId, tasks); // Log para debug
+                //console.log('Tareas cargadas para la lista:', this.currentListId, tasks); // Log para debug
             },
             error: (error) => {
-                console.error('Error loading tasks:', error);
+                //console.error('Error loading tasks:', error);
                 this.showErrorMessage('Error al cargar las tareas');
                 this.isLoading = false;
             }
@@ -143,10 +143,10 @@ export class TaskListComponent implements OnInit {
                 this.errorMessage = '';
                 this.checkTasksStatus(tasks);
                 this.isLoading = false;
-                console.log('Tareas cargadas sin lista específica:', tasks); // Log para debug
+                //console.log('Tareas cargadas sin lista específica:', tasks); // Log para debug
             },
             error: (error) => {
-                console.error('Error loading tasks:', error);
+                //console.error('Error loading tasks:', error);
                 this.showErrorMessage('Error al cargar las tareas');
                 this.isLoading = false;
             }
@@ -166,7 +166,7 @@ export class TaskListComponent implements OnInit {
         taskListId: this.currentListId || undefined  // Añadimos el taskListId
       };
 
-      console.log('Creando tarea con taskListId:', this.currentListId); // Log para debug
+      //console.log('Creando tarea con taskListId:', this.currentListId); // Log para debug
 
       this.toastr.info('Creando tarea...', 'Procesando', { timeOut: 1000 });
 
@@ -188,7 +188,7 @@ export class TaskListComponent implements OnInit {
         },
         error: (error) => {
           this.isSubmitting = false;
-          console.error('Error al crear la tarea:', error);
+          //console.error('Error al crear la tarea:', error);
           let errorMessage = 'No se pudo crear la tarea.';
           
           if (error.status === 400) {
@@ -250,10 +250,10 @@ export class TaskListComponent implements OnInit {
         
         if (updatedTask.completed) {
           this.toastr.success(
-            `¡Tarea "${updatedTask.title}" completada!`,
+            `¡Excelente! Has completado la tarea "${updatedTask.title}"`,
             '¡Felicidades!',
             {
-              timeOut: 3000,
+              timeOut: 4000,
               progressBar: true,
               closeButton: true
             }
@@ -271,18 +271,22 @@ export class TaskListComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error updating task:', error);
+        //console.error('Error updating task:', error);
         let errorMessage = 'Error al actualizar la tarea.';
         
         if (error.status === 401) {
           errorMessage = 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.';
         } else if (error.status === 403) {
           errorMessage = 'No tienes permisos para actualizar esta tarea.';
+        } else if (error.status === 404) {
+          errorMessage = 'La tarea no se encontró. Puede haber sido eliminada.';
+        } else if (error.status === 500) {
+          errorMessage = 'Error del servidor. Por favor, inténtalo más tarde.';
         }
         
         this.toastr.error(
           errorMessage,
-          'Error',
+          'Error al actualizar',
           {
             timeOut: 5000,
             progressBar: true,
@@ -295,39 +299,43 @@ export class TaskListComponent implements OnInit {
 
   deleteTask(id: number): void {
     const taskToDelete = this.tasks.find(t => t.id === id);
-    if (taskToDelete && confirm('¿Está seguro de que desea eliminar esta tarea?')) {
-      this.isDeleting = true;
-      this.toastr.info('Eliminando tarea...', 'Procesando', { timeOut: 1000 });
-
-      this.taskService.deleteTask(id).subscribe({
-        next: () => {
-          this.tasks = this.tasks.filter(task => task.id !== id);
-          this.isDeleting = false;
-          this.toastr.info(
-            `Tarea "${taskToDelete.title}" eliminada`,
-            'Tarea Eliminada',
-            {
-              timeOut: 3000,
-              progressBar: true,
-              closeButton: true
-            }
-          );
-        },
-        error: (error) => {
-          this.isDeleting = false;
-          console.error('Error deleting task:', error);
-          this.toastr.error(
-            'No se pudo eliminar la tarea. Por favor, intente nuevamente.',
-            'Error',
-            {
-              timeOut: 5000,
-              progressBar: true,
-              closeButton: true
-            }
-          );
-        }
-      });
+    if (taskToDelete && confirm(`¿Estás seguro de que deseas eliminar la tarea "${taskToDelete.title}"?`)) {
+      this.confirmDeleteTask(id, taskToDelete);
     }
+  }
+
+  // Añadir método auxiliar
+  private confirmDeleteTask(id: number, taskToDelete: Task): void {
+    this.isDeleting = true;
+    this.toastr.info('Eliminando tarea...', 'Procesando', { timeOut: 1000 });
+
+    this.taskService.deleteTask(id).subscribe({
+      next: () => {
+        this.tasks = this.tasks.filter(task => task.id !== id);
+        this.isDeleting = false;
+        this.toastr.success(
+          `Tarea "${taskToDelete.title}" eliminada correctamente`,
+          'Tarea Eliminada',
+          {
+            timeOut: 3000,
+            progressBar: true,
+            closeButton: true
+          }
+        );
+      },
+      error: (error) => {
+        this.isDeleting = false;
+        this.toastr.error(
+          'No se pudo eliminar la tarea. Por favor, intente nuevamente.',
+          'Error',
+          {
+            timeOut: 5000,
+            progressBar: true,
+            closeButton: true
+          }
+        );
+      }
+    });
   }
 
   toggleShowCompleted(): void {
@@ -354,8 +362,8 @@ export class TaskListComponent implements OnInit {
 
   applyFilters(): void {
     this.isLoading = true;
-    console.log('Estado del filtro:', this.statusFilter); // Debug
-    console.log('Lista actual:', this.currentListId); // Debug
+    //console.log('Estado del filtro:', this.statusFilter); // Debug
+    //console.log('Lista actual:', this.currentListId); // Debug
 
     const filters: TaskFilters = {
       search: this.searchTerm,
@@ -366,18 +374,18 @@ export class TaskListComponent implements OnInit {
       dateFilter: this.dateFilter,
       tasklistId: this.currentListId || undefined  // Añadimos el listId actual
     };
-    console.log('Filtros enviados:', filters); // Debug
+    //console.log('Filtros enviados:', filters); // Debug
 
     this.taskService.getFilteredTasks(filters).subscribe({
       next: (tasks) => {
-        console.log('Tareas recibidas:', tasks); // Debug
+        //console.log('Tareas recibidas:', tasks); // Debug
         this.tasks = tasks;
         this.errorMessage = '';
         this.checkTasksStatus(tasks);
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error applying filters:', error);
+        //console.error('Error applying filters:', error);
         this.showErrorMessage('Error al aplicar los filtros. Por favor, intente nuevamente.');
         this.isLoading = false;
       }
@@ -587,7 +595,7 @@ export class TaskListComponent implements OnInit {
         this.toastr.success('Tarea actualizada correctamente');
       },
       error: (error) => {
-        console.error('Error al actualizar la tarea:', error);
+        //console.error('Error al actualizar la tarea:', error);
         this.toastr.error('Error al actualizar la tarea');
       }
     });

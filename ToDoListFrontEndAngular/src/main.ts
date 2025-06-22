@@ -20,4 +20,6 @@ bootstrapApplication(AppComponent, {
       progressBar: true
     })
   ]
-}).catch(err => console.error(err));
+}).catch(err => {
+  console.error('Error crítico en la aplicación:', err);
+});

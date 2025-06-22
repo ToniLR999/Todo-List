@@ -46,10 +46,8 @@ export class TaskListListComponent implements OnInit {
 
   createList() {
     if (this.editingList) {
-      console.log('Editando lista. Datos a enviar:', this.newList);
       this.taskListService.updateTaskList(this.editingList.id!, this.newList).subscribe({
         next: (updatedList) => {
-          console.log('Lista actualizada recibida:', updatedList);
           const index = this.taskLists.findIndex(l => l.id === updatedList.id);
           if (index !== -1) {
             this.taskLists[index] = updatedList;
@@ -83,29 +81,30 @@ export class TaskListListComponent implements OnInit {
   }
 
   editList(list: TaskList) {
-    console.log('Lista a editar:', list);
     this.editingList = { ...list };
     this.newList = {
       name: list.name,
       description: list.description || ''
     };
-    console.log('Nueva lista preparada:', this.newList);
     this.showNewListForm = true;
   }
 
   deleteList(list: TaskList) {
     if (confirm(`¿Estás seguro de que deseas eliminar la lista "${list.name}"? Esta acción eliminará también todas las tareas asociadas.`)) {
-      this.taskListService.deleteTaskList(list.id!).subscribe({
-        next: () => {
-          this.taskLists = this.taskLists.filter(l => l.id !== list.id);
-          this.toastr.success('Lista eliminada correctamente');
-        },
-        error: (error) => {
-          console.error('Error al eliminar la lista:', error);
-          this.toastr.error('Error al eliminar la lista');
-        }
-      });
+      this.confirmDeleteList(list);
     }
+  }
+
+  private confirmDeleteList(list: TaskList): void {
+    this.taskListService.deleteTaskList(list.id!).subscribe({
+      next: () => {
+        this.taskLists = this.taskLists.filter(l => l.id !== list.id);
+        this.toastr.success(`Lista "${list.name}" eliminada correctamente`);
+      },
+      error: (error) => {
+        this.toastr.error('Error al eliminar la lista');
+      }
+    });
   }
 
   viewList(list: TaskList) {

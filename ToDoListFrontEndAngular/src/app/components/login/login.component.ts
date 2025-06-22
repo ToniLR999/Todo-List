@@ -36,14 +36,9 @@ export class LoginComponent {
       this.authService.setAuthMethod('jwt');
       this.authService.login(username, password).subscribe({
         next: (response) => {
-          console.log('Login exitoso, token:', response.token);
-          if (response && response.token) {
-            window.localStorage.setItem('token', response.token);
-            console.log('Token guardado antes de navegar:', window.localStorage.getItem('token'));
-            setTimeout(() => {
-              this.router.navigate(['/tasks']);
-            }, 100); // Pequeño delay para asegurar que el token se guarde
-          }
+          setTimeout(() => {
+            this.router.navigate(['/tasks']);
+          }, 100); // Pequeño delay para asegurar que el token se guarde
         },
         error: (error) => {
           console.error('Error login:', error);

@@ -42,19 +42,16 @@ export class TaskListService {
   }
 
   updateTaskList(id: number, taskList: TaskList): Observable<TaskList> {
-    console.log('Enviando petición PUT con datos:', taskList);
     const payload = {
       name: taskList.name,
       description: taskList.description,
       id: id
     };
-    console.log('Payload final:', payload);
     
     return this.http.put<TaskList>(`${this.apiUrl}/${id}`, payload, {
       headers: this.getHeaders()
     }).pipe(
       tap(response => {
-        console.log('Respuesta del servidor:', response);
         this.listUpdated.next();
       })
     );

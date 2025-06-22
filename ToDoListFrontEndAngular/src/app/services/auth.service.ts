@@ -20,13 +20,11 @@ export class AuthService {
   }
 
   setAuthMethod(method: 'jwt' | 'cookie'): void {
-    console.log('🔐 Cambiando método de autenticación a:', method);
     this.authMethod = method;
     this.isAuthenticatedSubject.next(this.isAuthenticated());
   }
 
   login(username: string, password: string): Observable<any> {
-    console.log('🔑 Iniciando sesión con método:', this.authMethod);
     const options = this.authMethod === 'cookie' 
       ? { withCredentials: true }
       : {};
@@ -37,9 +35,7 @@ export class AuthService {
           if (this.authMethod === 'jwt' && response.token) {
             localStorage.setItem('token', response.token);
             localStorage.setItem('username', username);
-            console.log('📝 Token JWT guardado');
           } else if (this.authMethod === 'cookie') {
-            console.log('🍪 Autenticación por cookie establecida');
           }
           this.isAuthenticatedSubject.next(true);
         })
@@ -47,21 +43,12 @@ export class AuthService {
   }
 
   logout(): void {
-    console.log('🚪 Cerrando sesión con método:', this.authMethod);
-    if (this.authMethod === 'jwt') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      console.log('🗑️ Token JWT eliminado');
-    } else {
-      console.log('🍪 Cookie de sesión eliminada');
-    }
     this.isAuthenticatedSubject.next(false);
     this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
     const token = window.localStorage.getItem('token');
-    //console.log('Verificando autenticación. Token:', token);
     return !!token;
   }
 
@@ -79,12 +66,10 @@ export class AuthService {
 
   checkAuthStatus(): void {
     const token = localStorage.getItem('token');
-    console.log('Token actual:', token);
     console.log('¿Está autenticado?:', this.isAuthenticated());
   }
 
   setToken(token: string): void {
-    console.log('Guardando token:', token); // Debug
     localStorage.setItem('token', token);
     this.isAuthenticatedSubject.next(true);
   }
@@ -95,7 +80,6 @@ export class AuthService {
 
   checkToken(): void {
     const token = localStorage.getItem('token');
-    console.log('Token actual:', token);
   }
 
   // Obtener perfil del usuario actual

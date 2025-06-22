@@ -40,24 +40,16 @@ export class TaskService {
         params = params.set('listId', listId.toString());
     }
 
-    console.log('Frontend - Enviando petición con parámetros:', {
-        showCompleted,
-        listId
-    });
-
     return this.http.get<Task[]>(`${this.apiUrl}tasks`, {
         headers: this.getHeaders(),
         params: params
     }).pipe(
         tap(tasks => {
-            console.log('Frontend - Tareas recibidas:', tasks);
-            console.log('Frontend - TaskListIds de las tareas:', tasks.map(t => t.taskListId));
         })
     );
   }
 
   createTask(task: TaskInput): Observable<any> {
-    console.log("Task a guardar: " + task);
     return this.http.post(`${this.apiUrl}tasks`, task, {
       headers: this.getHeaders()
     });
@@ -106,7 +98,6 @@ export class TaskService {
       params = params.set('search', filters.search);
     }
     if (filters.status) {
-      console.log('Valor de status recibido:', filters.status); // Debug
       params = params.set('completed', filters.status);
     }
     if (filters.priority && filters.priority !== 'all') {
@@ -116,11 +107,9 @@ export class TaskService {
       params = params.set('dateFilter', filters.dateFilter);
     }
     if (filters.tasklistId) {
-      console.log('Añadiendo listId a los parámetros:', filters.tasklistId); // Debug
       params = params.set('taskListId', filters.tasklistId.toString());
     }
 
-    console.log('Parámetros finales:', params.toString()); // Debug
     return this.http.get<Task[]>(`${this.apiUrl}tasks/filter`, { 
       params, 
       headers: this.getHeaders() 
