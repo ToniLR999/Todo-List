@@ -38,6 +38,9 @@ public class EmailService {
     @Value("${app.frontend.url}")
     private String frontendUrl;
     
+    @Autowired
+    private SanitizationService sanitizationService;
+    
     public void sendSimpleEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("TU_CORREO@gmail.com"); // Cambia por tu correo
@@ -52,11 +55,12 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject("Restablecimiento de contraseña - ToDoList");
+            helper.setTo(sanitizeEmail(to));
+            helper.setSubject("Restablecimiento de Contraseña - ToDoList");
+            helper.setFrom("noreply@todolist.com");
             
-            String content = String.format("""
+            // Sanitizar el contenido HTML
+            String sanitizedContent = String.format("""
                 <html>
                 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                     <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -75,9 +79,9 @@ public class EmailService {
                     </div>
                 </body>
                 </html>
-                """, frontendUrl, token);
+                """, frontendUrl, sanitizationService.sanitizeText(token));
             
-            helper.setText(content, true);
+            helper.setText(sanitizedContent, true);
             message.setHeader("X-Priority", "1"); // Alta prioridad
             message.setHeader("X-MSMail-Priority", "High");
             message.setHeader("Importance", "High");
@@ -162,5 +166,12 @@ public class EmailService {
             case 3: return "Baja";
             default: return "Desconocida";
         }
+    }
+    
+    private String sanitizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        return email.replaceAll("[^a-zA-Z0-9@._-]", "");
     }
 }

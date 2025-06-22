@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
 
 @Tag(name = "Tasks", description = "API de gestión de tareas")
 @RestController
@@ -31,14 +32,14 @@ public class TaskController {
 
     @Operation(summary = "Crear una nueva tarea")
     @PostMapping
-    public ResponseEntity<?> createTask(@RequestBody TaskDTO taskDTO) {
+    public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO, Authentication authentication) {
         try {
             String username = securityService.getCurrentUsername();
             TaskDTO newTask = taskService.createTask(taskDTO, username);
             return ResponseEntity.ok(newTask);
         } catch (RuntimeException e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -64,14 +65,15 @@ public class TaskController {
 
     @Operation(summary = "Actualizar una tarea")
     @PutMapping("/{taskId}")
-    public ResponseEntity<?> updateTask(
+    public ResponseEntity<TaskDTO> updateTask(
             @PathVariable Long taskId,
-            @RequestBody TaskDTO taskDetails) {
+            @Valid @RequestBody TaskDTO taskDetails,
+            Authentication authentication) {
         try {
             TaskDTO updatedTask = taskService.updateTask(taskId, taskDetails);
             return ResponseEntity.ok(updatedTask);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         }
     }
 

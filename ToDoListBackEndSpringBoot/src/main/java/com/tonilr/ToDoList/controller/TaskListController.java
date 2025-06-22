@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/lists")
@@ -23,13 +25,13 @@ public class TaskListController {
 
     @Operation(summary = "Crear una nueva lista de tareas")
     @PostMapping
-    public ResponseEntity<?> createTaskList(@RequestBody TaskListDTO taskListDTO) {
+    public ResponseEntity<TaskListDTO> createTaskList(@Valid @RequestBody TaskListDTO taskListDTO, Authentication authentication) {
         try {
             String username = securityService.getCurrentUsername();
             TaskListDTO newList = taskListService.createTaskList(taskListDTO, username);
             return ResponseEntity.ok(newList);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -46,15 +48,13 @@ public class TaskListController {
     }
 
     @Operation(summary = "Actualizar una lista de tareas")
-    @PutMapping("/{listId}")
-    public ResponseEntity<?> updateTaskList(
-            @PathVariable Long listId,
-            @RequestBody TaskListDTO taskListDetails) {
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskListDTO> updateTaskList(@PathVariable Long id, @Valid @RequestBody TaskListDTO taskListDTO, Authentication authentication) {
         try {
-            TaskListDTO updatedList = taskListService.updateTaskList(listId, taskListDetails);
+            TaskListDTO updatedList = taskListService.updateTaskList(id, taskListDTO);
             return ResponseEntity.ok(updatedList);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -65,9 +65,9 @@ public class TaskListController {
             taskListService.deleteTaskList(listId);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         }
-    }
+    }   
 
     @Operation(summary = "Buscar listas de tareas por nombre")
     @GetMapping("/search")
