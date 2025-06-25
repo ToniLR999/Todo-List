@@ -88,7 +88,7 @@ export class TaskDetailComponent implements OnInit {
 
   toggleComplete(): void {
     if (this.task) {
-      this.taskService.updateTask(this.task.id!.toString(), { ...this.task, completed: !this.task.completed })
+      this.taskService.updateTask(this.task.id!, { ...this.task, completed: !this.task.completed })
         .subscribe({
           next: (updatedTask) => {
             this.task = updatedTask;
@@ -132,7 +132,7 @@ export class TaskDetailComponent implements OnInit {
   saveTask(task: Task) {
     if (!task.id) return;
     
-    this.taskService.updateTask(task.id.toString(), task).subscribe({
+    this.taskService.updateTask(task.id, task).subscribe({
       next: (response) => {
         this.task = response;
         this.isEditing = false;

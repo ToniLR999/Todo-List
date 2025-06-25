@@ -18,6 +18,8 @@ import java.time.ZoneId;
 import java.util.Date;
 import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
+import com.tonilr.ToDoList.dto.CacheableTaskDTO;
+import java.util.stream.Collectors;
 
 @Tag(name = "Tasks", description = "API de gestión de tareas")
 @RestController
@@ -54,10 +56,16 @@ public class TaskController {
         List<TaskDTO> tasks;
         
         if (listId != null) {
-            tasks = taskService.getTasksByList(listId, username);
+            List<CacheableTaskDTO> cachedTasks = taskService.getTasksByList(listId, username);
+            tasks = cachedTasks.stream()
+                .map(CacheableTaskDTO::toTaskDTO)
+                .collect(Collectors.toList());
         } else {
             boolean showCompletedValue = showCompleted != null ? showCompleted : false;
-            tasks = taskService.getUserTasksByStatus(username, showCompletedValue);
+            List<CacheableTaskDTO> cachedTasks = taskService.getUserTasksByStatus(username, showCompletedValue);
+            tasks = cachedTasks.stream()
+                .map(CacheableTaskDTO::toTaskDTO)
+                .collect(Collectors.toList());
         }
         
         return ResponseEntity.ok(tasks);
@@ -91,7 +99,11 @@ public class TaskController {
     @GetMapping("/priority/{priority}")
     public ResponseEntity<?> getTasksByPriority(@PathVariable int priority) {
         String username = securityService.getCurrentUsername();
-        return ResponseEntity.ok(taskService.getUserTasksByPriority(username, priority));
+        List<CacheableTaskDTO> cachedTasks = taskService.getUserTasksByPriority(username, priority);
+        List<TaskDTO> tasks = cachedTasks.stream()
+            .map(CacheableTaskDTO::toTaskDTO)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/duedate")
@@ -105,7 +117,11 @@ public class TaskController {
     @GetMapping("/search")
     public ResponseEntity<?> searchTasksByTitle(@RequestParam String title) {
         String username = securityService.getCurrentUsername();
-        return ResponseEntity.ok(taskService.searchUserTasksByTitle(username, title));
+        List<CacheableTaskDTO> cachedTasks = taskService.searchUserTasksByTitle(username, title);
+        List<TaskDTO> tasks = cachedTasks.stream()
+            .map(CacheableTaskDTO::toTaskDTO)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(tasks);
     }
 
     @Operation(summary = "Obtener detalles de una tarea")
@@ -122,29 +138,23 @@ public class TaskController {
 
     @GetMapping("/filter")
     public ResponseEntity<List<TaskDTO>> getFilteredTasks(
-        @RequestParam(required = false) String search,
-        @RequestParam(required = false) String completed,
-        @RequestParam(required = false) String priority,
-        @RequestParam(required = false) String dateFilter,
-        @RequestParam(required = false) Long taskListId,
-        Authentication authentication
-    ) {
-        System.out.println("Filtros recibidos en el backend:"); // Debug
-        System.out.println("completed: " + completed); // Debug
-        System.out.println("priority: " + priority); // Debug
-        System.out.println("dateFilter: " + dateFilter); // Debug
-        System.out.println("listId: " + taskListId); // Debug
-
-        List<TaskDTO> tasks = taskService.getFilteredTasks(
-            search, 
-            completed != null ? Boolean.parseBoolean(completed) : null,
-            priority,
-            dateFilter,
-            authentication.getName(),
-            taskListId
-        );
-
-        System.out.println("Número de tareas encontradas: " + tasks.size()); // Debug
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String completed,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) String dateFilter,
+            @RequestParam(required = false) Long listId,
+            Authentication authentication) {
+        
+        String username = authentication.getName();
+        Boolean completedBool = completed != null ? Boolean.parseBoolean(completed) : null;
+        
+        List<CacheableTaskDTO> cachedTasks = taskService.getFilteredTasks(search, completedBool, priority, dateFilter, username, listId);
+        
+        // Convertir de vuelta a TaskDTO para el frontend
+        List<TaskDTO> tasks = cachedTasks.stream()
+            .map(CacheableTaskDTO::toTaskDTO)
+            .collect(Collectors.toList());
+        
         return ResponseEntity.ok(tasks);
     }
 }

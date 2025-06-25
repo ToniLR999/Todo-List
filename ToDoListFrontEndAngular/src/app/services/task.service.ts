@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Task } from '../models/task.model';
-import { tap } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
+import { CacheService } from './cache.service';
 
 interface TaskInput {
   priority: 1 | 2 | 3;
@@ -23,48 +24,93 @@ export interface TaskFilters {
   providedIn: 'root'
 })
 export class TaskService {
-  private apiUrl = 'http://localhost:8080/api/';
+  private apiUrl = 'http://localhost:8080/api/tasks';
+  private readonly CACHE_KEY_PREFIX = 'tasks_';
+  private readonly CACHE_TTL = 2 * 60 * 1000; // 2 minutos
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private cacheService: CacheService
+  ) {}
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  getTasks(showCompleted: boolean, listId?: number): Observable<Task[]> {
-    let params = new HttpParams()
-        .set('showCompleted', showCompleted.toString());
+  getTasks(): Observable<Task[]> {
+    const cacheKey = this.CACHE_KEY_PREFIX + 'all';
+    const cachedData = this.cacheService.get<Task[]>(cacheKey);
     
-    if (listId) {
-        params = params.set('listId', listId.toString());
+    if (cachedData) {
+      console.log('TAREAS DESDE CACHÉ (all)');
+      return of(cachedData);
     }
+    console.log('TAREAS DESDE SERVIDOR (all)');
 
-    return this.http.get<Task[]>(`${this.apiUrl}tasks`, {
-        headers: this.getHeaders(),
-        params: params
-    }).pipe(
-        tap(tasks => {
-        })
+    return this.http.get<Task[]>(`${this.apiUrl}`).pipe(
+      tap(data => {
+        this.cacheService.set(cacheKey, data, this.CACHE_TTL);
+      }),
+      catchError(error => {
+        console.error('Error al obtener tareas:', error);
+        return of([]);
+      })
     );
   }
 
-  createTask(task: TaskInput): Observable<any> {
-    return this.http.post(`${this.apiUrl}tasks`, task, {
-      headers: this.getHeaders()
-    });
+  getTasksByList(listId: number): Observable<Task[]> {
+    const cacheKey = this.CACHE_KEY_PREFIX + `list_${listId}`;
+    const cachedData = this.cacheService.get<Task[]>(cacheKey);
+    
+    if (cachedData) {
+      console.log(`TAREAS DESDE CACHÉ (list ${listId})`);
+      return of(cachedData);
+    }
+    console.log(`TAREAS DESDE SERVIDOR (list ${listId})`);
+
+    return this.http.get<Task[]>(`${this.apiUrl}/list/${listId}`).pipe(
+      tap(data => {
+        this.cacheService.set(cacheKey, data, this.CACHE_TTL);
+      }),
+      catchError(error => {
+        console.error('Error al obtener tareas de lista:', error);
+        return of([]);
+      })
+    );
   }
 
-  updateTask(id: string, task: Task) {
-    return this.http.put<Task>(`${this.apiUrl}tasks/${id}`, task, {
+  createTask(task: Task): Observable<Task> {
+    return this.http.post<Task>(`${this.apiUrl}`, task, {
       headers: this.getHeaders()
-    });
+    }).pipe(
+      tap(() => {
+        // Invalidar cachés relacionados
+        this.invalidateTaskCaches();
+      })
+    );
+  }
+
+  updateTask(id: number, task: Task): Observable<Task> {
+    return this.http.put<Task>(`${this.apiUrl}/${id}`, task, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap(() => {
+        // Invalidar cachés relacionados
+        this.invalidateTaskCaches();
+      })
+    );
   }
 
   deleteTask(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}tasks/${id}`, {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
       headers: this.getHeaders()
-    });
+    }).pipe(
+      tap(() => {
+        // Invalidar cachés relacionados
+        this.invalidateTaskCaches();
+      })
+    );
   }
 
   getTasksByPriority(priority: string): Observable<Task[]> {
@@ -110,15 +156,25 @@ export class TaskService {
       params = params.set('taskListId', filters.tasklistId.toString());
     }
 
-    return this.http.get<Task[]>(`${this.apiUrl}tasks/filter`, { 
+    return this.http.get<Task[]>(`${this.apiUrl}/filter`, { 
       params, 
       headers: this.getHeaders() 
     });
   }
 
   getTaskById(id: string) {
-    return this.http.get<Task>(`${this.apiUrl}tasks/${id}`, {
+    return this.http.get<Task>(`${this.apiUrl}/${id}`, {
       headers: this.getHeaders()
+    });
+  }
+
+  private invalidateTaskCaches(): void {
+    // Limpiar todos los cachés de tareas
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.includes('todolist_tasks_')) {
+        localStorage.removeItem(key);
+      }
     });
   }
 } 

@@ -3,6 +3,7 @@ package com.tonilr.ToDoList.dto;
 import com.tonilr.ToDoList.model.*;
 
 import java.util.stream.Collectors;
+import java.util.Date;
 
 import org.springframework.stereotype.Component;
 
@@ -44,7 +45,8 @@ public class DTOMapper {
         dto.setCompleted(task.isCompleted());
         dto.setPriority(task.getPriority());
         dto.setCreatedAt(task.getCreatedAt());
-        dto.setDueDate(task.getDueDate());
+        dto.setDueDate(task.getDueDate() != null ? 
+            Date.from(task.getDueDate().atZone(java.time.ZoneId.systemDefault()).toInstant()) : null);
         if (task.getTaskList() != null) {
             dto.setTaskListId(task.getTaskList().getId());
             dto.setTaskListName(task.getTaskList().getName());
@@ -59,7 +61,8 @@ public class DTOMapper {
         task.setDescription(dto.getDescription());
         task.setCompleted(dto.isCompleted());
         task.setPriority(dto.getPriority());
-        task.setDueDate(dto.getDueDate());
+        task.setDueDate(dto.getDueDate() != null ? 
+            dto.getDueDate().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
         return task;
     }
 

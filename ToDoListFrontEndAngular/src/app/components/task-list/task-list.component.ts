@@ -117,41 +117,30 @@ export class TaskListComponent implements OnInit {
   }
   loadTasks(): void {
     this.isLoading = true;
-    //console.log('Cargando tareas con listId:', this.currentListId); // Log para debug
 
-    // Si estamos en una lista específica, usamos ese listId
-    if (this.currentListId) {
-        this.taskService.getTasks(this.showCompleted, this.currentListId).subscribe({
+    // Construimos los filtros
+    const filters: TaskFilters = {
+      status: this.statusFilter === 'all' ? undefined : 
+              this.statusFilter === 'completed' ? 'true' : 
+              this.statusFilter === 'pending' ? 'false' : undefined,
+      priority: this.priorityFilter !== 'all' ? this.priorityFilter : undefined,
+      dateFilter: this.dateFilter !== 'all' ? this.dateFilter : undefined,
+      search: this.searchTerm || undefined,
+      tasklistId: this.currentListId || undefined
+    };
+
+    this.taskService.getFilteredTasks(filters).subscribe({
             next: (tasks) => {
                 this.tasks = tasks;
                 this.errorMessage = '';
                 this.checkTasksStatus(tasks);
                 this.isLoading = false;
-                //console.log('Tareas cargadas para la lista:', this.currentListId, tasks); // Log para debug
             },
             error: (error) => {
-                //console.error('Error loading tasks:', error);
                 this.showErrorMessage('Error al cargar las tareas');
                 this.isLoading = false;
             }
         });
-    } else {
-        // Si no estamos en una lista específica, usamos los filtros normales
-        this.taskService.getTasks(this.showCompleted).subscribe({
-            next: (tasks) => {
-                this.tasks = tasks;
-                this.errorMessage = '';
-                this.checkTasksStatus(tasks);
-                this.isLoading = false;
-                //console.log('Tareas cargadas sin lista específica:', tasks); // Log para debug
-            },
-            error: (error) => {
-                //console.error('Error loading tasks:', error);
-                this.showErrorMessage('Error al cargar las tareas');
-                this.isLoading = false;
-            }
-        });
-    }
 }
 
   onSubmit() {
@@ -170,7 +159,7 @@ export class TaskListComponent implements OnInit {
 
       this.toastr.info('Creando tarea...', 'Procesando', { timeOut: 1000 });
 
-      this.taskService.createTask(taskData).subscribe({
+      this.taskService.createTask(taskData as Task).subscribe({
         next: (response) => {
           this.taskForm.reset({ priority: 2 });
           this.loadTasks();
@@ -243,10 +232,10 @@ export class TaskListComponent implements OnInit {
   updateTask(task: Task): void {
     const updatedTask = { ...task, completed: !task.completed };
     
-    this.taskService.updateTask(task.id!.toString(), updatedTask).subscribe({
+    this.taskService.updateTask(task.id!, updatedTask).subscribe({
       next: (updatedTask) => {
         this.loadTasks();
-        this.errorMessage = '';
+        this.errorMessage = ''; 
         
         if (updatedTask.completed) {
           this.toastr.success(
@@ -585,7 +574,7 @@ export class TaskListComponent implements OnInit {
   }
 
   saveTask(updatedTask: Task) {
-    this.taskService.updateTask(updatedTask.id!.toString(), updatedTask).subscribe({
+    this.taskService.updateTask(updatedTask.id!, updatedTask).subscribe({
       next: (response) => {
         const index = this.tasks.findIndex(t => t.id === response.id);
         if (index !== -1) {

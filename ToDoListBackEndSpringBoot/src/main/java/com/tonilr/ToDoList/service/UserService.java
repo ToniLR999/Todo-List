@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 @Service
 @Transactional
@@ -29,7 +30,7 @@ public class UserService {
     @Autowired
     private EmailService emailService;
 
-    @CacheEvict(value = "users", key = "#user.username")
+    @CacheEvict(value = {"users", "taskCounts", "userStats"}, allEntries = true)
     @Transactional
     public User registerUser(User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
@@ -59,13 +60,14 @@ public class UserService {
         return savedUser;
     }
 
+    @Cacheable(value = "users", key = "'username_' + #username")
     @Transactional(readOnly = true)
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
-    @CacheEvict(value = "users", key = "#userDetails.username")
+    @CacheEvict(value = {"users", "taskCounts", "userStats"}, allEntries = true)
     @Transactional
     public User updateUser(Long userId, User userDetails) {
         User user = userRepository.findById(userId)

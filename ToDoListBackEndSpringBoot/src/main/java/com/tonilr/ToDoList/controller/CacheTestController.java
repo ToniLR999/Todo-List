@@ -106,4 +106,28 @@ public class CacheTestController {
                 ));
         }
     }
+
+    @GetMapping("/set-get")
+    public ResponseEntity<?> setValueGet(
+            @RequestParam String key, 
+            @RequestParam String value) {
+        try {
+            logger.info("Intentando guardar en Redis (GET) - key: {}, value: {}", key, value);
+            redisTemplate.opsForValue().set(key, value);
+            logger.info("Valor guardado exitosamente via GET");
+            return ResponseEntity.ok()
+                .body(Map.of(
+                    "message", "Valor guardado exitosamente via GET",
+                    "key", key,
+                    "value", value
+                ));
+        } catch (Exception e) {
+            logger.error("Error al guardar en Redis via GET", e);
+            return ResponseEntity.internalServerError()
+                .body(Map.of(
+                    "error", "Error al guardar en Redis",
+                    "message", e.getMessage()
+                ));
+        }
+    }
 }

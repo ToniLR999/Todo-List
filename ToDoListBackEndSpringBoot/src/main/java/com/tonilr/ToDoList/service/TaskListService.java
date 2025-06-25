@@ -36,7 +36,7 @@ public class TaskListService {
     @Autowired
     private EmailService emailService;
 
-    @CacheEvict(value = "taskLists", allEntries = true)
+    @CacheEvict(value = {"taskLists", "tasks"}, allEntries = true)
     @Transactional
     public TaskListDTO createTaskList(TaskListDTO taskListDTO, String username) {
         User owner = userService.findByUsername(username);
@@ -55,8 +55,9 @@ public class TaskListService {
         return dtoMapper.toTaskListDTO(savedList);
     }
 
-    @Cacheable(value = "taskLists", key = "#username")
+    @Cacheable(value = "taskLists", key = "'user_' + #username")
     public List<TaskListDTO> getUserTaskLists(String username) {
+        System.out.println("OBTENIENDO LISTAS DE TAREAS DESDE BASE DE DATOS para usuario: " + username);
         User owner = userService.findByUsername(username);
         return taskListRepository.findByOwner(owner)
             .stream()
@@ -64,7 +65,7 @@ public class TaskListService {
             .collect(Collectors.toList());
     }
 
-    @CacheEvict(value = "taskLists", allEntries = true)
+    @CacheEvict(value = {"taskLists", "tasks"}, allEntries = true)
     @Transactional
     public TaskListDTO updateTaskList(Long listId, TaskListDTO taskListDetails) {
         TaskList taskList = taskListRepository.findById(listId)
@@ -86,7 +87,7 @@ public class TaskListService {
         return dtoMapper.toTaskListDTO(updatedList);
     }
 
-    @CacheEvict(value = "taskLists", allEntries = true)
+    @CacheEvict(value = {"taskLists", "tasks"}, allEntries = true)
     @Transactional
     public void deleteTaskList(Long listId) {
         TaskList taskList = taskListRepository.findById(listId)
@@ -98,7 +99,9 @@ public class TaskListService {
         taskListRepository.delete(taskList);
     }
 
+    @Cacheable(value = "taskLists", key = "'user_' + #username + '_search_' + #name")
     public List<TaskListDTO> searchUserTaskListsByName(String username, String name) {
+        System.out.println("BUSCANDO LISTAS POR NOMBRE DESDE BASE DE DATOS para usuario: " + username + ", nombre: " + name);
         User owner = userService.findByUsername(username);
         return taskListRepository.findByOwnerAndNameContainingIgnoreCase(owner, name)
             .stream()

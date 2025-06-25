@@ -62,4 +62,14 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     );
 
     List<Task> findByTaskList(TaskList taskList);
+
+    // Métodos de conteo para caché
+    Long countByAssignedTo(User user);
+    Long countByAssignedToAndCompleted(User user, boolean completed);
+    
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.assignedTo = :user AND t.priority = :priority")
+    Long countByAssignedToAndPriority(@Param("user") User user, @Param("priority") int priority);
+    
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.assignedTo = :user AND t.dueDate < :dueDate")
+    Long countByAssignedToAndDueDateBefore(@Param("user") User user, @Param("dueDate") LocalDateTime dueDate);
 }

@@ -1,5 +1,6 @@
 package com.tonilr.ToDoList.service;
 
+import com.tonilr.ToDoList.dto.CacheableTaskDTO;
 import com.tonilr.ToDoList.dto.DTOMapper;
 import com.tonilr.ToDoList.dto.TaskDTO;
 import com.tonilr.ToDoList.exception.ResourceNotFoundException;
@@ -200,7 +201,7 @@ class TaskServiceTest {
         when(dtoMapper.toTaskDTO(testTask)).thenReturn(testTaskDTO);
 
         // Act
-        List<TaskDTO> result = taskService.getUserTasks("testuser");
+        List<CacheableTaskDTO> result = taskService.getUserTasks("testuser");
 
         // Assert
         assertNotNull(result);
@@ -274,7 +275,7 @@ class TaskServiceTest {
         when(dtoMapper.toTaskDTO(testTask)).thenReturn(testTaskDTO);
 
         // Act
-        List<TaskDTO> result = taskService.getTasksByList(1L, "testuser");
+        List<CacheableTaskDTO> result = taskService.getTasksByList(1L, "testuser");
 
         // Assert
         assertNotNull(result);

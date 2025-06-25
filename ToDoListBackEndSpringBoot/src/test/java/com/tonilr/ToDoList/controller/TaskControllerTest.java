@@ -2,6 +2,7 @@ package com.tonilr.ToDoList.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tonilr.ToDoList.dto.TaskDTO;
+import com.tonilr.ToDoList.dto.CacheableTaskDTO;
 import com.tonilr.ToDoList.service.TaskService;
 import com.tonilr.ToDoList.service.SecurityService;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +58,8 @@ class TaskControllerTest {
     @Test
     void getTasks_Success() throws Exception {
         when(securityService.getCurrentUsername()).thenReturn("testuser");
-        when(taskService.getUserTasksByStatus(anyString(), any(Boolean.class))).thenReturn(Arrays.asList(testTaskDTO));
+        when(taskService.getUserTasksByStatus(anyString(), any(Boolean.class)))
+            .thenReturn(Arrays.asList(new CacheableTaskDTO(testTaskDTO)));
 
         mockMvc.perform(get("/api/tasks"))  
                 .andExpect(status().isOk())

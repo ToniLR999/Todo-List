@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import com.tonilr.ToDoList.dto.CacheableTaskDTO;
 
 @Service
 public class TaskService {
@@ -44,7 +45,7 @@ public class TaskService {
     @Autowired
     private TaskListRepository taskListRepository;
 
-    @CacheEvict(value = "tasks", allEntries = true)
+    @CacheEvict(value = {"tasks", "taskCounts", "userStats"}, allEntries = true)
     @Transactional
     public TaskDTO createTask(TaskDTO taskDTO, String username) {
         System.out.println("Creando nueva tarea - Invalidando caché");
@@ -104,22 +105,27 @@ public class TaskService {
         return dtoMapper.toTaskDTO(savedTask);
     }
 
-    public List<TaskDTO> getUserTasks(String username) {
+    @Cacheable(value = "tasks", key = "'user_' + #username + '_all'")
+    public List<CacheableTaskDTO> getUserTasks(String username) {
+        System.out.println("OBTENIENDO TODAS LAS TAREAS DESDE BASE DE DATOS para usuario: " + username);
         User user = userService.findByUsername(username);
-        return taskRepository.findByAssignedTo(user)
-            .stream()
+        List<Task> tasks = taskRepository.findByAssignedTo(user);
+        
+        return tasks.stream()
             .map(task -> {
                 TaskDTO dto = dtoMapper.toTaskDTO(task);
                 if (task.getTaskList() != null) {
                     dto.setTaskListId(task.getTaskList().getId());
-                    dto.setTaskListName(task.getTaskList().getName()); // <-- Añade esto
+                    dto.setTaskListName(task.getTaskList().getName());
                 }
-                return dto;
+                return new CacheableTaskDTO(dto);
             })
             .collect(Collectors.toList());
     }
     
-    public List<TaskDTO> getUserTasksByStatus(String username, boolean showCompleted) {
+    @Cacheable(value = "tasks", key = "'user_' + #username + '_status_' + #showCompleted")
+    public List<CacheableTaskDTO> getUserTasksByStatus(String username, boolean showCompleted) {
+        System.out.println("OBTENIENDO TAREAS POR ESTADO DESDE BASE DE DATOS para usuario: " + username + ", completed: " + showCompleted);
         User user = userService.findByUsername(username);
         List<Task> tasks = taskRepository.findByAssignedToAndCompleted(user, showCompleted);
     
@@ -128,22 +134,30 @@ public class TaskService {
                 TaskDTO dto = dtoMapper.toTaskDTO(task);
                 if (task.getTaskList() != null) {
                     dto.setTaskListId(task.getTaskList().getId());
-                    dto.setTaskListName(task.getTaskList().getName()); // <-- Añade esto también aquí
+                    dto.setTaskListName(task.getTaskList().getName());
                 }
-                return dto;
+                return new CacheableTaskDTO(dto);
             })
             .collect(Collectors.toList());
     }
 
-    public List<TaskDTO> getUserTasksByPriority(String username, int priority) {
+    @Cacheable(value = "tasks", key = "'user_' + #username + '_priority_' + #priority")
+    public List<CacheableTaskDTO> getUserTasksByPriority(String username, int priority) {
+        System.out.println("OBTENIENDO TAREAS POR PRIORIDAD DESDE BASE DE DATOS para usuario: " + username + ", prioridad: " + priority);
         User user = userService.findByUsername(username);
-        return taskRepository.findByAssignedToAndPriority(user, priority)
-            .stream()
-            .map(dtoMapper::toTaskDTO)
+        List<Task> tasks = taskRepository.findByAssignedToAndPriority(user, priority);
+        
+        return tasks.stream()
+            .map(task -> {
+                TaskDTO dto = dtoMapper.toTaskDTO(task);
+                return new CacheableTaskDTO(dto);
+            })
             .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "tasks", key = "'user_' + #username + '_duedate_' + #dueDate")
     public List<TaskDTO> getUserTasksByDueDate(String username, Date dueDate) {
+        System.out.println("OBTENIENDO TAREAS POR FECHA DESDE BASE DE DATOS para usuario: " + username + ", fecha: " + dueDate);
         User user = userService.findByUsername(username);
         LocalDateTime localDateTime = dueDate.toInstant()
             .atZone(ZoneId.systemDefault())
@@ -154,15 +168,21 @@ public class TaskService {
             .collect(Collectors.toList());
     }
 
-    public List<TaskDTO> searchUserTasksByTitle(String username, String title) {
+    @Cacheable(value = "tasks", key = "'user_' + #username + '_search_' + #title")
+    public List<CacheableTaskDTO> searchUserTasksByTitle(String username, String title) {
+        System.out.println("BUSCANDO TAREAS POR TÍTULO DESDE BASE DE DATOS para usuario: " + username + ", título: " + title);
         User user = userService.findByUsername(username);
-        return taskRepository.findByAssignedToAndTitleContainingIgnoreCase(user, title)
-            .stream()
-            .map(dtoMapper::toTaskDTO)
+        List<Task> tasks = taskRepository.findByAssignedToAndTitleContainingIgnoreCase(user, title);
+        
+        return tasks.stream()
+            .map(task -> {
+                TaskDTO dto = dtoMapper.toTaskDTO(task);
+                return new CacheableTaskDTO(dto);
+            })
             .collect(Collectors.toList());
     }
 
-    @CacheEvict(value = "tasks", allEntries = true)
+    @CacheEvict(value = {"tasks", "taskCounts", "userStats"}, allEntries = true)
     @Transactional
     public TaskDTO updateTask(Long taskId, TaskDTO taskDetails) {
         Task task = taskRepository.findById(taskId)
@@ -183,14 +203,15 @@ public class TaskService {
         task.setDescription(taskDetails.getDescription());
         task.setCompleted(taskDetails.isCompleted());
         task.setPriority(taskDetails.getPriority());
-        task.setDueDate(taskDetails.getDueDate());
+        task.setDueDate(taskDetails.getDueDate() != null ? 
+            taskDetails.getDueDate().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
         
         Task updatedTask = taskRepository.save(task);
         auditLogService.logAction(task.getAssignedTo(), "ACTUALIZAR_TAREA", "Tarea actualizada: " + updatedTask.getTitle());
         return dtoMapper.toTaskDTO(updatedTask);
     }
 
-    @CacheEvict(value = "tasks", allEntries = true)
+    @CacheEvict(value = {"tasks", "taskCounts", "userStats"}, allEntries = true) 
     @Transactional
     public void deleteTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
@@ -202,7 +223,9 @@ public class TaskService {
         taskRepository.delete(task);
     }
 
+    @Cacheable(value = "tasks", key = "'task_' + #taskId")
     public TaskDTO getTaskDetails(Long taskId, String username) {
+        System.out.println("OBTENIENDO DETALLES DE TAREA DESDE BASE DE DATOS para ID: " + taskId);
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada con ID: " + taskId));
         
@@ -213,39 +236,18 @@ public class TaskService {
         return dtoMapper.toTaskDTO(task);
     }
 
-    public List<TaskDTO> getFilteredTasks(String search, Boolean completed, String priority, String dateFilter, String username, Long taskListId) {
-        System.out.println("Filtros recibidos - completed: " + completed + ", taskListId: " + taskListId); // Debug
-        
+    @Cacheable(value = "tasks", key = "'user_' + #username + '_filtered_' + #search + '_' + #completed + '_' + #priority + '_' + #dateFilter + '_' + #taskListId")
+    public List<CacheableTaskDTO> getFilteredTasks(String search, Boolean completed, String priority, String dateFilter, String username, Long taskListId) {
+        System.out.println("OBTENIENDO TAREAS FILTRADAS DESDE BASE DE DATOS para usuario: " + username);
         User user = userService.findByUsername(username);
-        List<Task> tasks;
         
+        List<Task> tasks;
         if (taskListId != null) {
-            // Si hay un taskListId, obtener las tareas de esa lista
-            TaskList taskList = taskListRepository.findById(taskListId)
-                .orElseThrow(() -> new ResourceNotFoundException("Lista no encontrada"));
-            
-            if (!taskList.getOwner().equals(user)) {
-                throw new UnauthorizedException("No tienes acceso a esta lista");
-            }
-            
-            tasks = taskRepository.findByTaskList(taskList);
-            
-            // Aplicar filtro de completed si está presente
-            if (completed != null) {
-                tasks = tasks.stream()
-                    .filter(task -> task.isCompleted() == completed)
-                    .collect(Collectors.toList());
-            }
+            tasks = taskRepository.findByTaskListId(taskListId);
         } else {
-            // Si no hay taskListId, usar el filtrado normal
-            if (completed == null) {
-                tasks = taskRepository.findByAssignedTo(user);
-            } else {
-                tasks = taskRepository.findByAssignedToAndCompleted(user, completed);
-            }
+            tasks = taskRepository.findByAssignedTo(user);
         }
         
-        System.out.println("Tareas encontradas: " + tasks.size()); // Debug
         return tasks.stream()
             .map(task -> {
                 TaskDTO dto = dtoMapper.toTaskDTO(task);
@@ -253,26 +255,35 @@ public class TaskService {
                     dto.setTaskListId(task.getTaskList().getId());
                     dto.setTaskListName(task.getTaskList().getName());
                 }
-                return dto;
+                return new CacheableTaskDTO(dto);
             })
             .collect(Collectors.toList());
     }
 
-    public List<TaskDTO> getTasksByList(Long listId, String username) {
-        User user = userService.findByUsername(username);
-        TaskList taskList = taskListRepository.findById(listId)
-            .orElseThrow(() -> new ResourceNotFoundException("Lista no encontrada"));
+    @Cacheable(value = "tasks", key = "'user_' + #username + '_list_' + #listId")
+    public List<CacheableTaskDTO> getTasksByList(Long listId, String username) {
+        System.out.println("OBTENIENDO TAREAS DE LISTA DESDE BASE DE DATOS para usuario: " + username + ", lista: " + listId);
+        List<Task> tasks = taskRepository.findByTaskListId(listId);
         
-        if (!taskList.getOwner().equals(user)) {
-            throw new UnauthorizedException("No tienes acceso a esta lista");
-        }
-        
-        // Usar el repositorio de tareas para obtener las tareas
-        List<Task> tasks = taskRepository.findByTaskList(taskList);
-        
-        // Convertir cada tarea a DTO individualmente
         return tasks.stream()
-            .map(task -> dtoMapper.toTaskDTO(task))
+            .map(task -> {
+                TaskDTO dto = dtoMapper.toTaskDTO(task);
+                if (task.getTaskList() != null) {
+                    dto.setTaskListId(task.getTaskList().getId());
+                    dto.setTaskListName(task.getTaskList().getName());
+                }
+                return new CacheableTaskDTO(dto);
+            })
             .collect(Collectors.toList());
+    }
+
+    @Cacheable(value = "tasks", key = "#listId != null ? 'list_' + #listId : 'all'")
+    public List<Task> getTasks(Long listId) {
+        System.out.println("OBTENIENDO TAREAS DESDE BASE DE DATOS para listId: " + listId);
+        if (listId != null) {
+            return taskRepository.findByTaskListId(listId);
+        } else {
+            return taskRepository.findAll();
+        }
     }
 }

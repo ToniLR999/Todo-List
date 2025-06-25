@@ -31,8 +31,13 @@ export class NavComponent implements OnInit {
 
   loadTaskLists() {
     this.taskListService.getTaskLists().subscribe({
-      next: (lists) => this.taskLists = lists,
-      error: (error) => console.error('Error loading lists:', error)
+      next: (taskLists) => {
+        console.log('🔄 nav: Obteniendo listas');
+        this.taskLists = taskLists;
+      },
+      error: (error) => {
+        console.error('Error al obtener listas de tareas:', error);
+      }
     });
   }
 

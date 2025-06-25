@@ -48,11 +48,12 @@ export class SidebarComponent implements OnInit {
 
   loadTaskLists() {
     this.taskListService.getTaskLists().subscribe({
-      next: (lists) => {
-        this.taskLists = lists;
+      next: (taskLists) => {
+        console.log('🔄 sidebar: Obteniendo listas');
+        this.taskLists = taskLists;
       },
       error: (error) => {
-        console.error('Error al cargar las listas:', error);
+        console.error('Error al obtener listas de tareas:', error);
         this.toastr.error('Error al cargar las listas');
       }
     });

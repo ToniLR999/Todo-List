@@ -25,7 +25,7 @@ public class TaskDTO {
     private Date createdAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    private LocalDateTime dueDate;
+    private Date dueDate;
 
     private Long taskListId;
 
