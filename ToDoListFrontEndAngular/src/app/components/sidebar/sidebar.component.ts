@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { TaskListService } from '../../services/task-list.service';
@@ -16,6 +16,9 @@ import { filter } from 'rxjs/operators';
 export class SidebarComponent implements OnInit {
   taskLists: TaskList[] = [];
   selectedListId: number | null = null;
+  isMobile: boolean = window.innerWidth <= 768;
+  sidebarVisible: boolean = false;
+
 
   constructor(
     private taskListService: TaskListService,
@@ -95,5 +98,17 @@ export class SidebarComponent implements OnInit {
 
   openListManager() {
     this.router.navigate(['/lists/manage']);
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.isMobile = window.innerWidth <= 768;
+    if (!this.isMobile) {
+      this.sidebarVisible = false;
+    }
+  }
+
+  toggleSidebar() {
+    this.sidebarVisible = !this.sidebarVisible;
   }
 }

@@ -1,9 +1,37 @@
 <nav class="navbar-custom">
   <div class="navbar-content">
+
     <a class="navbar-brand" routerLink="/">
       <i class="bi bi-check2-square me-2"></i>
       ToDo List
     </a>
+
+    <!-- Botón hamburguesa -->
+    <button 
+      *ngIf="isMobile && !sidebarVisible" 
+      class="menu-btn" 
+      (click)="toggleSidebar()" 
+      aria-label="Abrir menú"
+    >
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <rect y="4" width="24" height="3" rx="1.5" fill="white"/>
+        <rect y="10.5" width="24" height="3" rx="1.5" fill="white"/>
+        <rect y="17" width="24" height="3" rx="1.5" fill="white"/>
+      </svg>
+    </button>
+
+    <!-- Botón cerrar (X) -->
+    <button 
+      *ngIf="isMobile && sidebarVisible" 
+      class="menu-btn" 
+      (click)="toggleSidebar()" 
+      aria-label="Cerrar menú"
+    >
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <line x1="5" y1="5" x2="19" y2="19" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        <line x1="19" y1="5" x2="5" y2="19" stroke="white" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </button>
 
     <!-- Menú de usuario existente -->
     <div class="user-menu" (click)="toggleDropdown()" tabindex="0" (blur)="closeDropdown()" [class.open]="dropdownOpen">
@@ -37,5 +65,7 @@
 
       </ul>
     </div>
+
+
   </div>
 </nav>

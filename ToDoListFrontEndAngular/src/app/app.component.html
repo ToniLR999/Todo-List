@@ -1,8 +1,12 @@
 <div class="app-container">
-  <app-nav *ngIf="showNavbar"></app-nav>
-  <div class="content-container">
-    <app-sidebar *ngIf="showSidebar"></app-sidebar>
-    <main class="main-content">
+  <app-nav
+    *ngIf="showNavbar"
+    (abrirSidebarEvent)="sidebar.sidebarVisible = true"
+    (cerrarSidebarEvent)="sidebar.sidebarVisible = false"
+  ></app-nav>
+  <div class="main-content">
+    <app-sidebar #sidebar *ngIf="showSidebar"></app-sidebar>
+    <main class="content">
       <router-outlet></router-outlet>
     </main>
   </div>

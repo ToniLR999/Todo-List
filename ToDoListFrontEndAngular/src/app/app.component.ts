@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { Router, NavigationEnd, Event } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
@@ -16,40 +16,14 @@ import { AuthService } from './services/auth.service';
     NavComponent,
     SidebarComponent
   ],
-  template: `
-    <div class="app-container">
-      <app-nav *ngIf="showNavbar"></app-nav>
-      <div class="main-content">
-        <app-sidebar *ngIf="showSidebar"></app-sidebar>
-        <main class="content">
-          <router-outlet></router-outlet>
-        </main>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .app-container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-
-    .main-content {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .content {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-  `]
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
   showSidebar = false;
   showNavbar = false;
+  isMobile: boolean = window.innerWidth <= 768;
+  @ViewChild('sidebar') sidebar!: SidebarComponent;
 
   constructor(
     private router: Router,
@@ -74,5 +48,10 @@ export class AppComponent implements OnInit {
   private shouldShowNavbar(route: string): boolean {
     const publicRoutes = ['/login', '/register'];
     return !publicRoutes.some(r => route.startsWith(r));
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.isMobile = window.innerWidth <= 768;
   }
 }

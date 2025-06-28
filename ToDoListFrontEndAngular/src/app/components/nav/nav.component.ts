@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -13,10 +13,14 @@ import { TaskList } from '../../models/task-list.model';
   styleUrls: ['./nav.component.css']
 })
 export class NavComponent implements OnInit {
+  @Output() abrirSidebarEvent = new EventEmitter<void>();
+  @Output() cerrarSidebarEvent = new EventEmitter<void>();
   username: string = '';
   dropdownOpen = false;
   taskLists: TaskList[] = [];
   listsDropdownOpen = false;
+  isMobile: boolean = window.innerWidth <= 768;
+  sidebarVisible = false;
 
   constructor(
     private authService: AuthService, 
@@ -70,5 +74,22 @@ export class NavComponent implements OnInit {
       this.router.navigate(['/tasks']);
     }
     this.listsDropdownOpen = false;
+  }
+
+  toggleSidebar() {
+    this.sidebarVisible = !this.sidebarVisible;
+    if (this.sidebarVisible) {
+      this.abrirSidebarEvent.emit();
+    } else {
+      this.cerrarSidebarEvent.emit();
+    }
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.isMobile = window.innerWidth <= 768;
+    if (!this.isMobile) {
+      this.sidebarVisible = false;
+    }
   }
 }

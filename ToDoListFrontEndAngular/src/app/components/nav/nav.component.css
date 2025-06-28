@@ -217,3 +217,26 @@
   border-radius: 10px;
   margin-left: 5px;
 }
+
+.menu-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+  border-radius: 50%;
+
+}
+
+.menu-btn:hover {
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+}
+@media (min-width: 769px) {
+  .menu-btn {
+    display: none;
+  }
+}

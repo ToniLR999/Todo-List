@@ -1,4 +1,4 @@
-<div class="sidebar">
+<div *ngIf="!isMobile" class="sidebar">
     <div class="sidebar-header">
       <h3>Mis Listas</h3>
       <button class="btn btn-primary" (click)="openListManager()">
@@ -26,3 +26,34 @@
       </div>
     </div>
   </div>
+
+  <!-- Sidebar MÓVIL (panel deslizable) -->
+  <div *ngIf="isMobile && sidebarVisible" class="sidebar sidebar-mobile">
+    <ng-container *ngTemplateOutlet="sidebarContent"></ng-container>
+  </div>
+
+  <!-- Template reutilizable para el contenido del sidebar -->
+  <ng-template #sidebarContent>
+    <div class="sidebar-header">
+      <h3>Mis Listas</h3>
+      <button class="btn btn-primary" (click)="openListManager()">
+        <i class="fas fa-cog"></i> Gestionar Listas
+      </button>
+    </div>
+    <div class="list-container">
+      <div class="list-item" [class.selected]="selectedListId === null" (click)="selectList(null)">
+        <div class="list-info">
+          <i class="fas fa-tasks"></i>
+          <span>Todas las Tareas</span>
+        </div>
+      </div>
+      <div *ngFor="let list of taskLists" 
+           class="list-item" 
+           [class.selected]="selectedListId === list.id">
+        <div class="list-info" (click)="selectList(list.id!)">
+          <i class="fas fa-list"></i>
+          <span>{{ list.name }}</span>
+        </div>
+      </div>
+    </div>
+  </ng-template>
