@@ -16,6 +16,10 @@ import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.Map;
 
+/**
+ * REST controller for password reset operations.
+ * Provides endpoints for requesting a password reset and for resetting the password.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @Slf4j
@@ -34,31 +38,42 @@ public class PasswordResetController {
         this.emailService = emailService;
     }
 
-    @Operation(summary = "Solicitar restablecimiento de contraseña")
+    /**
+     * Endpoint to request a password reset.
+     * Sends a password reset email with a token to the user's email address.
+     * @param request Contains the user's email
+     * @return Success message or error
+     */
+    @Operation(summary = "Request password reset")
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody PasswordResetRequestDTO request) {
         try {
             User user = userService.findByEmail(request.getEmail());
             String token = tokenProvider.generatePasswordResetToken(user.getUsername());
             emailService.sendPasswordResetEmail(user.getEmail(), token);
-            return ResponseEntity.ok().body(Map.of("message", "Email de restablecimiento enviado"));
+            return ResponseEntity.ok().body(Map.of("message", "Password reset email sent"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    @Operation(summary = "Restablecer contraseña")
+    /**
+     * Endpoint to reset the user's password using a valid token.
+     * @param request Contains the reset token and the new password
+     * @return Success message or error
+     */
+    @Operation(summary = "Reset password")
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordResetDTO request) {
         try {
             String username = tokenProvider.getUsernameFromPasswordResetToken(request.getToken());
             userService.updatePassword(username, request.getNewPassword());
             User user = userService.findByUsername(username);
-            
-            // Enviar email de confirmación
+
+            // Send confirmation email
             emailService.sendPasswordChangedEmail(user.getEmail());
-            
-            return ResponseEntity.ok().body(Map.of("message", "Contraseña actualizada correctamente"));
+
+            return ResponseEntity.ok().body(Map.of("message", "Password updated successfully"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

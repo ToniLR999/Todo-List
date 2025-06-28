@@ -10,6 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service class for managing user notification preferences.
+ * Provides functionality to retrieve, create, update, and manage user notification settings
+ * including email preferences, reminder schedules, and global notification configurations.
+ */
 @Service
 @Slf4j
 public class NotificationPreferencesService {
@@ -18,6 +23,12 @@ public class NotificationPreferencesService {
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     * Retrieves notification preferences for a specific user.
+     * Creates default preferences if none exist for the user.
+     * @param username The username to get preferences for
+     * @return Notification preferences DTO
+     */
     public NotificationPreferencesDTO getPreferencesForUser(String username) {
         log.info("Obteniendo preferencias para usuario: {}", username);
         User user = userRepository.findByUsername(username)
@@ -34,6 +45,12 @@ public class NotificationPreferencesService {
         return convertToDTO(preferences);
     }
 
+    /**
+     * Saves or updates notification preferences for a user.
+     * @param dto Notification preferences DTO containing the new settings
+     * @param user User entity to associate preferences with
+     * @return Updated notification preferences DTO
+     */
     public NotificationPreferencesDTO savePreferences(NotificationPreferencesDTO dto, User user) {
         log.info("Guardando preferencias para usuario: {}", user.getUsername());
         log.info("DTO recibido: {}", dto);
@@ -80,6 +97,11 @@ public class NotificationPreferencesService {
         return convertToDTO(preferences);
     }
 
+    /**
+     * Converts NotificationPreferences entity to DTO.
+     * @param preferences Entity to convert
+     * @return Converted DTO
+     */
     private NotificationPreferencesDTO convertToDTO(NotificationPreferences preferences) {
         log.info("Convirtiendo preferencias a DTO: {}", preferences);
         NotificationPreferencesDTO dto = new NotificationPreferencesDTO();
@@ -104,6 +126,11 @@ public class NotificationPreferencesService {
         return dto;
     }
 
+    /**
+     * Creates default notification preferences for a new user.
+     * @param user User to create preferences for
+     * @return Created default preferences
+     */
     private NotificationPreferences createDefaultPreferences(User user) {
         log.info("Creando preferencias por defecto para usuario: {}", user.getUsername());
         NotificationPreferences preferences = new NotificationPreferences();

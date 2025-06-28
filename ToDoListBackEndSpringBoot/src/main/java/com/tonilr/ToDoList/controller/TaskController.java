@@ -22,11 +22,17 @@ import com.tonilr.ToDoList.dto.CacheableTaskDTO;
 import java.util.stream.Collectors;
 import com.tonilr.ToDoList.service.CacheService;
 
-@Tag(name = "Tasks", description = "API de gestión de tareas")
+/**
+ * REST controller for managing user tasks.
+ * Provides endpoints for CRUD operations, filtering, and searching tasks.
+ * All endpoints are secured and require authentication.
+ */
 @RestController
 @RequestMapping("/api/tasks")
 @CrossOrigin(origins = "http://localhost:4200")
+@Tag(name = "Tasks", description = "Task management API")
 public class TaskController {
+
     @Autowired
     private TaskService taskService;
     
@@ -36,7 +42,10 @@ public class TaskController {
     @Autowired
     private CacheService cacheService;
 
-    @Operation(summary = "Crear una nueva tarea")
+    /**
+     * Creates a new task for the authenticated user.
+     */
+    @Operation(summary = "Create a new task")
     @PostMapping
     public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO, Authentication authentication) {
         try {
@@ -49,8 +58,11 @@ public class TaskController {
         }
     }
 
-    @Operation(summary = "Obtener las tareas del usuario")
-    @ApiResponse(responseCode = "200", description = "Lista de tareas encontrada")
+    /**
+     * Retrieves all tasks for the authenticated user, optionally filtered by completion status or list.
+     */
+    @Operation(summary = "Get user tasks")
+    @ApiResponse(responseCode = "200", description = "Task list found")
     @GetMapping
     public ResponseEntity<?> getTasks(
         @RequestParam(required = false) Boolean showCompleted,
@@ -60,11 +72,13 @@ public class TaskController {
         List<TaskDTO> tasks;
         
         if (listId != null) {
+            // Get tasks by list
             List<CacheableTaskDTO> cachedTasks = taskService.getTasksByList(listId, username);
             tasks = cachedTasks.stream()
                 .map(CacheableTaskDTO::toTaskDTO)
                 .collect(Collectors.toList());
         } else {
+            // Get tasks by completion status
             boolean showCompletedValue = showCompleted != null ? showCompleted : false;
             List<CacheableTaskDTO> cachedTasks = taskService.getUserTasksByStatus(username, showCompletedValue);
             tasks = cachedTasks.stream()
@@ -75,7 +89,10 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    @Operation(summary = "Actualizar una tarea")
+    /**
+     * Updates an existing task.
+     */
+    @Operation(summary = "Update a task")
     @PutMapping("/{taskId}")
     public ResponseEntity<TaskDTO> updateTask(
             @PathVariable Long taskId,
@@ -89,7 +106,10 @@ public class TaskController {
         }
     }
 
-    @Operation(summary = "Eliminar una tarea")
+    /**
+     * Deletes a task by its ID.
+     */
+    @Operation(summary = "Delete a task")
     @DeleteMapping("/{taskId}")
     public ResponseEntity<?> deleteTask(@PathVariable Long taskId) {
         try {
@@ -100,6 +120,9 @@ public class TaskController {
         }
     }
 
+    /**
+     * Retrieves tasks by priority for the authenticated user.
+     */
     @GetMapping("/priority/{priority}")
     public ResponseEntity<?> getTasksByPriority(@PathVariable int priority) {
         String username = securityService.getCurrentUsername();
@@ -110,6 +133,9 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
+    /**
+     * Retrieves tasks by due date for the authenticated user.
+     */
     @GetMapping("/duedate")
     public ResponseEntity<?> getTasksByDueDate(@RequestParam String dueDate) {
         String username = securityService.getCurrentUsername();
@@ -118,6 +144,9 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getUserTasksByDueDate(username, date));
     }
 
+    /**
+     * Searches tasks by title for the authenticated user.
+     */
     @GetMapping("/search")
     public ResponseEntity<?> searchTasksByTitle(@RequestParam String title) {
         String username = securityService.getCurrentUsername();
@@ -128,7 +157,10 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    @Operation(summary = "Obtener detalles de una tarea")
+    /**
+     * Retrieves the details of a specific task.
+     */
+    @Operation(summary = "Get task details")
     @GetMapping("/{taskId}")
     public ResponseEntity<?> getTaskDetails(@PathVariable Long taskId) {
         try {
@@ -140,6 +172,9 @@ public class TaskController {
         }
     }
 
+    /**
+     * Retrieves tasks with advanced filtering options.
+     */
     @GetMapping("/filter")
     public ResponseEntity<List<TaskDTO>> getFilteredTasks(
             @RequestParam(required = false) String search,
@@ -172,6 +207,9 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
+    /**
+     * Endpoint to clear all task-related caches (for debugging or admin use).
+     */
     @PostMapping("/clear-cache")
     public ResponseEntity<String> clearCache() {
         try {

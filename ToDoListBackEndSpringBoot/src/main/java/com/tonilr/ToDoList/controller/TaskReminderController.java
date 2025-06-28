@@ -9,12 +9,23 @@ import com.tonilr.ToDoList.service.TaskReminderService;
 
 import java.util.List;
 
+/**
+ * REST controller for managing reminders associated with tasks.
+ * Provides endpoints to create, retrieve, and delete reminders for a specific task.
+ */
 @RestController
 @RequestMapping("/api/tasks/{taskId}/reminders")
 public class TaskReminderController {
+
     @Autowired
     private TaskReminderService reminderService;
 
+    /**
+     * Creates a new reminder for the specified task.
+     * @param taskId The ID of the task
+     * @param reminderDTO The reminder details
+     * @return The created reminder
+     */
     @PostMapping
     public ResponseEntity<TaskReminderDTO> createReminder(
             @PathVariable Long taskId,
@@ -23,12 +34,23 @@ public class TaskReminderController {
         return ResponseEntity.ok(reminderService.createReminder(reminderDTO));
     }
 
+    /**
+     * Retrieves all reminders for the specified task.
+     * @param taskId The ID of the task
+     * @return List of reminders
+     */
     @GetMapping
     public ResponseEntity<List<TaskReminderDTO>> getTaskReminders(
             @PathVariable Long taskId) {
         return ResponseEntity.ok(reminderService.getTaskReminders(taskId));
     }
 
+    /**
+     * Deletes a specific reminder for the specified task.
+     * @param taskId The ID of the task
+     * @param reminderId The ID of the reminder to delete
+     * @return HTTP 200 if successful
+     */
     @DeleteMapping("/{reminderId}")
     public ResponseEntity<Void> deleteReminder(
             @PathVariable Long taskId,

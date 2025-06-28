@@ -16,6 +16,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * REST controller for authentication operations.
+ * Provides endpoints for login, logout, authentication check, and CSRF token retrieval.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
@@ -27,7 +31,12 @@ public class AuthController {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
-    @Operation(summary = "Iniciar sesión")
+    /**
+     * Authenticates a user and returns a JWT token if successful.
+     * @param loginDTO User credentials
+     * @return JWT token and username, or error message
+     */
+    @Operation(summary = "User login")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
         try {
@@ -47,23 +56,35 @@ public class AuthController {
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error de autenticación: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Authentication error: " + e.getMessage());
         }
     }
 
-    @Operation(summary = "Cerrar sesión")
+    /**
+     * Logs out the current user by clearing the security context.
+     */
+    @Operation(summary = "User logout")
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Verificar autenticación")
+    /**
+     * Checks if the user is authenticated.
+     * @return HTTP 200 if authenticated
+     */
+    @Operation(summary = "Check authentication")
     @GetMapping("/check")
     public ResponseEntity<?> checkAuth() {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Retrieves the CSRF token for the current session.
+     * @param request HTTP request
+     * @return CSRF token (if enabled)
+     */
     @GetMapping("/csrf")
     public ResponseEntity<?> getCsrfToken(HttpServletRequest request) {
         CsrfToken token = (CsrfToken) request.getAttribute(CsrfToken.class.getName());

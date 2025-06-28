@@ -16,6 +16,11 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 
+/**
+ * Service class for managing task list operations.
+ * Provides functionality to create, retrieve, update, delete, and search task lists
+ * with proper authorization checks, caching, and audit logging.
+ */
 @Service
 public class TaskListService {
     @Autowired
@@ -36,6 +41,12 @@ public class TaskListService {
     @Autowired
     private EmailService emailService;
 
+    /**
+     * Creates a new task list for the specified user.
+     * @param taskListDTO Task list data to create
+     * @param username Username of the list owner
+     * @return Created task list DTO
+     */
     @CacheEvict(value = {"taskLists", "tasks"}, allEntries = true)
     @Transactional
     public TaskListDTO createTaskList(TaskListDTO taskListDTO, String username) {
@@ -55,9 +66,14 @@ public class TaskListService {
         return dtoMapper.toTaskListDTO(savedList);
     }
 
+    /**
+     * Retrieves all task lists for a specific user with caching.
+     * @param username Username to get task lists for
+     * @return List of task list DTOs
+     */
     @Cacheable(value = "taskLists", key = "'user_' + #username")
     public List<TaskListDTO> getUserTaskLists(String username) {
-        System.out.println("OBTENIENDO LISTAS DE TAREAS DESDE BASE DE DATOS para usuario: " + username);
+        // System.out.println("OBTENIENDO LISTAS DE TAREAS DESDE BASE DE DATOS para usuario: " + username);
         User owner = userService.findByUsername(username);
         return taskListRepository.findByOwner(owner)
             .stream()
@@ -65,6 +81,12 @@ public class TaskListService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Updates an existing task list with authorization checks.
+     * @param listId ID of the task list to update
+     * @param taskListDetails Updated task list data
+     * @return Updated task list DTO
+     */
     @CacheEvict(value = {"taskLists", "tasks"}, allEntries = true)
     @Transactional
     public TaskListDTO updateTaskList(Long listId, TaskListDTO taskListDetails) {
@@ -87,6 +109,10 @@ public class TaskListService {
         return dtoMapper.toTaskListDTO(updatedList);
     }
 
+    /**
+     * Deletes a task list with authorization checks.
+     * @param listId ID of the task list to delete
+     */
     @CacheEvict(value = {"taskLists", "tasks"}, allEntries = true)
     @Transactional
     public void deleteTaskList(Long listId) {
@@ -99,9 +125,15 @@ public class TaskListService {
         taskListRepository.delete(taskList);
     }
 
+    /**
+     * Searches task lists by name for a specific user with caching.
+     * @param username Username to search task lists for
+     * @param name Name to search for (case-insensitive)
+     * @return List of matching task list DTOs
+     */
     @Cacheable(value = "taskLists", key = "'user_' + #username + '_search_' + #name")
     public List<TaskListDTO> searchUserTaskListsByName(String username, String name) {
-        System.out.println("BUSCANDO LISTAS POR NOMBRE DESDE BASE DE DATOS para usuario: " + username + ", nombre: " + name);
+        // System.out.println("BUSCANDO LISTAS POR NOMBRE DESDE BASE DE DATOS para usuario: " + username + ", nombre: " + name);
         User owner = userService.findByUsername(username);
         return taskListRepository.findByOwnerAndNameContainingIgnoreCase(owner, name)
             .stream()

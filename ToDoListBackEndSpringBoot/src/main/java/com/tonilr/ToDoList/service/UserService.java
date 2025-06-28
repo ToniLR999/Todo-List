@@ -12,6 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
+/**
+ * Service class for managing user operations.
+ * Provides functionality for user registration, authentication, profile management,
+ * and password operations with proper security measures and audit logging.
+ */
 @Service
 @Transactional
 public class UserService {
@@ -30,6 +35,11 @@ public class UserService {
     @Autowired
     private EmailService emailService;
 
+    /**
+     * Registers a new user with password encryption and default role assignment.
+     * @param user User entity to register
+     * @return Registered user entity
+     */
     @CacheEvict(value = {"users", "taskCounts", "userStats"}, allEntries = true)
     @Transactional
     public User registerUser(User user) {
@@ -60,6 +70,11 @@ public class UserService {
         return savedUser;
     }
 
+    /**
+     * Retrieves a user by username with caching.
+     * @param username Username to search for
+     * @return User entity
+     */
     @Cacheable(value = "users", key = "'username_' + #username")
     @Transactional(readOnly = true)
     public User findByUsername(String username) {
@@ -67,6 +82,12 @@ public class UserService {
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
+    /**
+     * Updates user profile information with cache invalidation.
+     * @param userId ID of the user to update
+     * @param userDetails Updated user information
+     * @return Updated user entity
+     */
     @CacheEvict(value = {"users", "taskCounts", "userStats"}, allEntries = true)
     @Transactional
     public User updateUser(Long userId, User userDetails) {
@@ -81,21 +102,43 @@ public class UserService {
         return updatedUser;
     }
 
+    /**
+     * Retrieves a user by email address.
+     * @param email Email to search for
+     * @return User entity
+     */
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
+    /**
+     * Updates a user's password with encryption.
+     * @param username Username of the user
+     * @param newPassword New password to set
+     * @return Updated user entity
+     */
     public User updatePassword(String username, String newPassword) {
         User user = findByUsername(username);
         user.setPassword(passwordEncoder.encode(newPassword));
         return userRepository.save(user);
     }
 
+    /**
+     * Saves a user entity to the database.
+     * @param user User entity to save
+     * @return Saved user entity
+     */
     public User save(User user) {
         return userRepository.save(user);
     }
 
+    /**
+     * Updates a user's timezone setting.
+     * @param user User entity to update
+     * @param timezone New timezone to set
+     * @return Updated user entity
+     */
     public User setTimezone(User user, String timezone) {
         user.setTimezone(timezone);
         return userRepository.save(user);

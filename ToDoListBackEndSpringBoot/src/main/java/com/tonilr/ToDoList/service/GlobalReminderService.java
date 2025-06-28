@@ -20,6 +20,12 @@ import java.time.DayOfWeek;
 import java.time.ZoneId;
 import java.util.Date;
 
+/**
+ * Service class for managing global reminder operations.
+ * Provides scheduled functionality to send automated email reminders
+ * including due date reminders, daily summaries, and weekly summaries
+ * based on user notification preferences.
+ */
 @Service
 @Slf4j
 public class GlobalReminderService {
@@ -32,6 +38,11 @@ public class GlobalReminderService {
     @Autowired
     private EmailService emailService;
 
+    /**
+     * Scheduled method that runs every minute to check and send reminders.
+     * Processes all user notification preferences and sends appropriate reminders
+     * based on configured settings (due date, daily, weekly summaries).
+     */
     @Scheduled(cron = "0 */1 * * * *")  // Cada minuto
     public void checkAndSendReminders() {
         log.info("=== INICIANDO VERIFICACIÓN DE RECORDATORIOS ===");
@@ -80,6 +91,10 @@ public class GlobalReminderService {
         log.info("=== FINALIZADA VERIFICACIÓN DE RECORDATORIOS ===");
     }
 
+    /**
+     * Sends due date reminders for tasks that are approaching their deadline.
+     * @param preferences User notification preferences containing reminder settings
+     */
     private void sendDueDateReminders(NotificationPreferences preferences) {
         try {
             ZoneId userZone = ZoneId.of(preferences.getUser().getTimezone());
@@ -145,6 +160,10 @@ public class GlobalReminderService {
         }
     }
 
+    /**
+     * Sends daily summary of pending tasks for the current day.
+     * @param preferences User notification preferences
+     */
     private void sendDailySummary(NotificationPreferences preferences) {
         try {
             log.info("Enviando resumen diario a: {}", preferences.getEmail());
@@ -174,6 +193,10 @@ public class GlobalReminderService {
         }
     }
 
+    /**
+     * Sends weekly summary of pending tasks for the current week.
+     * @param preferences User notification preferences
+     */
     private void sendWeeklySummary(NotificationPreferences preferences) {
         try {
             log.info("Enviando resumen semanal a: {}", preferences.getEmail());
@@ -206,6 +229,11 @@ public class GlobalReminderService {
         }
     }
 
+    /**
+     * Truncates a Date object to seconds precision by removing milliseconds.
+     * @param date Date to truncate
+     * @return Truncated Date object
+     */
     private Date truncateToSeconds(Date date) {
         long time = date.getTime();
         return new Date((time / 1000) * 1000);

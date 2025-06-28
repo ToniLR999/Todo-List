@@ -13,17 +13,26 @@ import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 
+/**
+ * REST controller for managing task lists.
+ * Provides endpoints for CRUD operations and searching user task lists.
+ * All endpoints are secured and require authentication.
+ */
 @RestController
 @RequestMapping("/api/lists")
 @CrossOrigin(origins = "http://localhost:4200")
 public class TaskListController {
+
     @Autowired
     private TaskListService taskListService;
     
     @Autowired
     private SecurityService securityService;
 
-    @Operation(summary = "Crear una nueva lista de tareas")
+    /**
+     * Creates a new task list for the authenticated user.
+     */
+    @Operation(summary = "Create a new task list")
     @PostMapping
     public ResponseEntity<TaskListDTO> createTaskList(@Valid @RequestBody TaskListDTO taskListDTO, Authentication authentication) {
         try {
@@ -35,7 +44,10 @@ public class TaskListController {
         }
     }
 
-    @Operation(summary = "Obtener las listas de tareas del usuario")
+    /**
+     * Retrieves all task lists for the authenticated user.
+     */
+    @Operation(summary = "Get user's task lists")
     @GetMapping
     public ResponseEntity<?> getUserTaskLists() {
         try {
@@ -47,7 +59,10 @@ public class TaskListController {
         }
     }
 
-    @Operation(summary = "Actualizar una lista de tareas")
+    /**
+     * Updates an existing task list.
+     */
+    @Operation(summary = "Update a task list")
     @PutMapping("/{id}")
     public ResponseEntity<TaskListDTO> updateTaskList(@PathVariable Long id, @Valid @RequestBody TaskListDTO taskListDTO, Authentication authentication) {
         try {
@@ -58,7 +73,10 @@ public class TaskListController {
         }
     }
 
-    @Operation(summary = "Eliminar una lista de tareas")
+    /**
+     * Deletes a task list by its ID.
+     */
+    @Operation(summary = "Delete a task list")
     @DeleteMapping("/{listId}")
     public ResponseEntity<?> deleteTaskList(@PathVariable Long listId) {
         try {
@@ -69,7 +87,10 @@ public class TaskListController {
         }
     }   
 
-    @Operation(summary = "Buscar listas de tareas por nombre")
+    /**
+     * Searches task lists by name for the authenticated user.
+     */
+    @Operation(summary = "Search task lists by name")
     @GetMapping("/search")
     public ResponseEntity<?> searchTaskListsByName(@RequestParam String name) {
         String username = securityService.getCurrentUsername();

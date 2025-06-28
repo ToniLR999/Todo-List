@@ -20,6 +20,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service class for managing task reminders.
+ * Provides functionality to create, retrieve, and process task reminders
+ * with scheduled email notifications for upcoming task deadlines.
+ */
 @Service
 @Slf4j
 public class TaskReminderService {
@@ -32,6 +37,11 @@ public class TaskReminderService {
     @Autowired
     private JavaMailSender mailSender;
 
+    /**
+     * Creates a new reminder for a specific task.
+     * @param dto Reminder data containing task ID and reminder settings
+     * @return Created reminder DTO
+     */
     public TaskReminderDTO createReminder(TaskReminderDTO dto) {
         Task task = taskRepository.findById(dto.getTaskId())
             .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
@@ -46,6 +56,10 @@ public class TaskReminderService {
         return convertToDTO(reminder);
     }
 
+    /**
+     * Scheduled method that runs every minute to check and send pending reminders.
+     * Processes all unsent reminders that are due and sends email notifications.
+     */
     @Scheduled(cron = "0 * * * * *")  // Cada minuto
     public void checkReminders() {
         LocalDateTime now = LocalDateTime.now();
@@ -63,6 +77,10 @@ public class TaskReminderService {
         });
     }
 
+    /**
+     * Sends an email reminder for a specific task.
+     * @param reminder Task reminder to send email for
+     */
     private void sendReminderEmail(TaskReminder reminder) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(reminder.getTask().getUser().getEmail());
@@ -84,6 +102,11 @@ public class TaskReminderService {
         mailSender.send(message);
     }
 
+    /**
+     * Converts TaskReminder entity to DTO.
+     * @param reminder Entity to convert
+     * @return Converted DTO
+     */
     private TaskReminderDTO convertToDTO(TaskReminder reminder) {
         TaskReminderDTO dto = new TaskReminderDTO();
         dto.setId(reminder.getId());
@@ -94,6 +117,11 @@ public class TaskReminderService {
         return dto;
     }
 
+    /**
+     * Retrieves all active reminders for a specific task.
+     * @param taskId ID of the task to get reminders for
+     * @return List of reminder DTOs
+     */
     public List<TaskReminderDTO> getTaskReminders(Long taskId) {
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
@@ -103,6 +131,10 @@ public class TaskReminderService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Deletes a specific reminder by its ID.
+     * @param reminderId ID of the reminder to delete
+     */
     public void deleteReminder(Long reminderId) {
         reminderRepository.deleteById(reminderId);
     }

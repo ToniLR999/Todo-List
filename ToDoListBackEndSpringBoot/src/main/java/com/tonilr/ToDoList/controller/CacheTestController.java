@@ -10,6 +10,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * REST controller for testing Redis cache operations.
+ * Provides endpoints to set, get, delete, and set values with TTL in Redis.
+ * Intended for development and debugging purposes.
+ */
 @RestController
 @RequestMapping("/api/cache-test")
 public class CacheTestController {
@@ -19,31 +24,37 @@ public class CacheTestController {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
+    /**
+     * Sets a value in Redis for a given key.
+     */
     @PostMapping("/set")
     public ResponseEntity<?> setValue(
             @RequestParam String key, 
             @RequestParam String value) {
         try {
-            logger.info("Intentando guardar en Redis - key: {}, value: {}", key, value);
+            logger.info("Attempting to save in Redis - key: {}, value: {}", key, value);
             redisTemplate.opsForValue().set(key, value);
-            logger.info("Valor guardado exitosamente");
+            logger.info("Value saved successfully");
             return ResponseEntity.ok()
                 .body(Map.of(
-                    "message", "Valor guardado exitosamente",
+                    "message", "Value saved successfully",
                     "key", key,
                     "value", value
                 ));
         } catch (Exception e) {
-            logger.error("Error al guardar en Redis", e);
+            logger.error("Error saving in Redis", e);
             return ResponseEntity.internalServerError()
                 .body(Map.of(
-                    "error", "Error al guardar en Redis",
+                    "error", "Error saving in Redis",
                     "message", e.getMessage(),
                     "stackTrace", e.getStackTrace()[0].toString()
                 ));
         }
     }
 
+    /**
+     * Retrieves a value from Redis by key.
+     */
     @GetMapping("/get/{key}")
     public ResponseEntity<?> getValue(@PathVariable String key) {
         try {
@@ -59,12 +70,15 @@ public class CacheTestController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                 .body(Map.of(
-                    "error", "Error al obtener de Redis",
+                    "error", "Error retrieving from Redis",
                     "message", e.getMessage()
                 ));
         }
     }
 
+    /**
+     * Sets a value in Redis with a time-to-live (TTL).
+     */
     @PostMapping("/set-with-ttl")
     public ResponseEntity<?> setValueWithTTL(
             @RequestParam String key, 
@@ -74,7 +88,7 @@ public class CacheTestController {
             redisTemplate.opsForValue().set(key, value, ttlSeconds, TimeUnit.SECONDS);
             return ResponseEntity.ok()
                 .body(Map.of(
-                    "message", "Valor guardado con TTL exitosamente",
+                    "message", "Value saved with TTL successfully",
                     "key", key,
                     "value", value,
                     "ttl", ttlSeconds
@@ -82,50 +96,56 @@ public class CacheTestController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                 .body(Map.of(
-                    "error", "Error al guardar en Redis con TTL",
+                    "error", "Error saving in Redis with TTL",
                     "message", e.getMessage()
                 ));
         }
     }
 
+    /**
+     * Deletes a value from Redis by key.
+     */
     @DeleteMapping("/delete/{key}")
     public ResponseEntity<?> deleteValue(@PathVariable String key) {
         try {
             Boolean deleted = redisTemplate.delete(key);
             return ResponseEntity.ok()
                 .body(Map.of(
-                    "message", "Clave eliminada exitosamente",
+                    "message", "Key deleted successfully",
                     "key", key,
                     "deleted", deleted
                 ));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                 .body(Map.of(
-                    "error", "Error al eliminar de Redis",
+                    "error", "Error deleting from Redis",
                     "message", e.getMessage()
                 ));
         }
     }
 
+    /**
+     * Sets a value in Redis via GET request (for testing).
+     */
     @GetMapping("/set-get")
     public ResponseEntity<?> setValueGet(
             @RequestParam String key, 
             @RequestParam String value) {
         try {
-            logger.info("Intentando guardar en Redis (GET) - key: {}, value: {}", key, value);
+            logger.info("Attempting to save in Redis (GET) - key: {}, value: {}", key, value);
             redisTemplate.opsForValue().set(key, value);
-            logger.info("Valor guardado exitosamente via GET");
+            logger.info("Value saved successfully via GET");
             return ResponseEntity.ok()
                 .body(Map.of(
-                    "message", "Valor guardado exitosamente via GET",
+                    "message", "Value saved successfully via GET",
                     "key", key,
                     "value", value
                 ));
         } catch (Exception e) {
-            logger.error("Error al guardar en Redis via GET", e);
+            logger.error("Error saving in Redis via GET", e);
             return ResponseEntity.internalServerError()
                 .body(Map.of(
-                    "error", "Error al guardar en Redis",
+                    "error", "Error saving in Redis",
                     "message", e.getMessage()
                 ));
         }

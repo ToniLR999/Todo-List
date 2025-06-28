@@ -22,6 +22,11 @@ import java.time.ZoneId;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Service class for handling email operations.
+ * Provides functionality to send various types of emails including password reset,
+ * task reminders, and user notifications with proper HTML formatting and sanitization.
+ */
 @Service
 @Slf4j
 public class EmailService {
@@ -41,6 +46,12 @@ public class EmailService {
     @Autowired
     private SanitizationService sanitizationService;
     
+    /**
+     * Sends a simple text email.
+     * @param to Recipient email address
+     * @param subject Email subject
+     * @param text Email body text
+     */
     public void sendSimpleEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("TU_CORREO@gmail.com"); // Cambia por tu correo
@@ -50,6 +61,11 @@ public class EmailService {
         mailSender.send(message);
     }
     
+    /**
+     * Sends a password reset email with HTML formatting and security token.
+     * @param to Recipient email address
+     * @param token Password reset token
+     */
     public void sendPasswordResetEmail(String to, String token) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -94,6 +110,10 @@ public class EmailService {
         }
     }
     
+    /**
+     * Sends a confirmation email when password is successfully changed.
+     * @param to Recipient email address
+     */
     public void sendPasswordChangedEmail(String to) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -103,6 +123,13 @@ public class EmailService {
         mailSender.send(message);
     }
     
+    /**
+     * Sends a task reminder email with HTML formatting and user timezone support.
+     * @param to Recipient email address
+     * @param subject Email subject
+     * @param tasks List of tasks to include in the reminder
+     * @param user User for timezone conversion
+     */
     public void sendTaskReminderEmail(String to, String subject, List<Task> tasks, User user) {
         try {
             log.info("Preparando email de recordatorio para: {}", to);
@@ -128,6 +155,13 @@ public class EmailService {
         }
     }
     
+    /**
+     * Builds HTML email content for task reminders with user timezone support.
+     * @param tasks List of tasks to include
+     * @param subject Email subject
+     * @param user User for timezone conversion
+     * @return Formatted HTML content
+     */
     private String buildEmailContent(List<Task> tasks, String subject, User user) {
         StringBuilder content = new StringBuilder();
         content.append("<html><body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>");
@@ -159,6 +193,11 @@ public class EmailService {
         return content.toString();
     }
     
+    /**
+     * Converts priority number to human-readable label.
+     * @param priority Priority number (1-3)
+     * @return Priority label in Spanish
+     */
     private String getPriorityLabel(int priority) {
         switch (priority) {
             case 1: return "Alta";
@@ -168,6 +207,11 @@ public class EmailService {
         }
     }
     
+    /**
+     * Sanitizes email address by removing potentially dangerous characters.
+     * @param email Email address to sanitize
+     * @return Sanitized email address
+     */
     private String sanitizeEmail(String email) {
         if (email == null) {
             return null;
