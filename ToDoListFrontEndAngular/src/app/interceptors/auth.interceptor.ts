@@ -1,3 +1,8 @@
+/**
+ * HTTP interceptor for automatically adding JWT authentication tokens to requests.
+ * Intercepts all HTTP requests and adds the Bearer token from localStorage
+ * to the Authorization header if a token exists.
+ */
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {

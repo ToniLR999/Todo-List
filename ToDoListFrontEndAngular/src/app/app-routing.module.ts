@@ -1,3 +1,8 @@
+/**
+ * Application routing module defining all routes and navigation configuration.
+ * Includes route guards for authentication, route animations, and scroll behavior.
+ * Routes are organized by feature with proper lazy loading considerations.
+ */
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
@@ -11,6 +16,10 @@ import { TaskDetailComponent } from './components/task-detail/task-detail.compon
 import { NotificationPreferencesComponent } from './components/notification-preferences/notification-preferences.component';
 import { TaskListListComponent } from './components/task-list-list/task-list-list.component';
 
+/**
+ * Application routes configuration with authentication guards and animations.
+ * Protected routes require authentication via AuthGuard.
+ */
 export const routes: Routes = [
   { 
     path: 'login', 

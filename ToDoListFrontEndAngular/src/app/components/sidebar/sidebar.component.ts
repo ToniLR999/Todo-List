@@ -1,3 +1,8 @@
+/**
+ * Sidebar component for task list navigation and management.
+ * Provides navigation between task lists, list management operations,
+ * and responsive design support for mobile devices.
+ */
 import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
@@ -19,7 +24,6 @@ export class SidebarComponent implements OnInit {
   isMobile: boolean = window.innerWidth <= 768;
   sidebarVisible: boolean = false;
 
-
   constructor(
     private taskListService: TaskListService,
     private router: Router,
@@ -27,6 +31,9 @@ export class SidebarComponent implements OnInit {
     private toastr: ToastrService
   ) {}
 
+  /**
+   * Initializes the component by loading task lists and setting up route monitoring.
+   */
   ngOnInit() {
     this.loadTaskLists();
     
@@ -49,10 +56,13 @@ export class SidebarComponent implements OnInit {
     });
   }
 
+  /**
+   * Loads user's task lists for sidebar navigation.
+   */
   loadTaskLists() {
     this.taskListService.getTaskLists().subscribe({
       next: (taskLists) => {
-        console.log('🔄 sidebar: Obteniendo listas');
+        // console.log('🔄 sidebar: Obteniendo listas');
         this.taskLists = taskLists;
       },
       error: (error) => {
@@ -62,28 +72,43 @@ export class SidebarComponent implements OnInit {
     });
   }
 
+  /**
+   * Selects a task list and navigates to its tasks.
+   * @param listId Task list ID to select, or null for all tasks
+   */
   selectList(listId: number | null) {
     this.selectedListId = listId;
-    console.log('🔄 sidebar: Seleccionando lista:', listId);
+    // console.log('🔄 sidebar: Seleccionando lista:', listId);
     if (listId) {
       this.router.navigate(['/tasks/list', listId]);
     } else {
-      console.log('🔄 sidebar: Navegando a /tasks');
+      // console.log('🔄 sidebar: Navegando a /tasks');
       this.router.navigate(['/tasks']);
     }
   }
 
-
+  /**
+   * Placeholder method for editing task lists.
+   * @param list Task list to edit
+   */
   editList(list: TaskList) {
     // Implementar lógica para editar lista
   }
 
+  /**
+   * Initiates deletion of a task list with confirmation.
+   * @param list Task list to delete
+   */
   deleteList(list: TaskList) {
     if (confirm(`¿Estás seguro de que deseas eliminar la lista "${list.name}"? Esta acción eliminará también todas las tareas asociadas.`)) {
       this.confirmDeleteList(list);
     }
   }
 
+  /**
+   * Confirms and executes the deletion of a task list.
+   * @param list Task list to delete
+   */
   private confirmDeleteList(list: TaskList): void {
     this.taskListService.deleteTaskList(list.id!).subscribe({
       next: () => {
@@ -96,10 +121,17 @@ export class SidebarComponent implements OnInit {
     });
   }
 
+  /**
+   * Navigates to the list management page.
+   */
   openListManager() {
     this.router.navigate(['/lists/manage']);
   }
 
+  /**
+   * Handles window resize events for responsive design.
+   * Automatically hides sidebar on desktop view.
+   */
   @HostListener('window:resize')
   onResize() {
     this.isMobile = window.innerWidth <= 768;
@@ -108,6 +140,9 @@ export class SidebarComponent implements OnInit {
     }
   }
 
+  /**
+   * Toggles the sidebar visibility.
+   */
   toggleSidebar() {
     this.sidebarVisible = !this.sidebarVisible;
   }

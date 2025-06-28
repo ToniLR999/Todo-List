@@ -1,4 +1,9 @@
 // src/app/services/auth.service.ts
+/**
+ * Authentication service for managing user authentication and authorization.
+ * Handles login, logout, registration, password reset, and token management
+ * with support for both JWT and cookie-based authentication methods.
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, throwError, map, of } from 'rxjs';
@@ -19,11 +24,22 @@ export class AuthService {
     this.isAuthenticatedSubject.next(this.isAuthenticated());
   }
 
+  /**
+   * Sets the authentication method (JWT or cookie-based).
+   * @param method Authentication method to use
+   */
   setAuthMethod(method: 'jwt' | 'cookie'): void {
     this.authMethod = method;
     this.isAuthenticatedSubject.next(this.isAuthenticated());
   }
 
+  /**
+   * Authenticates a user with username and password.
+   * Stores JWT token in localStorage if using JWT authentication.
+   * @param username User's username
+   * @param password User's password
+   * @returns Observable with authentication response
+   */
   login(username: string, password: string): Observable<any> {
     const options = this.authMethod === 'cookie' 
       ? { withCredentials: true }
@@ -42,20 +58,38 @@ export class AuthService {
       );
   }
 
+  /**
+   * Logs out the current user and navigates to login page.
+   */
   logout(): void {
     this.isAuthenticatedSubject.next(false);
     this.router.navigate(['/login']);
   }
 
+  /**
+   * Checks if the user is currently authenticated.
+   * @returns true if user has a valid token, false otherwise
+   */
   isAuthenticated(): boolean {
     const token = window.localStorage.getItem('token');
     return !!token;
   }
 
+  /**
+   * Gets the current authentication status as an observable.
+   * @returns Observable of authentication status
+   */
   getAuthStatus(): Observable<boolean> {
     return this.isAuthenticatedSubject.asObservable();
   }
 
+  /**
+   * Registers a new user account.
+   * @param username New user's username
+   * @param email New user's email
+   * @param password New user's password
+   * @returns Observable with registration response
+   */
   register(username: string, email: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/users/register`, { 
       username, 
@@ -64,34 +98,60 @@ export class AuthService {
     });
   }
 
+  /**
+   * Checks and logs the current authentication status.
+   */
   checkAuthStatus(): void {
     const token = localStorage.getItem('token');
-    console.log('¿Está autenticado?:', this.isAuthenticated());
+    // console.log('¿Está autenticado?:', this.isAuthenticated());
   }
 
+  /**
+   * Sets the JWT token in localStorage and updates authentication status.
+   * @param token JWT token to store
+   */
   setToken(token: string): void {
     localStorage.setItem('token', token);
     this.isAuthenticatedSubject.next(true);
   }
 
+  /**
+   * Retrieves the stored JWT token.
+   * @returns JWT token or null if not found
+   */
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
+  /**
+   * Checks if a token exists in localStorage.
+   */
   checkToken(): void {
     const token = localStorage.getItem('token');
   }
 
-  // Obtener perfil del usuario actual
+  /**
+   * Retrieves the current user's profile information.
+   * @returns Observable with user profile data
+   */
   getCurrentUser(): Observable<any> {
     return this.http.get(`${this.usersUrl}/profile`);
   }
 
-  // Actualizar perfil del usuario
+  /**
+   * Updates the current user's profile information.
+   * @param userDetails Updated user details
+   * @returns Observable with update response
+   */
   updateProfile(userDetails: any): Observable<any> {
     return this.http.put(`${this.usersUrl}/profile`, userDetails);
   }
 
+  /**
+   * Initiates password reset process by sending reset email.
+   * @param email User's email address
+   * @returns Observable with reset request response
+   */
   forgotPassword(email: string): Observable<any> {
     return this.http.post(`${this.authUrl}/forgot-password`, { email })
       .pipe(
@@ -106,6 +166,12 @@ export class AuthService {
       );
   }
 
+  /**
+   * Resets user password using reset token.
+   * @param token Password reset token
+   * @param newPassword New password
+   * @returns Observable with reset response
+   */
   resetPassword(token: string, newPassword: string): Observable<any> {
     return this.http.post(`${this.authUrl}/reset-password`, { token, newPassword })
       .pipe(
@@ -120,6 +186,10 @@ export class AuthService {
       );
   }
 
+  /**
+   * Retrieves the current user's username from localStorage.
+   * @returns Username or null if not found
+   */
   getUsername(): string | null {
     return localStorage.getItem('username');
   }

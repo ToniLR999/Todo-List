@@ -1,3 +1,8 @@
+/**
+ * Registration component for new user account creation.
+ * Provides a form for user registration with validation, password confirmation,
+ * and timezone selection. Integrates with AuthService for account creation.
+ */
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -42,11 +47,21 @@ export class RegisterComponent {
     }, { validator: this.passwordMatchValidator });
   }
 
+  /**
+   * Custom validator to ensure password and confirm password match.
+   * @param g FormGroup to validate
+   * @returns null if passwords match, error object otherwise
+   */
   passwordMatchValidator(g: FormGroup) {
     return g.get('password')?.value === g.get('confirmPassword')?.value
       ? null : { mismatch: true };
   }
 
+  /**
+   * Gets error message for form validation errors.
+   * @param controlName Name of the form control
+   * @returns Error message string
+   */
   getErrorMessage(controlName: string): string {
     const control = this.registerForm.get(controlName);
     if (control?.hasError('required')) {
@@ -64,6 +79,10 @@ export class RegisterComponent {
     return '';
   }
 
+  /**
+   * Handles form submission for user registration.
+   * Validates form, creates user account, and navigates to login page on success.
+   */
   onSubmit(): void {
     if (this.registerForm.valid) {
       const { username, email, password } = this.registerForm.value;
@@ -82,6 +101,9 @@ export class RegisterComponent {
     }
   }
 
+  /**
+   * Navigates to the login page.
+   */
   goToLogin(): void {
     this.router.navigate(['/login']);
   }

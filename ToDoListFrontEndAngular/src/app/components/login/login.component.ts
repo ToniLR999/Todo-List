@@ -1,3 +1,8 @@
+/**
+ * Login component for user authentication.
+ * Provides a form for user login with validation and error handling.
+ * Integrates with AuthService for JWT-based authentication.
+ */
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -30,6 +35,10 @@ export class LoginComponent {
     });
   }
 
+  /**
+   * Handles form submission for user login.
+   * Validates form, authenticates user, and navigates to tasks page on success.
+   */
   onSubmit(): void {
     if (this.loginForm.valid) {
       const { username, password } = this.loginForm.value;
@@ -41,17 +50,23 @@ export class LoginComponent {
           }, 100); // Pequeño delay para asegurar que el token se guarde
         },
         error: (error) => {
-          console.error('Error login:', error);
+          // console.error('Error login:', error);
           this.error = 'Error de autenticación. Por favor, verifica tus credenciales.';
         }
       });
     }
   }
 
+  /**
+   * Navigates to the registration page.
+   */
   goToRegister(): void {
     this.router.navigate(['/register']);
   }
 
+  /**
+   * Navigates to the forgot password page.
+   */
   goToForgotPassword(): void {
     this.router.navigate(['/forgot-password']);
   }
