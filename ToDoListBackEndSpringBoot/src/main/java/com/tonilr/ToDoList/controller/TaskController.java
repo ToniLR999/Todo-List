@@ -20,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 import com.tonilr.ToDoList.dto.CacheableTaskDTO;
 import java.util.stream.Collectors;
+import com.tonilr.ToDoList.service.CacheService;
 
 @Tag(name = "Tasks", description = "API de gestión de tareas")
 @RestController
@@ -31,6 +32,9 @@ public class TaskController {
     
     @Autowired
     private SecurityService securityService;
+
+    @Autowired
+    private CacheService cacheService;
 
     @Operation(summary = "Crear una nueva tarea")
     @PostMapping
@@ -142,19 +146,41 @@ public class TaskController {
             @RequestParam(required = false) String completed,
             @RequestParam(required = false) String priority,
             @RequestParam(required = false) String dateFilter,
-            @RequestParam(required = false) Long listId,
+            @RequestParam(required = false) Long taskListId,
             Authentication authentication) {
         
         String username = authentication.getName();
+        System.out.println("🔄 CONTROLLER: Recibiendo petición de filtrado");
+        System.out.println("🔄 CONTROLLER: Usuario: " + username);
+        System.out.println("🔄 CONTROLLER: TaskListId: " + taskListId);
+        System.out.println("🔄 CONTROLLER: Completed: " + completed);
+        System.out.println("🔄 CONTROLLER: Search: " + search);
+        System.out.println("🔄 CONTROLLER: Priority: " + priority);
+        System.out.println("🔄 CONTROLLER: DateFilter: " + dateFilter);
+        
         Boolean completedBool = completed != null ? Boolean.parseBoolean(completed) : null;
         
-        List<CacheableTaskDTO> cachedTasks = taskService.getFilteredTasks(search, completedBool, priority, dateFilter, username, listId);
+        List<CacheableTaskDTO> cachedTasks = taskService.getFilteredTasks(search, completedBool, priority, dateFilter, username, taskListId);
         
         // Convertir de vuelta a TaskDTO para el frontend
         List<TaskDTO> tasks = cachedTasks.stream()
             .map(CacheableTaskDTO::toTaskDTO)
             .collect(Collectors.toList());
         
+        System.out.println("🔄 CONTROLLER: Tareas devueltas: " + tasks.size());
+        
         return ResponseEntity.ok(tasks);
     }
+
+    @PostMapping("/clear-cache")
+    public ResponseEntity<String> clearCache() {
+        try {
+            // Limpiar caché de Redis
+            cacheService.evictAllCache();
+            return ResponseEntity.ok("Caché limpiado correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al limpiar caché: " + e.getMessage());
+        }
+    }
 }
+        

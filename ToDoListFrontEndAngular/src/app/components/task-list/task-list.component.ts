@@ -111,7 +111,7 @@ export class TaskListComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.currentListId = params['id'] ? Number(params['id']) : null;
-      //console.log('Frontend - currentListId:', this.currentListId); // Añadir este log
+      console.log('🔄 TaskList: currentListId:', this.currentListId);
       this.loadTasks();
     });
   }
@@ -128,19 +128,23 @@ export class TaskListComponent implements OnInit {
       search: this.searchTerm || undefined,
       tasklistId: this.currentListId || undefined
     };
+    
+    console.log('🔄 TaskList: Filtros enviados:', filters);
 
     this.taskService.getFilteredTasks(filters).subscribe({
-            next: (tasks) => {
-                this.tasks = tasks;
-                this.errorMessage = '';
-                this.checkTasksStatus(tasks);
-                this.isLoading = false;
-            },
-            error: (error) => {
-                this.showErrorMessage('Error al cargar las tareas');
-                this.isLoading = false;
-            }
-        });
+      next: (tasks) => {
+        console.log('🔄 TaskList: Tareas recibidas:', tasks);
+        this.tasks = tasks;
+        this.errorMessage = '';
+        this.checkTasksStatus(tasks);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('🔄 TaskList: Error al cargar tareas:', error);
+        this.showErrorMessage('Error al cargar las tareas');
+        this.isLoading = false;
+      }
+    });
 }
 
   onSubmit() {

@@ -238,14 +238,34 @@ public class TaskService {
 
     @Cacheable(value = "tasks", key = "'user_' + #username + '_filtered_' + #search + '_' + #completed + '_' + #priority + '_' + #dateFilter + '_' + #taskListId")
     public List<CacheableTaskDTO> getFilteredTasks(String search, Boolean completed, String priority, String dateFilter, String username, Long taskListId) {
-        System.out.println("OBTENIENDO TAREAS FILTRADAS DESDE BASE DE DATOS para usuario: " + username);
+        System.out.println("🔄 BACKEND: OBTENIENDO TAREAS FILTRADAS");
+        System.out.println("🔄 BACKEND: Usuario: " + username);
+        System.out.println("🔄 BACKEND: Lista ID: " + taskListId);
+        System.out.println("🔄 BACKEND: Search: " + search);
+        System.out.println("🔄 BACKEND: Completed: " + completed);
+        System.out.println("🔄 BACKEND: Priority: " + priority);
+        System.out.println("🔄 BACKEND: DateFilter: " + dateFilter);
+        
         User user = userService.findByUsername(username);
+        System.out.println("🔄 BACKEND: Usuario encontrado: " + user.getUsername() + " (ID: " + user.getId() + ")");
         
         List<Task> tasks;
         if (taskListId != null) {
-            tasks = taskRepository.findByTaskListId(taskListId);
+            System.out.println("🔄 BACKEND: Filtrando por lista ID: " + taskListId);
+            tasks = taskRepository.findByAssignedToAndTaskListId(user, taskListId);
+            System.out.println("🔄 BACKEND: Tareas encontradas para lista " + taskListId + ": " + tasks.size());
         } else {
+            System.out.println("🔄 BACKEND: Obteniendo todas las tareas del usuario");
             tasks = taskRepository.findByAssignedTo(user);
+            System.out.println("🔄 BACKEND: Total tareas del usuario: " + tasks.size());
+        }
+        
+        // Log de cada tarea encontrada
+        for (Task task : tasks) {
+            System.out.println("🔄 BACKEND: Tarea - ID: " + task.getId() + 
+                              ", Título: " + task.getTitle() + 
+                              ", Lista: " + (task.getTaskList() != null ? task.getTaskList().getId() : "null") +
+                              ", Usuario: " + task.getAssignedTo().getUsername());
         }
         
         return tasks.stream()

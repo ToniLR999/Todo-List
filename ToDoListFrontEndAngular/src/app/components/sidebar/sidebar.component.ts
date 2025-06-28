@@ -61,9 +61,11 @@ export class SidebarComponent implements OnInit {
 
   selectList(listId: number | null) {
     this.selectedListId = listId;
+    console.log('🔄 sidebar: Seleccionando lista:', listId);
     if (listId) {
       this.router.navigate(['/tasks/list', listId]);
     } else {
+      console.log('🔄 sidebar: Navegando a /tasks');
       this.router.navigate(['/tasks']);
     }
   }

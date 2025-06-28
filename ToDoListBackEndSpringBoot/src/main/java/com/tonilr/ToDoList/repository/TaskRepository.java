@@ -72,4 +72,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     
     @Query("SELECT COUNT(t) FROM Task t WHERE t.assignedTo = :user AND t.dueDate < :dueDate")
     Long countByAssignedToAndDueDateBefore(@Param("user") User user, @Param("dueDate") LocalDateTime dueDate);
+
+    @Query("SELECT t FROM Task t WHERE t.assignedTo = :user AND t.taskList.id = :taskListId")
+    List<Task> findByAssignedToAndTaskListId(@Param("user") User user, @Param("taskListId") Long taskListId);
 }
