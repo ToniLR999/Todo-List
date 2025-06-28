@@ -13,10 +13,22 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 
 import java.time.Duration;
 
+/**
+ * Cache configuration class for Redis-based caching.
+ * Configures cache manager with different TTL settings for various data types
+ * and proper serialization for JSON data storage in Redis.
+ */
 @Configuration
 @EnableCaching
 public class CacheConfig {
 
+    /**
+     * Configures the Redis cache manager with custom TTL settings.
+     * Sets up different cache configurations for tasks, task lists, and users
+     * with appropriate serialization for JSON data.
+     * @param connectionFactory Redis connection factory
+     * @return Configured CacheManager
+     */
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()

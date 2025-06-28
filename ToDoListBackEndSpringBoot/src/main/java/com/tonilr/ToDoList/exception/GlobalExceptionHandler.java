@@ -11,9 +11,21 @@ import org.springframework.web.context.request.ServletWebRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Global exception handler for the application.
+ * Provides centralized error handling for all controllers,
+ * converting exceptions into standardized ErrorResponse objects
+ * with appropriate HTTP status codes and detailed error information.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Handles ResourceNotFoundException and returns 404 status.
+     * @param ex The ResourceNotFoundException that was thrown
+     * @param request The web request that caused the exception
+     * @return ResponseEntity with ErrorResponse and 404 status
+     */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
@@ -26,6 +38,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * Handles BadRequestException and returns 400 status.
+     * @param ex The BadRequestException that was thrown
+     * @param request The web request that caused the exception
+     * @return ResponseEntity with ErrorResponse and 400 status
+     */
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequestException(
             BadRequestException ex, WebRequest request) {
@@ -38,6 +56,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Handles UnauthorizedException and returns 401 status.
+     * @param ex The UnauthorizedException that was thrown
+     * @param request The web request that caused the exception
+     * @return ResponseEntity with ErrorResponse and 401 status
+     */
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorizedException(
             UnauthorizedException ex, WebRequest request) {
@@ -50,6 +74,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
+    /**
+     * Handles validation exceptions from @Valid annotations.
+     * Extracts field-specific validation errors and returns them in a structured format.
+     * @param ex The MethodArgumentNotValidException that was thrown
+     * @param request The web request that caused the exception
+     * @return ResponseEntity with ErrorResponse containing validation details
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(
             MethodArgumentNotValidException ex, WebRequest request) {
@@ -72,6 +103,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Handles all other unhandled exceptions and returns 500 status.
+     * Provides a generic error message to avoid exposing internal details.
+     * @param ex The Exception that was thrown
+     * @param request The web request that caused the exception
+     * @return ResponseEntity with ErrorResponse and 500 status
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception ex, WebRequest request) {

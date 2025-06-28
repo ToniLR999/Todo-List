@@ -14,6 +14,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Security configuration class for the application.
+ * Configures Spring Security with JWT authentication, CORS support,
+ * CSRF protection, and authorization rules for different endpoints.
+ */
 @Configuration
 @EnableWebSecurity
 @Slf4j
@@ -25,11 +30,24 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /**
+     * Configures the AuthenticationManager bean for JWT authentication.
+     * @param authConfig Authentication configuration
+     * @return Configured AuthenticationManager
+     * @throws Exception if configuration fails
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
+    /**
+     * Configures the security filter chain with authentication and authorization rules.
+     * Sets up JWT authentication, CSRF protection, CORS, and endpoint access control.
+     * @param http HttpSecurity object to configure
+     * @return Configured SecurityFilterChain
+     * @throws Exception if configuration fails
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http

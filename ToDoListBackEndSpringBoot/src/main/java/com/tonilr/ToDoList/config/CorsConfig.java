@@ -6,9 +6,19 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+/**
+ * CORS (Cross-Origin Resource Sharing) configuration class.
+ * Configures cross-origin requests to allow the Angular frontend
+ * to communicate with the Spring Boot backend API.
+ */
 @Configuration
 public class CorsConfig {
 
+    /**
+     * Configures CORS filter to allow cross-origin requests from the Angular frontend.
+     * Sets up allowed origins, methods, headers, and credentials for secure communication.
+     * @return Configured CorsFilter
+     */
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

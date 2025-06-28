@@ -5,6 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 
+/**
+ * Standardized error response class for API error handling.
+ * Provides a consistent structure for all error responses including
+ * status codes, error messages, timestamps, and additional details.
+ */
 public class ErrorResponse {
     private int status;
     private int errorCode;
@@ -14,6 +19,13 @@ public class ErrorResponse {
     private String path;
     private List<String> errors;
 
+    /**
+     * Constructor for creating error responses with full details.
+     * @param status HTTP status code
+     * @param errorCode Application-specific error code
+     * @param details Detailed error description
+     * @param path Request path that caused the error
+     */
     public ErrorResponse(int status, ErrorCode errorCode, String details, String path) {
         this.status = status;
         this.errorCode = errorCode.getCode();
@@ -24,6 +36,10 @@ public class ErrorResponse {
         this.errors = new ArrayList<>();
     }
 
+    /**
+     * Constructor for creating simple error responses.
+     * @param message Error message
+     */
     public ErrorResponse(String message) {
         this.status = HttpStatus.INTERNAL_SERVER_ERROR.value();
         this.message = message;
@@ -31,11 +47,15 @@ public class ErrorResponse {
         this.errors = new ArrayList<>();
     }
 
+    /**
+     * Adds an additional error message to the error list.
+     * @param error Error message to add
+     */
     public void addError(String error) {
         this.errors.add(error);
     }
 
-    // Getters y setters
+    // Getters and Setters
     public int getStatus() {
         return status;
     }
