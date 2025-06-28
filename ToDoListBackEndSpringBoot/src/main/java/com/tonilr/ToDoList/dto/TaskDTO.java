@@ -7,7 +7,12 @@ import java.util.Date;
 
 import lombok.Data;
 
-// TaskDTO.java
+/**
+ * Data Transfer Object for task operations.
+ * Represents task data for API requests and responses, including
+ * proper date formatting and task list associations.
+ * Uses Lombok @Data annotation for automatic getter/setter generation.
+ */
 @Data
 public class TaskDTO {
 

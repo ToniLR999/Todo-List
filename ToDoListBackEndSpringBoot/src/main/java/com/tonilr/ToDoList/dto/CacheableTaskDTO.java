@@ -3,6 +3,12 @@ package com.tonilr.ToDoList.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 
+/**
+ * Data Transfer Object for tasks optimized for caching operations.
+ * Provides a serializable representation of task data that can be efficiently
+ * stored in cache systems like Redis, with proper date formatting and
+ * conversion methods between TaskDTO and CacheableTaskDTO.
+ */
 public class CacheableTaskDTO {
     private Long id;
     private String title;
@@ -20,10 +26,16 @@ public class CacheableTaskDTO {
     private String taskListName;
     private String assignedToUsername;
     
-    // Constructor vacío
+    /**
+     * Default constructor required for serialization.
+     */
     public CacheableTaskDTO() {}
     
-    // Constructor desde TaskDTO
+    /**
+     * Constructor that creates a CacheableTaskDTO from a TaskDTO.
+     * Handles date conversion and all task properties mapping.
+     * @param taskDTO Source TaskDTO to convert from
+     */
     public CacheableTaskDTO(TaskDTO taskDTO) {
         this.id = taskDTO.getId();
         this.title = taskDTO.getTitle();
@@ -38,7 +50,11 @@ public class CacheableTaskDTO {
         this.assignedToUsername = taskDTO.getAssignedTo();
     }
     
-    // Método para convertir de vuelta a TaskDTO
+    /**
+     * Converts this CacheableTaskDTO back to a TaskDTO.
+     * Useful when retrieving cached data and converting back to the standard DTO format.
+     * @return TaskDTO representation of this cached task
+     */
     public TaskDTO toTaskDTO() {
         TaskDTO dto = new TaskDTO();
         dto.setId(this.id);
@@ -55,7 +71,7 @@ public class CacheableTaskDTO {
         return dto;
     }
     
-    // Getters y Setters
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     

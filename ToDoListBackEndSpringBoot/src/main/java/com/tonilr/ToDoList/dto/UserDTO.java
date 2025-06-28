@@ -2,6 +2,12 @@ package com.tonilr.ToDoList.dto;
 
 import lombok.Data;
 
+/**
+ * Data Transfer Object for user operations.
+ * Represents user data for API requests and responses, excluding
+ * sensitive information like passwords for security purposes.
+ * Uses Lombok @Data annotation for automatic getter/setter generation.
+ */
 @Data
 public class UserDTO {
     private Long id;
@@ -10,6 +16,9 @@ public class UserDTO {
     private String timezone;
     // No incluimos password por seguridad
 
+    /**
+     * Default constructor required for serialization.
+     */
     public UserDTO() {}
 
     public Long getId() {

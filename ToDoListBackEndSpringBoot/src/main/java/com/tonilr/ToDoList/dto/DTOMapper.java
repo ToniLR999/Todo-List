@@ -7,9 +7,20 @@ import java.util.Date;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * Data Transfer Object (DTO) mapper component.
+ * Provides methods to convert between entity objects and DTOs,
+ * ensuring proper data transformation and preventing direct entity exposure
+ * in API responses while maintaining data integrity.
+ */
 @Component
 public class DTOMapper {
     
+    /**
+     * Converts User entity to UserDTO for API responses.
+     * @param user User entity to convert
+     * @return UserDTO or null if user is null
+     */
     public UserDTO toUserDTO(User user) {
         if (user == null) return null;
         
@@ -20,6 +31,11 @@ public class DTOMapper {
         return dto;
     }
 
+    /**
+     * Converts UserRegistrationDTO to User entity for registration.
+     * @param dto Registration DTO containing user data
+     * @return User entity
+     */
     public User toUser(UserRegistrationDTO dto) {
         User user = new User();
         user.setUsername(dto.getUsername());
@@ -28,6 +44,11 @@ public class DTOMapper {
         return user;
     }
 
+    /**
+     * Converts User entity to UserProfileDTO for profile operations.
+     * @param user User entity to convert
+     * @return UserProfileDTO with profile information
+     */
     public UserProfileDTO toUserProfileDTO(User user) {
         UserProfileDTO dto = new UserProfileDTO();
         dto.setId(user.getId());
@@ -37,6 +58,12 @@ public class DTOMapper {
         return dto;
     }
 
+    /**
+     * Converts Task entity to TaskDTO for API responses.
+     * Handles date conversion and nested object mapping.
+     * @param task Task entity to convert
+     * @return TaskDTO with all task information
+     */
     public TaskDTO toTaskDTO(Task task) {
         TaskDTO dto = new TaskDTO();
         dto.setId(task.getId());
@@ -55,6 +82,12 @@ public class DTOMapper {
         return dto;
     }
 
+    /**
+     * Converts TaskDTO to Task entity for persistence.
+     * Handles date conversion from Date to LocalDateTime.
+     * @param dto TaskDTO to convert
+     * @return Task entity
+     */
     public Task toTask(TaskDTO dto) {
         Task task = new Task();
         task.setTitle(dto.getTitle());
@@ -66,6 +99,12 @@ public class DTOMapper {
         return task;
     }
 
+    /**
+     * Converts TaskList entity to TaskListDTO for API responses.
+     * Includes nested task conversion and owner information.
+     * @param taskList TaskList entity to convert
+     * @return TaskListDTO with all list information
+     */
     public TaskListDTO toTaskListDTO(TaskList taskList) {
         TaskListDTO dto = new TaskListDTO();
         dto.setId(taskList.getId());
@@ -78,6 +117,11 @@ public class DTOMapper {
         return dto;
     }
 
+    /**
+     * Converts TaskListDTO to TaskList entity for persistence.
+     * @param dto TaskListDTO to convert
+     * @return TaskList entity
+     */
     public TaskList toTaskList(TaskListDTO dto) {
         TaskList taskList = new TaskList();
         taskList.setName(dto.getName());
@@ -85,6 +129,11 @@ public class DTOMapper {
         return taskList;
     }
 
+    /**
+     * Converts AuditLog entity to AuditLogDTO for API responses.
+     * @param auditLog AuditLog entity to convert
+     * @return AuditLogDTO or null if auditLog is null
+     */
     public AuditLogDTO toAuditLogDTO(AuditLog auditLog) {
         if (auditLog == null) return null;
         
