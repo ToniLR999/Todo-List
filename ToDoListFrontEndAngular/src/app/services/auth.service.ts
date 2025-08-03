@@ -90,12 +90,20 @@ export class AuthService {
    * @param password New user's password
    * @returns Observable with registration response
    */
-  register(username: string, email: string, password: string): Observable<any> {
+  register(username: string, email: string, password: string, timezone: string): Observable<any> {
+    console.log('🚀 Enviando datos de registro:', { username, email, password, timezone });
     return this.http.post(`${this.apiUrl}/users/register`, { 
       username, 
       email, 
-      password 
-    });
+      password,
+      timezone
+    }).pipe(
+      tap(response => console.log('✅ Registro exitoso:', response)),
+      catchError(error => {
+        console.error('❌ Error en registro:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   /**

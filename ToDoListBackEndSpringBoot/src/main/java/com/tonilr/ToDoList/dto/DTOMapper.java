@@ -41,6 +41,7 @@ public class DTOMapper {
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword());
+        user.setTimezone(dto.getTimezone()); // ✅ AGREGAR ESTA LÍNEA
         return user;
     }
 

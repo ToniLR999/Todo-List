@@ -20,5 +20,6 @@ public class UserRegistrationDTO {
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
 
+    @NotBlank(message = "El timezone es obligatorio")
     private String timezone;
 }

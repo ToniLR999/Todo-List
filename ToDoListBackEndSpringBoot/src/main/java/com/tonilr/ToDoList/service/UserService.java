@@ -59,14 +59,17 @@ public class UserService {
             
         User savedUser = userRepository.save(user);
         
+        // Comentar temporalmente estas líneas para diagnosticar
+        /*
         emailService.sendSimpleEmail(
             savedUser.getEmail(),
             "¡Bienvenido a ToDoList!",
             "Hola " + savedUser.getUsername() + ", tu cuenta ha sido creada correctamente."
         );
         
-
         auditLogService.logAction(savedUser, "REGISTRO_USUARIO", "Usuario registrado: " + savedUser.getUsername());
+        */
+        
         return savedUser;
     }
 

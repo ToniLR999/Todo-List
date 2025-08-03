@@ -85,12 +85,15 @@ export class RegisterComponent {
    */
   onSubmit(): void {
     if (this.registerForm.valid) {
-      const { username, email, password } = this.registerForm.value;
-      this.authService.register(username, email, password).subscribe({
+      const { username, email, password, timezone } = this.registerForm.value;
+      console.log('📝 Datos del formulario:', this.registerForm.value);
+      this.authService.register(username, email, password, timezone).subscribe({
         next: () => {
+          console.log('✅ Registro completado exitosamente');
           this.router.navigate(['/login']);
         },
         error: (error) => {
+          console.error('❌ Error en registro:', error);
           if (error.status === 409) {
             this.error = 'El usuario o email ya existe';
           } else {
