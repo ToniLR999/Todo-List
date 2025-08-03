@@ -5,12 +5,16 @@ import com.tonilr.ToDoList.exception.ResourceNotFoundException;
 import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.repository.UserRepository;
 import com.tonilr.ToDoList.repository.RoleRepository;
+import com.tonilr.ToDoList.dto.UserCacheDTO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
+import java.time.Duration;
 
 /**
  * Service class for managing user operations.
@@ -34,6 +38,9 @@ public class UserService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     /**
      * Registers a new user with password encryption and default role assignment.
@@ -74,15 +81,58 @@ public class UserService {
     }
 
     /**
-     * Retrieves a user by username with caching.
+     * Retrieves a user by username with caching using DTO.
      * @param username Username to search for
      * @return User entity
      */
-    @Cacheable(value = "users", key = "'username_' + #username")
     @Transactional(readOnly = true)
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username)
+        // Primero intentar obtener del caché
+        UserCacheDTO cachedUser = getUserFromCache(username);
+        if (cachedUser != null) {
+            return cachedUser.toUser();
+        }
+        
+        // Si no está en caché, obtener de la base de datos
+        User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        // Guardar en caché
+        saveUserToCache(user);
+        
+        return user;
+    }
+
+    /**
+     * Obtiene usuario del caché usando DTO
+     */
+    private UserCacheDTO getUserFromCache(String username) {
+        try {
+            String cacheKey = "users::username_" + username;
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached instanceof UserCacheDTO) {
+                return (UserCacheDTO) cached;
+            }
+            return null;
+        } catch (Exception e) {
+            // Si hay error de deserialización, limpiar caché y continuar
+            System.err.println("Error leyendo usuario del caché: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Guarda usuario en caché usando DTO
+     */
+    private void saveUserToCache(User user) {
+        try {
+            UserCacheDTO userCacheDTO = new UserCacheDTO(user);
+            String cacheKey = "users::username_" + user.getUsername();
+            redisTemplate.opsForValue().set(cacheKey, userCacheDTO, Duration.ofMinutes(30));
+        } catch (Exception e) {
+            // Log del error pero no fallar la operación
+            System.err.println("Error guardando usuario en caché: " + e.getMessage());
+        }
     }
 
     /**

@@ -199,11 +199,14 @@ export class TaskService {
   getFilteredTasks(filters: TaskFilters): Observable<Task[]> {
     let params = new HttpParams();
     
+    console.log('🔄 FRONTEND: Filtros recibidos:', filters);
+    
     if (filters.search) {
       params = params.set('search', filters.search);
     }
     if (filters.status) {
       params = params.set('completed', filters.status);
+      console.log('🔄 FRONTEND: Enviando completed:', filters.status);
     }
     if (filters.priority && filters.priority !== 'all') {
       params = params.set('priority', filters.priority);
@@ -214,6 +217,8 @@ export class TaskService {
     if (filters.tasklistId) {
       params = params.set('taskListId', filters.tasklistId.toString());
     }
+
+    console.log('🔄 FRONTEND: Parámetros finales:', params.toString());
 
     return this.http.get<Task[]>(`${this.apiUrl}/filter`, { 
       params, 

@@ -74,8 +74,19 @@ public class TaskService {
             TaskList taskList = taskListRepository.findById(taskDTO.getTaskListId())
                 .orElseThrow(() -> new ResourceNotFoundException("Lista no encontrada"));
             
-            // Verificar que el usuario es el propietario de la lista
-            if (!taskList.getOwner().equals(user)) {
+            // Verificar permisos: el usuario debe ser propietario O usuario asignado
+            boolean isOwner = taskList.getOwner().getId().equals(user.getId());
+            boolean isAssignedUser = taskList.getUser() != null && taskList.getUser().getId().equals(user.getId());
+
+            // Agregar logs para diagnosticar
+            System.out.println("🔍 DEBUG PERMISOS:");
+            System.out.println("  - Usuario actual: " + user.getUsername() + " (ID: " + user.getId() + ")");
+            System.out.println("  - Lista owner: " + taskList.getOwner().getUsername() + " (ID: " + taskList.getOwner().getId() + ")");
+            System.out.println("  - Lista user: " + (taskList.getUser() != null ? taskList.getUser().getUsername() : "null"));
+            System.out.println("  - isOwner: " + isOwner);
+            System.out.println("  - isAssignedUser: " + isAssignedUser);
+
+            if (!isOwner && !isAssignedUser) {
                 throw new UnauthorizedException("No tienes permiso para añadir tareas a esta lista");
             }
             
@@ -304,37 +315,96 @@ public class TaskService {
      */
     @Cacheable(value = "tasks", key = "'user_' + #username + '_filtered_' + #search + '_' + #completed + '_' + #priority + '_' + #dateFilter + '_' + #taskListId")
     public List<CacheableTaskDTO> getFilteredTasks(String search, Boolean completed, String priority, String dateFilter, String username, Long taskListId) {
-        // System.out.println("🔄 BACKEND: OBTENIENDO TAREAS FILTRADAS");
-        // System.out.println("🔄 BACKEND: Usuario: " + username);
-        // System.out.println("🔄 BACKEND: Lista ID: " + taskListId);
-        // System.out.println("🔄 BACKEND: Search: " + search);
-        // System.out.println("🔄 BACKEND: Completed: " + completed);
-        // System.out.println("🔄 BACKEND: Priority: " + priority);
-        // System.out.println("🔄 BACKEND: DateFilter: " + dateFilter);
+        System.out.println("🔄 BACKEND: OBTENIENDO TAREAS FILTRADAS");
+        System.out.println("🔄 BACKEND: Usuario: " + username);
+        System.out.println("🔄 BACKEND: Lista ID: " + taskListId);
+        System.out.println("🔄 BACKEND: Search: " + search);
+        System.out.println("🔄 BACKEND: Completed: " + completed);
+        System.out.println("🔄 BACKEND: Priority: " + priority);
+        System.out.println("🔄 BACKEND: DateFilter: " + dateFilter);
         
         User user = userService.findByUsername(username);
-        // System.out.println("🔄 BACKEND: Usuario encontrado: " + user.getUsername() + " (ID: " + user.getId() + ")");
         
         List<Task> tasks;
         if (taskListId != null) {
-            // System.out.println("🔄 BACKEND: Filtrando por lista ID: " + taskListId);
+            // Filtrar por lista específica
             tasks = taskRepository.findByAssignedToAndTaskListId(user, taskListId);
-            // System.out.println("🔄 BACKEND: Tareas encontradas para lista " + taskListId + ": " + tasks.size());
+            System.out.println("🔄 BACKEND: Tareas encontradas para lista " + taskListId + ": " + tasks.size());
         } else {
-            // System.out.println("🔄 BACKEND: Obteniendo todas las tareas del usuario");
+            // Obtener todas las tareas del usuario
             tasks = taskRepository.findByAssignedTo(user);
-            // System.out.println("🔄 BACKEND: Total tareas del usuario: " + tasks.size());
+            System.out.println("🔄 BACKEND: Total tareas del usuario: " + tasks.size());
         }
         
-        // Log de cada tarea encontrada
+        // Log de cada tarea antes del filtro
+        System.out.println("🔄 BACKEND: TAREAS ANTES DEL FILTRO:");
         for (Task task : tasks) {
-            // System.out.println("🔄 BACKEND: Tarea - ID: " + task.getId() + 
-            //                   ", Título: " + task.getTitle() + 
-            //                   ", Lista: " + (task.getTaskList() != null ? task.getTaskList().getId() : "null") +
-            //                   ", Usuario: " + task.getAssignedTo().getUsername());
+            System.out.println("  - ID: " + task.getId() + 
+                              ", Título: " + task.getTitle() + 
+                              ", Completada: " + task.isCompleted() +
+                              ", Lista: " + (task.getTaskList() != null ? task.getTaskList().getId() : "null"));
         }
         
-        return tasks.stream()
+        // Aplicar filtros adicionales
+        List<CacheableTaskDTO> filteredTasks = tasks.stream()
+            .filter(task -> {
+                // Filtro por estado (completed)
+                if (completed != null) {
+                    System.out.println("🔄 BACKEND: Aplicando filtro completed. Valor: " + completed + ", Tarea completada: " + task.isCompleted());
+                    if (task.isCompleted() != completed) {
+                        System.out.println("🔄 BACKEND: Tarea " + task.getId() + " filtrada por estado");
+                        return false;
+                    }
+                }
+                
+                // Filtro por búsqueda (search)
+                if (search != null && !search.trim().isEmpty()) {
+                    if (!task.getTitle().toLowerCase().contains(search.toLowerCase()) &&
+                        (task.getDescription() == null || !task.getDescription().toLowerCase().contains(search.toLowerCase()))) {
+                        return false;
+                    }
+                }
+                
+                // Filtro por prioridad
+                if (priority != null && !priority.equals("all")) {
+                    if (task.getPriority() != Integer.parseInt(priority)) {
+                        return false;
+                    }
+                }
+                
+                // Filtro por fecha
+                if (dateFilter != null && !dateFilter.equals("all") && task.getDueDate() != null) {
+                    LocalDateTime now = LocalDateTime.now();
+                    LocalDateTime dueDate = task.getDueDate();
+                    
+                    switch (dateFilter) {
+                        case "today":
+                            if (!dueDate.toLocalDate().equals(now.toLocalDate())) {
+                                return false;
+                            }
+                            break;
+                        case "week":
+                            LocalDateTime weekFromNow = now.plusWeeks(1);
+                            if (dueDate.isAfter(weekFromNow) || dueDate.isBefore(now)) {
+                                return false;
+                            }
+                            break;
+                        case "month":
+                            LocalDateTime monthFromNow = now.plusMonths(1);
+                            if (dueDate.isAfter(monthFromNow) || dueDate.isBefore(now)) {
+                                return false;
+                            }
+                            break;
+                        case "overdue":
+                            if (!dueDate.isBefore(now)) {
+                                return false;
+                            }
+                            break;
+                    }
+                }
+                
+                return true;
+            })
             .map(task -> {
                 TaskDTO dto = dtoMapper.toTaskDTO(task);
                 if (task.getTaskList() != null) {
@@ -344,6 +414,15 @@ public class TaskService {
                 return new CacheableTaskDTO(dto);
             })
             .collect(Collectors.toList());
+        
+        System.out.println("🔄 BACKEND: TAREAS DESPUÉS DEL FILTRO: " + filteredTasks.size());
+        for (CacheableTaskDTO task : filteredTasks) {
+            System.out.println("  - ID: " + task.getId() + 
+                              ", Título: " + task.getTitle() + 
+                              ", Completada: " + task.isCompleted());
+        }
+        
+        return filteredTasks;
     }
 
     /**

@@ -112,40 +112,20 @@ export class TaskListComponent implements OnInit {
     this.route.params.subscribe(params => {
       this.currentListId = params['id'] ? Number(params['id']) : null;
       console.log('🔄 TaskList: currentListId:', this.currentListId);
-      this.loadTasks();
+      
+      // Aplicar filtro por defecto de "pendientes"
+      this.statusFilter = 'pending';
+      this.priorityFilter = 'all';
+      this.dateFilter = 'all';
+      this.searchTerm = '';
+      
+      // Usar applyFilters en lugar de loadTasks para asegurar consistencia
+      this.applyFilters();
     });
   }
   loadTasks(): void {
-    this.isLoading = true;
-
-    // Construimos los filtros
-    const filters: TaskFilters = {
-      status: this.statusFilter === 'all' ? undefined : 
-              this.statusFilter === 'completed' ? 'true' : 
-              this.statusFilter === 'pending' ? 'false' : undefined,
-      priority: this.priorityFilter !== 'all' ? this.priorityFilter : undefined,
-      dateFilter: this.dateFilter !== 'all' ? this.dateFilter : undefined,
-      search: this.searchTerm || undefined,
-      tasklistId: this.currentListId || undefined
-    };
-    
-    console.log('🔄 TaskList: Filtros enviados:', filters);
-
-    this.taskService.getFilteredTasks(filters).subscribe({
-      next: (tasks) => {
-        console.log('🔄 TaskList: Tareas recibidas:', tasks);
-        this.tasks = tasks;
-        this.errorMessage = '';
-        this.checkTasksStatus(tasks);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('🔄 TaskList: Error al cargar tareas:', error);
-        this.showErrorMessage('Error al cargar las tareas');
-        this.isLoading = false;
-      }
-    });
-}
+    this.applyFilters();
+  }
 
   onSubmit() {
     if (this.taskForm.valid) {
@@ -355,30 +335,30 @@ export class TaskListComponent implements OnInit {
 
   applyFilters(): void {
     this.isLoading = true;
-    //console.log('Estado del filtro:', this.statusFilter); // Debug
-    //console.log('Lista actual:', this.currentListId); // Debug
+    console.log('🔄 FRONTEND: Estado del filtro:', this.statusFilter);
+    console.log('🔄 FRONTEND: Lista actual:', this.currentListId);
 
     const filters: TaskFilters = {
       search: this.searchTerm,
       status: this.statusFilter === 'all' ? undefined : 
               this.statusFilter === 'completed' ? 'true' : 
-              this.statusFilter === 'pending' ? 'false' : undefined,
+              this.statusFilter === 'pending' ? 'false' : 'false', // Asegurar que sea 'false' para pending
       priority: this.priorityFilter,
       dateFilter: this.dateFilter,
-      tasklistId: this.currentListId || undefined  // Añadimos el listId actual
+      tasklistId: this.currentListId || undefined
     };
-    //console.log('Filtros enviados:', filters); // Debug
+    console.log('🔄 FRONTEND: Filtros enviados:', filters);
 
     this.taskService.getFilteredTasks(filters).subscribe({
       next: (tasks) => {
-        //console.log('Tareas recibidas:', tasks); // Debug
+        console.log('🔄 FRONTEND: Tareas recibidas:', tasks);
         this.tasks = tasks;
         this.errorMessage = '';
         this.checkTasksStatus(tasks);
         this.isLoading = false;
       },
       error: (error) => {
-        //console.error('Error applying filters:', error);
+        console.error('🔄 FRONTEND: Error applying filters:', error);
         this.showErrorMessage('Error al aplicar los filtros. Por favor, intente nuevamente.');
         this.isLoading = false;
       }
