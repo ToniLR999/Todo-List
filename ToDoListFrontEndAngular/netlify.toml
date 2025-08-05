@@ -1,0 +1,15 @@
+[build]
+  base = "ToDoListFrontEndAngular"
+  command = "npm run build"
+  publish = "dist/todo-angular-app"
+
+[build.environment]
+  NODE_VERSION = "20.19.0"
+  NPM_VERSION = "10.2.4"
+  API_URL = "https://todolist-production.up.railway.app"
+
+# IMPORTANTE: Redirects para Angular SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
