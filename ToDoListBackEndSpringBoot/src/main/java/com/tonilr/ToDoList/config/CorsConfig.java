@@ -15,9 +15,6 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.frontend.url:http://localhost:4200}")
-    private String frontendUrl;
-
     @Value("${spring.web.cors.allowed-origins:http://localhost:4200}")
     private String allowedOrigins;
 
@@ -34,24 +31,25 @@ public class CorsConfig {
         // Configurar orígenes permitidos
         config.addAllowedOrigin("http://localhost:4200"); // Desarrollo local
         config.addAllowedOrigin("https://localhost:4200"); // Desarrollo local HTTPS
-        config.addAllowedOrigin("https://todolist-tonilr.netlify.app"); // Netlify (actualizar con tu URL real)
+        config.addAllowedOrigin("https://todolist-tonilr.netlify.app"); // Netlify
         config.addAllowedOrigin("https://*.netlify.app"); // Cualquier subdominio de Netlify
         
         // Configurar métodos HTTP permitidos
-        config.addAllowedMethod("GET");
-        config.addAllowedMethod("POST");
-        config.addAllowedMethod("PUT");
-        config.addAllowedMethod("DELETE");
-        config.addAllowedMethod("OPTIONS");
+        config.addAllowedMethod("*"); // Permitir todos los métodos
         
         // Configurar headers permitidos
-        config.addAllowedHeader("*");
+        config.addAllowedHeader("*"); // Permitir todos los headers
         
         // Permitir credenciales (cookies, headers de autorización)
         config.setAllowCredentials(true);
         
         // Configurar tiempo máximo de cache para las respuestas preflight
         config.setMaxAge(3600L);
+        
+        // Configurar headers expuestos
+        config.addExposedHeader("Authorization");
+        config.addExposedHeader("Content-Type");
+        config.addExposedHeader("Accept");
         
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
