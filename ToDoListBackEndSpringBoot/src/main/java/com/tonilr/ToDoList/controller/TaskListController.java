@@ -20,7 +20,6 @@ import org.springframework.security.core.Authentication;
  */
 @RestController
 @RequestMapping("/api/lists")
-@CrossOrigin(origins = "http://localhost:4200")
 public class TaskListController {
 
     @Autowired

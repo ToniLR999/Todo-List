@@ -29,7 +29,6 @@ import com.tonilr.ToDoList.service.CacheService;
  */
 @RestController
 @RequestMapping("/api/tasks")
-@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Tasks", description = "Task management API")
 public class TaskController {
 

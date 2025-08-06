@@ -24,7 +24,6 @@ import org.springframework.http.HttpStatus;
  */
 @RestController
 @RequestMapping("/api/auth/users")
-@CrossOrigin(origins = "http://localhost:4200") // For Angular frontend
 public class UserController {
 
     @Autowired
