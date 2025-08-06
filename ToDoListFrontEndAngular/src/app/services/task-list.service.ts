@@ -9,12 +9,13 @@ import { Observable, Subject, of } from 'rxjs';
 import { TaskList } from '../models/task-list.model';
 import { tap, catchError } from 'rxjs/operators';
 import { CacheService } from './cache.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TaskListService {
-  private apiUrl = 'http://localhost:8080/api/lists';
+  private apiUrl = `${environment.apiUrl}/api/lists`;
   public listUpdated = new Subject<void>();
   private readonly CACHE_KEY = 'task_lists';
   private readonly CACHE_TTL = 2 * 60 * 1000; // 2 minutos

@@ -9,6 +9,7 @@ import { Observable, of } from 'rxjs';
 import { Task } from '../models/task.model';
 import { tap, catchError } from 'rxjs/operators';
 import { CacheService } from './cache.service';
+import { environment } from '../../environments/environment';
 
 interface TaskInput {
   priority: 1 | 2 | 3;
@@ -29,7 +30,7 @@ export interface TaskFilters {
   providedIn: 'root'
 })
 export class TaskService {
-  private apiUrl = 'http://localhost:8080/api/tasks';
+  private apiUrl = `${environment.apiUrl}/api/tasks`;
   private readonly CACHE_KEY_PREFIX = 'tasks_';
   private readonly CACHE_TTL = 2 * 60 * 1000; // 2 minutos
 
