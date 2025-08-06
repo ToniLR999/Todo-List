@@ -1,5 +1,6 @@
 package com.tonilr.ToDoList.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -14,6 +15,12 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class CorsConfig {
 
+    @Value("${app.frontend.url:http://localhost:4200}")
+    private String frontendUrl;
+
+    @Value("${spring.web.cors.allowed-origins:http://localhost:4200}")
+    private String allowedOrigins;
+
     /**
      * Configures CORS filter to allow cross-origin requests from the Angular frontend.
      * Sets up allowed origins, methods, headers, and credentials for secure communication.
@@ -25,7 +32,10 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         
         // Configurar orígenes permitidos
-        config.addAllowedOrigin("http://localhost:4200"); // Angular frontend
+        config.addAllowedOrigin("http://localhost:4200"); // Desarrollo local
+        config.addAllowedOrigin("https://localhost:4200"); // Desarrollo local HTTPS
+        config.addAllowedOrigin("https://todolist-tonilr.netlify.app"); // Netlify (actualizar con tu URL real)
+        config.addAllowedOrigin("https://*.netlify.app"); // Cualquier subdominio de Netlify
         
         // Configurar métodos HTTP permitidos
         config.addAllowedMethod("GET");
