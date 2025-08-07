@@ -45,7 +45,7 @@
       <input 
         type="text" 
         [(ngModel)]="searchTerm" 
-        (input)="onSearch()"
+        (ngModelChange)="onSearch()"
         placeholder="Buscar tareas..."
         class="search-input">
     </div>

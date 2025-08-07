@@ -6,6 +6,11 @@ import { ToastrService } from 'ngx-toastr';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
+/**
+ * Component for managing and displaying task lists.
+ * Provides functionality to create, edit, delete, and view task lists.
+ * Users can organize their tasks into different lists for better organization.
+ */
 @Component({
   selector: 'app-task-list-list',
   templateUrl: './task-list-list.component.html',
@@ -14,14 +19,22 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule, FormsModule, ReactiveFormsModule]
 })
 export class TaskListListComponent implements OnInit {
+  /** Array of task lists to display */
   taskLists: TaskList[] = [];
+  
+  /** Flag to control the visibility of the new list form */
   showNewListForm = false;
+  
+  /** Object to hold the new task list data being created/edited */
   newList: TaskList = {
     name: '',
     description: ''
   };
+  
+  /** Reference to the task list being edited (null if creating new) */
   editingList: TaskList | null = null;
 
+  
   constructor(
     private taskListService: TaskListService,
     private router: Router,
@@ -32,10 +45,14 @@ export class TaskListListComponent implements OnInit {
     this.loadTaskLists();
   }
 
+  /**
+   * Loads all task lists for the current user.
+   * Subscribes to the task list service to fetch and display task lists.
+   */
   loadTaskLists() {
     this.taskListService.getTaskLists().subscribe({
       next: (taskLists) => {
-        console.log('�� task-list-list: Obteniendo listas');
+        //console.log(' task-list-list: Obteniendo listas');
         this.taskLists = taskLists;
       },
       error: (error) => {
@@ -45,14 +62,22 @@ export class TaskListListComponent implements OnInit {
     });
   }
 
+  /**
+   * Creates a new task list or updates an existing one.
+   * Handles both creation and editing modes based on the editingList state.
+   * Shows success/error notifications and updates the UI accordingly.
+   */
   createList() {
     if (this.editingList) {
+      // Update existing task list
       this.taskListService.updateTaskList(this.editingList.id!, this.newList).subscribe({
         next: (updatedList) => {
+          // Update the list in the local array
           const index = this.taskLists.findIndex(l => l.id === updatedList.id);
           if (index !== -1) {
             this.taskLists[index] = updatedList;
           }
+          // Reset form and notify other components
           this.showNewListForm = false;
           this.newList = { name: '', description: '' };
           this.editingList = null;
@@ -65,9 +90,12 @@ export class TaskListListComponent implements OnInit {
         }
       });
     } else {
+      // Create new task list
       this.taskListService.createTaskList(this.newList).subscribe({
         next: (list) => {
+          // Add new list to the local array
           this.taskLists = [...this.taskLists, list];
+          // Reset form and notify other components
           this.showNewListForm = false;
           this.newList = { name: '', description: '' };
           this.taskListService.listUpdated.next();
@@ -81,6 +109,11 @@ export class TaskListListComponent implements OnInit {
     }
   }
 
+  /**
+   * Initiates editing mode for a specific task list.
+   * Populates the form with the existing list data.
+   * @param list The task list to edit
+   */
   editList(list: TaskList) {
     this.editingList = { ...list };
     this.newList = {
@@ -90,15 +123,26 @@ export class TaskListListComponent implements OnInit {
     this.showNewListForm = true;
   }
 
+  /**
+   * Initiates the deletion process for a task list.
+   * Shows a confirmation dialog before proceeding with deletion.
+   * @param list The task list to delete
+   */
   deleteList(list: TaskList) {
     if (confirm(`¿Estás seguro de que deseas eliminar la lista "${list.name}"? Esta acción eliminará también todas las tareas asociadas.`)) {
       this.confirmDeleteList(list);
     }
   }
 
+  /**
+   * Confirms and executes the deletion of a task list.
+   * Removes the list from the local array and shows success/error notifications.
+   * @param list The task list to delete
+   */
   private confirmDeleteList(list: TaskList): void {
     this.taskListService.deleteTaskList(list.id!).subscribe({
       next: () => {
+        // Remove the list from the local array
         this.taskLists = this.taskLists.filter(l => l.id !== list.id);
         this.toastr.success(`Lista "${list.name}" eliminada correctamente`);
       },
@@ -108,12 +152,21 @@ export class TaskListListComponent implements OnInit {
     });
   }
 
+  /**
+   * Navigates to the task list view to display tasks within the selected list.
+   * Notifies other components about the list update.
+   * @param list The task list to view
+   */
   viewList(list: TaskList) {
     this.router.navigate(['/tasks/list', list.id]).then(() => {
       this.taskListService.listUpdated.next();
     });
   }
 
+  /**
+   * Cancels the current form operation (create/edit).
+   * Resets the form state and hides the form.
+   */
   cancelForm() {
     this.showNewListForm = false;
     this.newList = { name: '', description: '' };

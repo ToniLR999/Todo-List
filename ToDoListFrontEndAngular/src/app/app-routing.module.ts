@@ -1,8 +1,3 @@
-/**
- * Application routing module defining all routes and navigation configuration.
- * Includes route guards for authentication, route animations, and scroll behavior.
- * Routes are organized by feature with proper lazy loading considerations.
- */
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';

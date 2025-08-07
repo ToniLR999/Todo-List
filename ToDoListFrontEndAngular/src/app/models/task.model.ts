@@ -24,4 +24,14 @@ export interface Task {
   taskListId?: number;
   /** Name of the task list this task belongs to */
   taskListName?: string;
+  /** User who created the task */
+  userId?: number;
+  /** Username of the task creator */
+  username?: string;
+  /** ID of the user assigned to the task */
+  assignedToId?: number;
+  /** Username of the user assigned to the task */
+  assignedToUsername?: string;
+  /** List of comments on the task */
+  comments?: Comment[];
 } 

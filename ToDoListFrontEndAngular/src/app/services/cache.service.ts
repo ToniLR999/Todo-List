@@ -1,8 +1,3 @@
-/**
- * Cache service for managing local storage caching with TTL support.
- * Provides methods for storing, retrieving, and managing cached data
- * with automatic expiration and cleanup functionality.
- */
 import { Injectable } from '@angular/core';
 
 export interface CacheItem<T> {

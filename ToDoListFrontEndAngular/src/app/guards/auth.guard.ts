@@ -1,8 +1,3 @@
-/**
- * Authentication guard for protecting routes that require user authentication.
- * Checks if the user is authenticated before allowing access to protected routes.
- * Redirects unauthenticated users to the login page.
- */
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';

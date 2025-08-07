@@ -10,5 +10,4 @@ export const TIMEZONES: string[] = [
   'Asia/Kolkata',
   'Australia/Sydney',
   'UTC'
-  // ... puedes añadir más
 ];

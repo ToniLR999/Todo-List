@@ -1,9 +1,3 @@
-// src/app/services/auth.service.ts
-/**
- * Authentication service for managing user authentication and authorization.
- * Handles login, logout, registration, password reset, and token management
- * with support for both JWT and cookie-based authentication methods.
- */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, throwError, map, of } from 'rxjs';
@@ -62,6 +56,7 @@ export class AuthService {
    * Logs out the current user and navigates to login page.
    */
   logout(): void {
+    localStorage.clear();
     this.isAuthenticatedSubject.next(false);
     this.router.navigate(['/login']);
   }
@@ -91,7 +86,7 @@ export class AuthService {
    * @returns Observable with registration response
    */
   register(username: string, email: string, password: string, timezone: string): Observable<any> {
-    console.log('🚀 Enviando datos de registro:', { username, email, password, timezone });
+    //console.log('🚀 Enviando datos de registro:', { username, email, password, timezone });
     return this.http.post(`${this.apiUrl}/users/register`, { 
       username, 
       email, 

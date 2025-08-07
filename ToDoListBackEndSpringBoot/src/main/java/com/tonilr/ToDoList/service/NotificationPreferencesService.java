@@ -30,17 +30,17 @@ public class NotificationPreferencesService {
      * @return Notification preferences DTO
      */
     public NotificationPreferencesDTO getPreferencesForUser(String username) {
-        log.info("Obteniendo preferencias para usuario: {}", username);
+        //log.info("Obteniendo preferencias para usuario: {}", username);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
-        log.info("Usuario encontrado con ID: {}", user.getId());
+        //log.info("Usuario encontrado con ID: {}", user.getId());
         
         NotificationPreferences preferences = repository.findByUser(user)
                 .orElseGet(() -> {
                     log.info("No se encontraron preferencias, creando por defecto para usuario: {}", username);
                     return createDefaultPreferences(user);
                 });
-        log.info("Preferencias encontradas/creadas con ID: {}", preferences.getId());
+        //log.info("Preferencias encontradas/creadas con ID: {}", preferences.getId());
         
         return convertToDTO(preferences);
     }
@@ -52,8 +52,8 @@ public class NotificationPreferencesService {
      * @return Updated notification preferences DTO
      */
     public NotificationPreferencesDTO savePreferences(NotificationPreferencesDTO dto, User user) {
-        log.info("Guardando preferencias para usuario: {}", user.getUsername());
-        log.info("DTO recibido: {}", dto);
+        //log.info("Guardando preferencias para usuario: {}", user.getUsername());
+        //log.info("DTO recibido: {}", dto);
         
         NotificationPreferences preferences = repository.findByUser(user)
                 .orElseGet(() -> {
@@ -61,7 +61,7 @@ public class NotificationPreferencesService {
                     return new NotificationPreferences();
                 });
         
-        log.info("Preferencias actuales: {}", preferences);
+        //log.info("Preferencias actuales: {}", preferences);
         
         // Actualizar campos básicos
         preferences.setUser(user);
@@ -71,7 +71,7 @@ public class NotificationPreferencesService {
         // Actualizar campos de globalReminders
         if (dto.getGlobalReminders() != null) {
             GlobalRemindersDTO global = dto.getGlobalReminders();
-            log.info("Actualizando globalReminders: {}", global);
+            //log.info("Actualizando globalReminders: {}", global);
             
             preferences.setDueDateReminder(global.isDueDateReminder());
             preferences.setDueDateReminderTime(global.getDueDateReminderTime());
@@ -88,7 +88,7 @@ public class NotificationPreferencesService {
         
         try {
             preferences = repository.save(preferences);
-            log.info("Preferencias guardadas exitosamente con ID: {}", preferences.getId());
+            //log.info("Preferencias guardadas exitosamente con ID: {}", preferences.getId());
         } catch (Exception e) {
             log.error("Error al guardar preferencias: {}", e.getMessage(), e);
             throw e;
@@ -103,7 +103,7 @@ public class NotificationPreferencesService {
      * @return Converted DTO
      */
     private NotificationPreferencesDTO convertToDTO(NotificationPreferences preferences) {
-        log.info("Convirtiendo preferencias a DTO: {}", preferences);
+        //log.info("Convirtiendo preferencias a DTO: {}", preferences);
         NotificationPreferencesDTO dto = new NotificationPreferencesDTO();
         dto.setEmail(preferences.getEmail());
         dto.setNotificationType(preferences.getNotificationType());
@@ -122,7 +122,7 @@ public class NotificationPreferencesService {
         global.setWeekendNotifications(preferences.isWeekendNotifications());
         
         dto.setGlobalReminders(global);
-        log.info("DTO convertido: {}", dto);
+        //log.info("DTO convertido: {}", dto);
         return dto;
     }
 
@@ -132,7 +132,7 @@ public class NotificationPreferencesService {
      * @return Created default preferences
      */
     private NotificationPreferences createDefaultPreferences(User user) {
-        log.info("Creando preferencias por defecto para usuario: {}", user.getUsername());
+        //log.info("Creando preferencias por defecto para usuario: {}", user.getUsername());
         NotificationPreferences preferences = new NotificationPreferences();
         preferences.setUser(user);
         preferences.setEmail(user.getEmail());
@@ -151,7 +151,7 @@ public class NotificationPreferencesService {
         
         try {
             preferences = repository.save(preferences);
-            log.info("Preferencias por defecto creadas con ID: {}", preferences.getId());
+            //log.info("Preferencias por defecto creadas con ID: {}", preferences.getId());
         } catch (Exception e) {
             log.error("Error al crear preferencias por defecto: {}", e.getMessage(), e);
             throw e;

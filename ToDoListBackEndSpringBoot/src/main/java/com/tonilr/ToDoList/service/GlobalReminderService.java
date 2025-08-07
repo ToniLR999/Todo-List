@@ -3,14 +3,11 @@ package com.tonilr.ToDoList.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import com.tonilr.ToDoList.model.NotificationPreferences;
 import com.tonilr.ToDoList.model.Task;
 import com.tonilr.ToDoList.repository.NotificationPreferencesRepository;
 import com.tonilr.ToDoList.repository.TaskRepository;
-
 import lombok.extern.slf4j.Slf4j;
-
 import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,10 +42,10 @@ public class GlobalReminderService {
      */
     @Scheduled(cron = "0 */1 * * * *")  // Cada minuto
     public void checkAndSendReminders() {
-        log.info("=== INICIANDO VERIFICACIÓN DE RECORDATORIOS ===");
+        //log.info("=== INICIANDO VERIFICACIÓN DE RECORDATORIOS ===");
         try {
             List<NotificationPreferences> preferences = notificationPreferencesRepository.findAll();
-            log.info("Número de preferencias encontradas: {}", preferences.size());
+            //log.info("Número de preferencias encontradas: {}", preferences.size());
             
             if (preferences.isEmpty()) {
                 log.warn("No se encontraron preferencias de notificación");
@@ -56,22 +53,22 @@ public class GlobalReminderService {
             }
 
             for (NotificationPreferences pref : preferences) {
-                log.info("Procesando usuario: {}", pref.getUser().getUsername());
-                log.info("Email configurado: {}", pref.getEmail());
-                log.info("Recordatorios activos: daily={}, weekly={}, dueDate={}", 
+                //log.info("Procesando usuario: {}", pref.getUser().getUsername());
+                //log.info("Email configurado: {}", pref.getEmail());
+                /*log.info("Recordatorios activos: daily={}, weekly={}, dueDate={}", 
                     pref.isDailySummary(), 
                     pref.isWeeklySummary(), 
-                    pref.isDueDateReminder());
+                    pref.isDueDateReminder());*/
 
                 if (pref.isDueDateReminder()) {
-                    log.info("Enviando recordatorios de vencimiento...");
+                    //log.info("Enviando recordatorios de vencimiento...");
                     sendDueDateReminders(pref);
                 }
                 if (pref.isDailySummary()) {
                     LocalTime horaActual = LocalTime.now().withSecond(0).withNano(0);
                     LocalTime horaConfigurada = LocalTime.parse(pref.getDailySummaryTime());
                     if (horaActual.equals(horaConfigurada)) {
-                        log.info("Enviando resumen diario...");
+                        //log.info("Enviando resumen diario...");
                         sendDailySummary(pref);
                     }
                 }
@@ -80,7 +77,7 @@ public class GlobalReminderService {
                     LocalTime horaConfigurada = LocalTime.parse(pref.getWeeklySummaryTime());
                     String diaActual = LocalDate.now().getDayOfWeek().name().toLowerCase();
                     if (horaActual.equals(horaConfigurada) && diaActual.equals(pref.getWeeklySummaryDay())) {
-                        log.info("Enviando resumen semanal...");
+                        //log.info("Enviando resumen semanal...");
                         sendWeeklySummary(pref);
                     }
                 }
@@ -88,7 +85,7 @@ public class GlobalReminderService {
         } catch (Exception e) {
             log.error("Error en checkAndSendReminders: ", e);
         }
-        log.info("=== FINALIZADA VERIFICACIÓN DE RECORDATORIOS ===");
+        //log.info("=== FINALIZADA VERIFICACIÓN DE RECORDATORIOS ===");
     }
 
     /**
@@ -99,7 +96,7 @@ public class GlobalReminderService {
         try {
             ZoneId userZone = ZoneId.of(preferences.getUser().getTimezone());
             LocalDateTime now = LocalDateTime.now(userZone);
-            log.info("Hora actual backend (zona usuario): {}", now);
+            //log.info("Hora actual backend (zona usuario): {}", now);
 
             // Duración configurada (ej: "1d", "1h")
             String durationStr = preferences.getDueDateReminderTime();
@@ -117,15 +114,15 @@ public class GlobalReminderService {
 
             LocalDateTime reminderStart = now.minus(reminderDuration);
 
-            log.warn("Parámetros enviados al repo:");
-            log.warn("Usuario: {}", preferences.getUser().getId());
-            log.warn("Start: {}", reminderStart);
-            log.warn("End: {}", now);
+            //log.warn("Parámetros enviados al repo:");
+            //log.warn("Usuario: {}", preferences.getUser().getId());
+            //log.warn("Start: {}", reminderStart);
+            //log.warn("End: {}", now);
 
-            log.warn("Buscando tareas próximas entre {} y {}", reminderStart, now);
+            //log.warn("Buscando tareas próximas entre {} y {}", reminderStart, now);
 
             List<Task> allUserTasks = taskRepository.findByAssignedToAndCompletedFalse(preferences.getUser());
-            log.warn("Tareas del usuario {} (no completadas): {}", preferences.getUser().getId(), allUserTasks.size());
+            //log.warn("Tareas del usuario {} (no completadas): {}", preferences.getUser().getId(), allUserTasks.size());
             for (Task t : allUserTasks) {
                 log.warn("Tarea BD - ID: {}, Título: {}, due_date: {}, assigned_to_id: {}", 
                     t.getId(), t.getTitle(), t.getDueDate(), 
@@ -138,7 +135,7 @@ public class GlobalReminderService {
             if (upcomingTasks.isEmpty()) {
                 log.warn("El repositorio NO ha devuelto ninguna tarea próxima. Revisa los parámetros enviados y las fechas en la BD.");
             } else {
-                log.warn("Tareas próximas encontradas: {}", upcomingTasks.size());
+                //log.warn("Tareas próximas encontradas: {}", upcomingTasks.size());
                 upcomingTasks.forEach(task ->
                     log.warn("Tarea encontrada - ID: {}, Fecha en BD: {}, Asignado a: {}", 
                         task.getId(), task.getDueDate(), task.getAssignedTo() != null ? task.getAssignedTo().getId() : null)
@@ -166,7 +163,7 @@ public class GlobalReminderService {
      */
     private void sendDailySummary(NotificationPreferences preferences) {
         try {
-            log.info("Enviando resumen diario a: {}", preferences.getEmail());
+            //log.info("Enviando resumen diario a: {}", preferences.getEmail());
             ZoneId userZone = ZoneId.of(preferences.getUser().getTimezone());
             LocalDate today = LocalDate.now(userZone);
             LocalDateTime startOfDay = today.atStartOfDay();
@@ -178,7 +175,7 @@ public class GlobalReminderService {
                 endOfDay
             );
 
-            log.info("Tareas encontradas para el resumen diario: {}", tasks.size());
+            //log.info("Tareas encontradas para el resumen diario: {}", tasks.size());
 
             if (!tasks.isEmpty()) {
                 emailService.sendTaskReminderEmail(
@@ -199,7 +196,7 @@ public class GlobalReminderService {
      */
     private void sendWeeklySummary(NotificationPreferences preferences) {
         try {
-            log.info("Enviando resumen semanal a: {}", preferences.getEmail());
+            //log.info("Enviando resumen semanal a: {}", preferences.getEmail());
             ZoneId userZone = ZoneId.of(preferences.getUser().getTimezone());
             LocalDate today = LocalDate.now(userZone);
             LocalDate startOfWeek = today.with(DayOfWeek.MONDAY);
@@ -214,7 +211,7 @@ public class GlobalReminderService {
                 endOfWeekDateTime
             );
 
-            log.info("Tareas encontradas para el resumen semanal: {}", tasks.size());
+            //log.info("Tareas encontradas para el resumen semanal: {}", tasks.size());
 
             if (!tasks.isEmpty()) {
                 emailService.sendTaskReminderEmail(

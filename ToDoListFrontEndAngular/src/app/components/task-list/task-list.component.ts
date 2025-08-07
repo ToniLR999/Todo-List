@@ -111,7 +111,7 @@ export class TaskListComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.currentListId = params['id'] ? Number(params['id']) : null;
-      console.log('🔄 TaskList: currentListId:', this.currentListId);
+      //console.log('🔄 TaskList: currentListId:', this.currentListId);
       
       // Aplicar filtro por defecto de "pendientes"
       this.statusFilter = 'pending';
@@ -335,8 +335,8 @@ export class TaskListComponent implements OnInit {
 
   applyFilters(): void {
     this.isLoading = true;
-    console.log('🔄 FRONTEND: Estado del filtro:', this.statusFilter);
-    console.log('🔄 FRONTEND: Lista actual:', this.currentListId);
+    //console.log('🔄 FRONTEND: Estado del filtro:', this.statusFilter);
+    //console.log('🔄 FRONTEND: Lista actual:', this.currentListId);
 
     const filters: TaskFilters = {
       search: this.searchTerm,
@@ -347,11 +347,11 @@ export class TaskListComponent implements OnInit {
       dateFilter: this.dateFilter,
       tasklistId: this.currentListId || undefined
     };
-    console.log('🔄 FRONTEND: Filtros enviados:', filters);
+    //console.log('🔄 FRONTEND: Filtros enviados:', filters);
 
     this.taskService.getFilteredTasks(filters).subscribe({
       next: (tasks) => {
-        console.log('🔄 FRONTEND: Tareas recibidas:', tasks);
+        //console.log('🔄 FRONTEND: Tareas recibidas:', tasks);
         this.tasks = tasks;
         this.errorMessage = '';
         this.checkTasksStatus(tasks);

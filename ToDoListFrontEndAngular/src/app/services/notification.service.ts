@@ -1,8 +1,3 @@
-/**
- * Notification service for managing user notification preferences.
- * Provides methods for retrieving and updating notification settings
- * with integration to the Spring Boot backend API.
- */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';

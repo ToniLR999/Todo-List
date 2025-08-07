@@ -5,17 +5,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import com.tonilr.ToDoList.dto.TaskReminderDTO;
 import com.tonilr.ToDoList.model.Task;
 import com.tonilr.ToDoList.model.TaskReminder;
 import com.tonilr.ToDoList.repository.TaskReminderRepository;
 import com.tonilr.ToDoList.repository.TaskRepository;
-
 import lombok.extern.slf4j.Slf4j;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,6 +1,5 @@
 package com.tonilr.ToDoList.model;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -41,9 +40,7 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     @Column(name = "timezone")
-    private String timezone; // Valor por defecto
-
-    // ... otros campos como fecha de registro, estado, etc.
+    private String timezone;
 
     public Long getId() {
         return id;

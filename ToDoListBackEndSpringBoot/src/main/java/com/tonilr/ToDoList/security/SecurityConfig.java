@@ -14,11 +14,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Security configuration class for the application.
- * Configures Spring Security with JWT authentication, CORS support,
- * CSRF protection, and authorization rules for different endpoints.
- */
 @Configuration
 @EnableWebSecurity
 @Slf4j

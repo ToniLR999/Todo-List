@@ -10,6 +10,12 @@ export interface TaskList {
   name: string;
   /** Description of the task list */
   description: string;
+  /** ID of the user who created the task list */
+  userId?: number;
+  /** Username of the task list creator */
+  username?: string;  
+  /** ID of the task list owner (can be different from creator) */
+  ownerId?: number;
   /** Username of the task list owner */
   ownerUsername?: string;
   /** Array of tasks belonging to this list */

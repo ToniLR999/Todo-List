@@ -3,13 +3,17 @@
  * Provides basic CRUD operations for todo items with local state management.
  * This is a simple implementation used for demonstration purposes.
  */
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Todo } from 'src/app/models/Todo';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-todos',
   templateUrl: './todos.component.html',
-  styleUrls: ['./todos.component.css']
+  styleUrls: ['./todos.component.css'],
+  standalone: true,
+  imports: [CommonModule, FormsModule]  
 })
 export class TodosComponent implements OnInit {
 

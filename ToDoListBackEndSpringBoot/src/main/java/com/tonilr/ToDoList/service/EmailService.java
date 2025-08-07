@@ -4,20 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
-import com.tonilr.ToDoList.model.NotificationPreferences;
 import com.tonilr.ToDoList.model.Task;
 import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.repository.TaskRepository;
-
 import jakarta.mail.internet.MimeMessage;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.List;
-
 import java.time.ZoneId;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -103,7 +97,7 @@ public class EmailService {
             message.setHeader("Importance", "High");
             
             mailSender.send(message);
-            log.info("Email de restablecimiento enviado a: {}", to);
+            //log.info("Email de restablecimiento enviado a: {}", to);
         } catch (Exception e) {
             log.error("Error enviando email de restablecimiento: {}", e.getMessage());
             throw new RuntimeException("Error enviando email de restablecimiento");
@@ -132,9 +126,9 @@ public class EmailService {
      */
     public void sendTaskReminderEmail(String to, String subject, List<Task> tasks, User user) {
         try {
-            log.info("Preparando email de recordatorio para: {}", to);
-            log.info("Número de tareas a enviar: {}", tasks.size());
-            log.info("Zona horaria del usuario: {}", user.getTimezone());
+            //log.info("Preparando email de recordatorio para: {}", to);
+            //log.info("Número de tareas a enviar: {}", tasks.size());
+            //log.info("Zona horaria del usuario: {}", user.getTimezone());
             
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -146,9 +140,9 @@ public class EmailService {
             String content = buildEmailContent(tasks, subject, user);
             helper.setText(content, true);
             
-            log.info("Enviando email a: {}", to);
+            //log.info("Enviando email a: {}", to);
             mailSender.send(message);
-            log.info("Email enviado exitosamente a: {}", to);
+            //log.info("Email enviado exitosamente a: {}", to);
         } catch (Exception e) {
             log.error("Error al enviar email: ", e);
             throw new RuntimeException("Error al enviar email", e);

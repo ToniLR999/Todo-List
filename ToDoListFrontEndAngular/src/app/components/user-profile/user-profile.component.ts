@@ -43,7 +43,7 @@ export class UserProfileComponent implements OnInit {
   loadProfile(): void {
     this.authService.getCurrentUser().subscribe({
       next: (user) => {
-        console.log('Usuario recibido:', user);
+        //console.log('Usuario recibido:', user);
         this.userProfile = user;
         this.profileForm.patchValue({
           username: user.username,

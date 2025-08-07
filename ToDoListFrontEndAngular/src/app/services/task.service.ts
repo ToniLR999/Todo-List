@@ -1,8 +1,3 @@
-/**
- * Task service for managing task operations with caching support.
- * Provides CRUD operations for tasks, filtering, searching, and cache management
- * with integration to the Spring Boot backend API.
- */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
@@ -200,14 +195,14 @@ export class TaskService {
   getFilteredTasks(filters: TaskFilters): Observable<Task[]> {
     let params = new HttpParams();
     
-    console.log('🔄 FRONTEND: Filtros recibidos:', filters);
+    //console.log('🔄 FRONTEND: Filtros recibidos:', filters);
     
     if (filters.search) {
       params = params.set('search', filters.search);
     }
     if (filters.status) {
       params = params.set('completed', filters.status);
-      console.log('🔄 FRONTEND: Enviando completed:', filters.status);
+      //console.log('🔄 FRONTEND: Enviando completed:', filters.status);
     }
     if (filters.priority && filters.priority !== 'all') {
       params = params.set('priority', filters.priority);
@@ -219,7 +214,7 @@ export class TaskService {
       params = params.set('taskListId', filters.tasklistId.toString());
     }
 
-    console.log('🔄 FRONTEND: Parámetros finales:', params.toString());
+    //console.log('🔄 FRONTEND: Parámetros finales:', params.toString());
 
     return this.http.get<Task[]>(`${this.apiUrl}/filter`, { 
       params, 

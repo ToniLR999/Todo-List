@@ -1,6 +1,5 @@
 package com.tonilr.ToDoList.model;
 
-
 import jakarta.persistence.*;
 
 @Entity

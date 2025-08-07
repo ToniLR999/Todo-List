@@ -1,8 +1,3 @@
-/**
- * Task list service for managing task list operations with caching support.
- * Provides CRUD operations for task lists and cache management
- * with integration to the Spring Boot backend API.
- */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject, of } from 'rxjs';

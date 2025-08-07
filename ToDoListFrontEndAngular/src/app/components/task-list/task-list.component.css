@@ -330,7 +330,6 @@
   font-weight: bold;
 }
 
-/* Estilo para el botón activo al pasar el mouse */
 .btn-sort.active:hover {
   background-color: #0056b3;
   border-color: #004494;

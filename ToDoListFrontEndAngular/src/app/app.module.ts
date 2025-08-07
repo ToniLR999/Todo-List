@@ -15,9 +15,7 @@ import { NotificationPreferencesComponent } from './components/notification-pref
 import { authInterceptor } from './interceptors/auth.interceptor';
 
 @NgModule({
-  declarations: [
-    // NavComponent <-- quítalo de aquí
-  ],
+  declarations: [],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

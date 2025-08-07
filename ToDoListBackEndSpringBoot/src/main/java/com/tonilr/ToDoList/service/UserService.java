@@ -6,13 +6,11 @@ import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.repository.UserRepository;
 import com.tonilr.ToDoList.repository.RoleRepository;
 import com.tonilr.ToDoList.dto.UserCacheDTO;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import java.time.Duration;
 
