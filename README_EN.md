@@ -208,9 +208,9 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## 👨‍💻 Author
 
-**Antonio López Rodríguez**
-- GitHub: [@tonilr](https://github.com/tonilr)
-- LinkedIn: [Antonio López](https://www.linkedin.com/in/antonio-lopez-rodriguez/)
+**Toni Lupiañez Roman**
+- GitHub: [@ToniLRo](https://github.com/ToniLRo)
+- LinkedIn: [Toni Lupiañez Roman](https://www.linkedin.com/in/toni-lupia%C3%B1ez-roman-4a8024202/)
 
 ## 🙏 Acknowledgments
 
