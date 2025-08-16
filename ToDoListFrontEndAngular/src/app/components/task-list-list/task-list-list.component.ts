@@ -42,6 +42,15 @@ export class TaskListListComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    console.log('🚀 TaskListListComponent.ngOnInit()');
+    
+    // Limpiar caché temporalmente para debug
+    this.taskListService.clearCache();
+    
+    // Verificar si hay token
+    const token = localStorage.getItem('token');
+    console.log('🔑 Token presente:', !!token);
+    
     this.loadTaskLists();
   }
 
@@ -50,13 +59,16 @@ export class TaskListListComponent implements OnInit {
    * Subscribes to the task list service to fetch and display task lists.
    */
   loadTaskLists() {
+    console.log('📥 TaskListListComponent.loadTaskLists()');
+    
     this.taskListService.getTaskLists().subscribe({
       next: (taskLists) => {
-        //console.log(' task-list-list: Obteniendo listas');
+        console.log('✅ Listas recibidas en componente:', taskLists);
+        console.log('📊 Número de listas:', taskLists.length);
         this.taskLists = taskLists;
       },
       error: (error) => {
-        console.error('Error al obtener listas de tareas:', error);
+        console.error('❌ Error en componente al obtener listas:', error);
         this.toastr.error('Error al cargar las listas');
       }
     });

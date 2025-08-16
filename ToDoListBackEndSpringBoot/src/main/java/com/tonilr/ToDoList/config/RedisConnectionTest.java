@@ -1,11 +1,13 @@
 package com.tonilr.ToDoList.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 
 @Component
+@ConditionalOnProperty(name = "spring.data.redis.enabled", havingValue = "true", matchIfMissing = true)
 public class RedisConnectionTest {
 
     @Autowired

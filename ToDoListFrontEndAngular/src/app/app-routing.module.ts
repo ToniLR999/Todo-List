@@ -4,18 +4,27 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { TaskListComponent } from './components/task-list/task-list.component';
 import { AuthGuard } from './guards/auth.guard';
+import { MaintenanceGuard } from './guards/maintenance.guard';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { TaskDetailComponent } from './components/task-detail/task-detail.component';
 import { NotificationPreferencesComponent } from './components/notification-preferences/notification-preferences.component';
 import { TaskListListComponent } from './components/task-list-list/task-list-list.component';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { MaintenanceInfoComponent } from './components/maintenance-info/maintenance-info.component';
 
 /**
  * Application routes configuration with authentication guards and animations.
  * Protected routes require authentication via AuthGuard.
+ * Maintenance routes check if application is active via MaintenanceGuard.
  */
 export const routes: Routes = [
+  { 
+    path: 'maintenance', 
+    component: MaintenanceInfoComponent,
+    data: { animation: 'maintenance' }
+  },
   { 
     path: 'login', 
     component: LoginComponent,
@@ -29,23 +38,23 @@ export const routes: Routes = [
   { 
     path: 'tasks', 
     component: TaskListComponent,
-    canActivate: [AuthGuard],
+    canActivate: [MaintenanceGuard, AuthGuard],
     data: { animation: 'tasks' }
   },
   { 
     path: 'tasks/list/:id',
     component: TaskListComponent,
-    canActivate: [AuthGuard]
+    canActivate: [MaintenanceGuard, AuthGuard]
   },
   { 
     path: 'tasks/:id',
     component: TaskDetailComponent,
-    canActivate: [AuthGuard]
+    canActivate: [MaintenanceGuard, AuthGuard]
   },
   { 
     path: 'profile', 
     component: UserProfileComponent,
-    canActivate: [AuthGuard],
+    canActivate: [MaintenanceGuard, AuthGuard],
     data: { animation: 'profile' }
   },
   { 
@@ -65,6 +74,11 @@ export const routes: Routes = [
     children: [
       { path: 'manage', component: TaskListListComponent }
     ]
+  },
+  { 
+    path: 'admin',
+    component: AdminDashboardComponent,
+    canActivate: [MaintenanceGuard, AuthGuard]
   },
   { 
     path: '', 

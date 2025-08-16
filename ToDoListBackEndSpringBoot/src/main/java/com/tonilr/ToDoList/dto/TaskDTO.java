@@ -37,5 +37,9 @@ public class TaskDTO {
     private String taskListName;
 
     private String assignedTo;
+
+    private Long assignedToId;
+    
+    private Long userId;
     
 }

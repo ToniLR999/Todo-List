@@ -37,7 +37,7 @@ public class UserService {
     @Autowired
     private EmailService emailService;
 
-    @Autowired
+    @Autowired(required = false)
     private RedisTemplate<String, Object> redisTemplate;
 
     /**
@@ -85,18 +85,22 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public User findByUsername(String username) {
-        // Primero intentar obtener del caché
-        UserCacheDTO cachedUser = getUserFromCache(username);
-        if (cachedUser != null) {
-            return cachedUser.toUser();
+        // Primero intentar obtener del caché solo si Redis está disponible
+        if (redisTemplate != null) {
+            UserCacheDTO cachedUser = getUserFromCache(username);
+            if (cachedUser != null) {
+                return cachedUser.toUser();
+            }
         }
         
-        // Si no está en caché, obtener de la base de datos
+        // Si no está en caché o Redis no está disponible, obtener de la base de datos
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
-        // Guardar en caché
-        saveUserToCache(user);
+        // Guardar en caché solo si Redis está disponible
+        if (redisTemplate != null) {
+            saveUserToCache(user);
+        }
         
         return user;
     }
@@ -106,6 +110,8 @@ public class UserService {
      */
     private UserCacheDTO getUserFromCache(String username) {
         try {
+            if (redisTemplate == null) return null;
+            
             String cacheKey = "users::username_" + username;
             Object cached = redisTemplate.opsForValue().get(cacheKey);
             if (cached instanceof UserCacheDTO) {
@@ -124,6 +130,8 @@ public class UserService {
      */
     private void saveUserToCache(User user) {
         try {
+            if (redisTemplate == null) return;
+            
             UserCacheDTO userCacheDTO = new UserCacheDTO(user);
             String cacheKey = "users::username_" + user.getUsername();
             redisTemplate.opsForValue().set(cacheKey, userCacheDTO, Duration.ofMinutes(30));

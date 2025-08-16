@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Collections;
 
 /**
  * Service class for managing task list operations.
@@ -23,6 +26,8 @@ import org.springframework.cache.annotation.CacheEvict;
  */
 @Service
 public class TaskListService {
+    private static final Logger log = LoggerFactory.getLogger(TaskListService.class);
+
     @Autowired
     private TaskListRepository taskListRepository;
     
@@ -73,12 +78,50 @@ public class TaskListService {
      */
     @Cacheable(value = "taskLists", key = "'user_' + #username")
     public List<TaskListDTO> getUserTaskLists(String username) {
-        // System.out.println("OBTENIENDO LISTAS DE TAREAS DESDE BASE DE DATOS para usuario: " + username);
-        User owner = userService.findByUsername(username);
-        return taskListRepository.findByOwner(owner)
-            .stream()
-            .map(dtoMapper::toTaskListDTO)
-            .collect(Collectors.toList());
+        //log.info("🔍 ===== INICIO TaskListService.getUserTaskLists =====");
+        //log.info(" Username recibido: {}", username);
+        
+        try {
+            //log.info("🔍 Llamando a userService.findByUsername('{}')", username);
+            User user = userService.findByUsername(username);
+            //log.info(" Usuario encontrado: {}", user != null ? "SÍ" : "NO");
+            
+            if (user == null) {
+                //log.warn("⚠️ Usuario no encontrado para username: {}", username);
+                return Collections.emptyList();
+            }
+            
+            //log.info(" Usuario ID: {}, Username: {}", user.getId(), user.getUsername());
+            
+            List<TaskList> taskLists = taskListRepository.findByOwnerIdWithTasks(user.getId());
+            
+            //log.info("✅ Listas encontradas en BD: {}", taskLists.size());
+            
+            if (!taskLists.isEmpty()) {
+                log.info("📋 Primera lista en BD: ID={}, Name={}, Owner ID={}", 
+                    taskLists.get(0).getId(), 
+                    taskLists.get(0).getName(),
+                    taskLists.get(0).getOwner() != null ? taskLists.get(0).getOwner().getId() : "NULL");
+            }
+            
+            // Convertir a DTOs
+            //log.info("🔍 Convirtiendo {} listas a DTOs", taskLists.size());
+            List<TaskListDTO> dtos = taskLists.stream()
+                .map(dtoMapper::toTaskListDTO)
+                .collect(Collectors.toList());
+            
+            //log.info("✅ DTOs convertidos: {}", dtos.size());
+            //log.info(" ===== FIN TaskListService.getUserTaskLists =====");
+            
+            return dtos;
+            
+        } catch (Exception e) {
+            //log.error("❌ ===== ERROR EN TaskListService.getUserTaskLists =====");
+            //log.error("❌ Username: {}", username);
+            //log.error("❌ Error completo:", e);
+            //log.error("❌ Stack trace:", e);
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -133,7 +176,6 @@ public class TaskListService {
      */
     @Cacheable(value = "taskLists", key = "'user_' + #username + '_search_' + #name")
     public List<TaskListDTO> searchUserTaskListsByName(String username, String name) {
-        // System.out.println("BUSCANDO LISTAS POR NOMBRE DESDE BASE DE DATOS para usuario: " + username + ", nombre: " + name);
         User owner = userService.findByUsername(username);
         return taskListRepository.findByOwnerAndNameContainingIgnoreCase(owner, name)
             .stream()

@@ -18,32 +18,28 @@ export class TaskListService {
   constructor(
     private http: HttpClient,
     private cacheService: CacheService
-  ) {}
+  ) {
+  }
 
   /**
    * Retrieves all task lists with caching support.
    * @returns Observable of TaskList array
    */
   getTaskLists(): Observable<TaskList[]> {
-    // Intentar obtener del caché primero
     const cachedData = this.cacheService.get<TaskList[]>(this.CACHE_KEY);
-    // console.log('🔍 Buscando en caché:', this.CACHE_KEY, 'Resultado:', cachedData);
     
     if (cachedData) {
-      // console.log('✅ Usando caché para listas de tareas');
       return of(cachedData);
     }
 
-    // console.log('🌐 Obteniendo listas desde servidor');
-    // Si no está en caché, obtener del servidor
     return this.http.get<TaskList[]>(`${this.apiUrl}`).pipe(
       tap(data => {
-        // console.log(' Guardando en caché:', data.length, 'listas');
-        // Guardar en caché
         this.cacheService.set(this.CACHE_KEY, data, this.CACHE_TTL);
       }),
       catchError(error => {
-        console.error('Error al obtener listas de tareas:', error);
+        console.error('❌ Error al obtener listas de tareas:', error);
+        console.error('❌ Status:', error.status);
+        console.error('❌ Message:', error.message);
         return of([]);
       })
     );

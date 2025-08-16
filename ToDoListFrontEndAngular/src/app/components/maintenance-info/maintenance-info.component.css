@@ -1,0 +1,254 @@
+.maintenance-container {
+  min-height: 100vh;
+  background: #f5f5f5; /* Fondo blanco puro */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333333; /* Texto oscuro para contraste */
+}
+
+.maintenance-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.maintenance-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+  color: #666666; /* Icono gris oscuro */
+}
+
+.maintenance-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  font-weight: 300;
+  color: #333333; /* Título principal oscuro */
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #666666; /* Subtítulo gris oscuro */
+  margin: 0;
+}
+
+.maintenance-content {
+  max-width: 800px;
+  width: 100%;
+}
+
+.status-card {
+  background: #FFFFFF; /* Tarjeta blanca */
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 20px;
+  border: 1px solid #E0E0E0; /* Borde gris claro */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); /* Sombra sutil */
+}
+
+.status-card.status-active {
+  border-left: 5px solid #4CAF50; /* Borde izquierdo verde */
+}
+
+.status-card.status-maintenance {
+  border-left: 5px solid #FF9800; /* Borde izquierdo naranja */
+}
+
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.status-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: #333333; /* Título de tarjeta oscuro */
+}
+
+.status-badge {
+  background: #E8F5E8; /* Fondo verde claro */
+  color: #2E7D32; /* Texto verde oscuro */
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-badge.status-maintenance {
+  background: #FFF3E0; /* Fondo naranja claro */
+  color: #E65100; /* Texto naranja oscuro */
+}
+
+.status-message {
+  margin-bottom: 25px;
+}
+
+.status-message p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0;
+  color: #666666; /* Mensaje gris oscuro */
+}
+
+.schedule-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.info-item {
+  background: #F8F9FA; /* Fondo gris muy claro */
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #E9ECEF; /* Borde gris claro */
+}
+
+.info-item .label {
+  display: block;
+  font-size: 0.9rem;
+  color: #6C757D; /* Etiqueta gris */
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-item .value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333333; /* Valor oscuro */
+}
+
+.info-card {
+  background: #FFFFFF; /* Tarjeta blanca */
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 20px;
+  border: 1px solid #E0E0E0; /* Borde gris claro */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); /* Sombra sutil */
+}
+
+.info-card h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #333333; /* Título oscuro */
+}
+
+.recruiter-info {
+  margin-top: 20px;
+}
+
+.recruiter-info p {
+  margin: 10px 0;
+  line-height: 1.6;
+  color: #666666; /* Texto gris oscuro */
+}
+
+.action-card {
+  background: #FFFFFF; /* Tarjeta blanca */
+  border-radius: 20px;
+  padding: 25px;
+  text-align: center;
+  border: 1px solid #E0E0E0; /* Borde gris claro */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); /* Sombra sutil */
+}
+
+.btn {
+  background: #F8F9FA; /* Fondo gris claro */
+  color: #333333; /* Texto oscuro */
+  border: 1px solid #DEE2E6; /* Borde gris */
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn:hover {
+  background: #E9ECEF; /* Fondo gris más oscuro al hover */
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: #FFFFFF; /* Texto blanco para botón verde */
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #45a049, #4CAF50);
+}
+
+.note {
+  margin: 15px 0 0 0;
+  font-size: 0.9rem;
+  color: #6C757D; /* Nota gris */
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid #E9ECEF; /* Borde gris claro */
+  border-top: 3px solid #4CAF50; /* Borde superior verde */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  color: #DC3545; /* Icono de error rojo */
+}
+
+.error h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: #333333; /* Título de error oscuro */
+}
+
+.error p {
+  margin: 0 0 20px 0;
+  color: #666666; /* Texto de error gris oscuro */
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .maintenance-header h1 {
+    font-size: 2rem;
+  }
+  
+  .schedule-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .status-card, .info-card, .action-card {
+    padding: 20px;
+  }
+}

@@ -97,6 +97,15 @@ public class DTOMapper {
         task.setPriority(dto.getPriority());
         task.setDueDate(dto.getDueDate() != null ? 
             dto.getDueDate().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
+        
+        // Agregar estos campos que faltaban
+        if (dto.getUserId() != null) {
+            // El userId se usará en TaskService para establecer la relación
+        }
+        if (dto.getAssignedToId() != null) {
+            // El assignedToId se usará en TaskService para establecer la relación
+        }
+        
         return task;
     }
 

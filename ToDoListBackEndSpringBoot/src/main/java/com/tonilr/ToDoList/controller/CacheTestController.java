@@ -3,6 +3,7 @@ package com.tonilr.ToDoList.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,7 @@ public class CacheTestController {
 
     private static final Logger logger = LoggerFactory.getLogger(CacheTestController.class);
 
-    @Autowired
+    @Autowired(required = false)
     private RedisTemplate<String, String> redisTemplate;
 
     /**
@@ -31,6 +32,11 @@ public class CacheTestController {
     public ResponseEntity<?> setValue(
             @RequestParam String key, 
             @RequestParam String value) {
+        if (redisTemplate == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("error", "Redis not available"));
+        }
+        
         try {
             logger.info("Attempting to save in Redis - key: {}, value: {}", key, value);
             redisTemplate.opsForValue().set(key, value);
@@ -57,6 +63,11 @@ public class CacheTestController {
      */
     @GetMapping("/get/{key}")
     public ResponseEntity<?> getValue(@PathVariable String key) {
+        if (redisTemplate == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("error", "Redis not available"));
+        }
+        
         try {
             String value = redisTemplate.opsForValue().get(key);
             if (value == null) {
@@ -84,6 +95,11 @@ public class CacheTestController {
             @RequestParam String key, 
             @RequestParam String value, 
             @RequestParam long ttlSeconds) {
+        if (redisTemplate == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("error", "Redis not available"));
+        }
+        
         try {
             redisTemplate.opsForValue().set(key, value, ttlSeconds, TimeUnit.SECONDS);
             return ResponseEntity.ok()
@@ -107,6 +123,11 @@ public class CacheTestController {
      */
     @DeleteMapping("/delete/{key}")
     public ResponseEntity<?> deleteValue(@PathVariable String key) {
+        if (redisTemplate == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("error", "Redis not available"));
+        }
+        
         try {
             Boolean deleted = redisTemplate.delete(key);
             return ResponseEntity.ok()
@@ -131,6 +152,11 @@ public class CacheTestController {
     public ResponseEntity<?> setValueGet(
             @RequestParam String key, 
             @RequestParam String value) {
+        if (redisTemplate == null) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("error", "Redis not available"));
+        }
+        
         try {
             logger.info("Attempting to save in Redis (GET) - key: {}, value: {}", key, value);
             redisTemplate.opsForValue().set(key, value);

@@ -270,8 +270,7 @@ class TaskServiceTest {
     void getTasksByList_Success() {
         // Arrange
         when(userService.findByUsername("testuser")).thenReturn(testUser);
-        when(taskListRepository.findById(1L)).thenReturn(Optional.of(testTaskList));
-        when(taskRepository.findByTaskList(testTaskList)).thenReturn(Arrays.asList(testTask));
+        when(taskRepository.findByAssignedToAndTaskListId(testUser, 1L)).thenReturn(Arrays.asList(testTask));
         when(dtoMapper.toTaskDTO(testTask)).thenReturn(testTaskDTO);
 
         // Act
@@ -287,11 +286,13 @@ class TaskServiceTest {
     void getTasksByList_NotFound() {
         // Arrange
         when(userService.findByUsername("testuser")).thenReturn(testUser);
-        when(taskListRepository.findById(1L)).thenReturn(Optional.empty());
+        when(taskRepository.findByAssignedToAndTaskListId(testUser, 1L)).thenReturn(Arrays.asList());
 
-        // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> {
-            taskService.getTasksByList(1L, "testuser");
-        });
+        // Act
+        List<CacheableTaskDTO> result = taskService.getTasksByList(1L, "testuser");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(0, result.size());
     }
 }

@@ -4,18 +4,22 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ToastrModule } from 'ngx-toastr';
+import { CommonModule } from '@angular/common';
 
-import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './components/login/login.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { NavComponent } from './components/nav/nav.component';
 import { NotificationPreferencesComponent } from './components/notification-preferences/notification-preferences.component';
+import { TaskListListComponent } from './components/task-list-list/task-list-list.component';
 import { authInterceptor } from './interceptors/auth.interceptor';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    
+  ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -23,12 +27,14 @@ import { authInterceptor } from './interceptors/auth.interceptor';
     HttpClientModule,
     AppRoutingModule,
     ToastrModule.forRoot(),
-    AppComponent,
     LoginComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
     NotificationPreferencesComponent,
-    NavComponent // <-- añádelo aquí
+    NavComponent,
+    TaskListListComponent,
+    AdminDashboardComponent,
+    CommonModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useValue: authInterceptor, multi: true }

@@ -1,0 +1,158 @@
+<div class="admin-dashboard" *ngIf="isAdmin">
+    <div class="dashboard-header">
+      <h1>🔧 Panel de Administración</h1>
+      <div class="last-update">
+        Última actualización: {{ getLastUpdate() }}
+      </div>
+      <div class="optimization-status" *ngIf="!isLoading">
+        <span class="status-indicator" [class]="isHighLoad ? 'high-load' : 'normal-load'">
+          {{ isHighLoad ? '⚠️ Alta Carga' : '✅ Carga Normal' }}
+        </span>
+        <span class="cache-info">
+          📦 Caché: {{ metricsCache?.size || 0 }} entradas
+        </span>
+      </div>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div class="loading-indicator" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando métricas del sistema...</p>
+    </div>
+
+    <!-- Estado de la Aplicación -->
+    <div class="metric-card" *ngIf="!isLoading">
+      <h3>📱 Estado de la Aplicación</h3>
+      <div class="metric-grid">
+        <div class="metric-item">
+          <span class="label">Estado:</span>
+          <span class="value" [class]="metrics?.app?.status === 'UP' ? 'status-up' : 'status-down'">
+            {{ metrics?.app?.status || 'N/A' }}
+          </span>
+        </div>
+        <div class="metric-item">
+          <span class="label">Uptime:</span>
+          <span class="value">{{ formatUptime(metrics?.app?.uptime || 0) }}</span>
+        </div>
+        <div class="metric-item">
+          <span class="label">Horario:</span>
+          <span class="value">{{ metrics?.app?.schedule || 'N/A' }}</span>
+        </div>
+        <div class="metric-item">
+          <span class="label">Versión:</span>
+          <span class="value">{{ metrics?.app?.version || 'N/A' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Métricas de Memoria -->
+    <div class="metric-card" *ngIf="!isLoading">
+      <h3>💾 Memoria del Sistema</h3>
+      <div class="metric-grid">
+        <div class="metric-item">
+          <span class="label">Usada:</span>
+          <span class="value">{{ metrics?.memory?.used || 0 }} MB</span>
+        </div>
+        <div class="metric-item">
+          <span class="label">Máxima:</span>
+          <span class="value">{{ metrics?.memory?.max || 0 }} MB</span>
+        </div>
+        <div class="metric-item">
+          <span class="label">Porcentaje:</span>
+          <span class="value" [class]="getMemoryClass(metrics?.memory?.percentage || 0)">
+            {{ metrics?.memory?.percentage?.toFixed(1) || '0.0' }}%
+          </span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="metrics?.memory?.percentage || 0"></div>
+      </div>
+    </div>
+
+    <!-- Métricas de CPU -->
+    <div class="metric-card" *ngIf="!isLoading">
+      <h3>⚡ CPU</h3>
+      <div class="metric-grid">
+        <div class="metric-item">
+          <span class="label">Uso:</span>
+          <span class="value" [class]="getCpuClass(metrics?.cpu?.usage || 0)">
+            {{ (metrics?.cpu?.usage || 0) * 100 }}%
+          </span>
+        </div>
+        <div class="metric-item">
+          <span class="label">Carga:</span>
+          <span class="value">{{ metrics?.cpu?.load?.toFixed(2) || '0.00' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado de Base de Datos -->
+    <div class="metric-card" *ngIf="!isLoading">
+      <h3>🗄️ Base de Datos</h3>
+      <div class="metric-grid">
+        <div class="metric-item">
+          <span class="label">Estado:</span>
+          <span class="value" [class]="getDbClass(metrics?.database?.status || '')">
+            {{ metrics?.database?.status || 'N/A' }}
+          </span>
+        </div>
+        <div class="metric-item">
+          <span class="label">Conexiones Activas:</span>
+          <span class="value">{{ metrics?.database?.connections || '0' }}</span>
+        </div>
+        <div class="metric-item">
+          <span class="label">Conexiones Máximas:</span>
+          <span class="value">{{ metrics?.database?.maxConnections || '0' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado de Redis -->
+    <div class="metric-card" *ngIf="!isLoading">
+      <h3>🔴 Redis</h3>
+      <div class="metric-grid">
+        <div class="metric-item">
+          <span class="label">Estado:</span>
+          <span class="value" [class]="getRedisClass(metrics?.redis?.status || '')">
+            {{ metrics?.redis?.status || 'N/A' }}
+          </span>
+        </div>
+        <div class="metric-item">
+          <span class="label">Operaciones:</span>
+          <span class="value">{{ metrics?.redis?.operations || '0' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones de Administración -->
+    <div class="metric-card" *ngIf="!isLoading">
+      <h3>⚙️ Acciones</h3>
+      <div class="action-buttons">
+        <button class="btn btn-primary" (click)="refreshMetrics()" [disabled]="isLoading">
+          🔄 Actualizar Métricas
+        </button>
+        <button class="btn btn-warning" (click)="clearCache()" [disabled]="isLoading">
+          🗑️ Limpiar Caché
+        </button>
+        <button class="btn btn-info" (click)="exportMetrics()" [disabled]="isLoading">
+          📊 Exportar Reporte
+        </button>
+        <button class="btn btn-secondary" (click)="showDiagnosticAlert()" [disabled]="isLoading">
+          🔍 Diagnóstico
+        </button>
+        <button class="btn btn-success" (click)="testEndpoints()" [disabled]="isLoading">
+          🧪 Probar Endpoints
+        </button>
+        <button class="btn btn-dark" (click)="showPerformanceStats()" [disabled]="isLoading">
+          🚀 Rendimiento
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="access-denied" *ngIf="!isAdmin">
+    <h2> Acceso Denegado</h2>
+    <p>No tienes permisos para acceder a esta sección.</p>
+    <p>Para acceder, usa: <code>/admin?token=admin123</code></p>
+    <button class="btn btn-primary" (click)="goToLogin()">Ir al Login</button>
+  </div>

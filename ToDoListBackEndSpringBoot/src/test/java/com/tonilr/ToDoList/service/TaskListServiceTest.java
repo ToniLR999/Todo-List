@@ -94,7 +94,7 @@ class TaskListServiceTest {
     void getUserTaskLists_Success() {
         // Arrange
         when(userService.findByUsername("testuser")).thenReturn(testUser);
-        when(taskListRepository.findByOwner(testUser)).thenReturn(Arrays.asList(testTaskList));
+        when(taskListRepository.findByOwnerIdWithTasks(testUser.getId())).thenReturn(Arrays.asList(testTaskList));
         when(dtoMapper.toTaskListDTO(testTaskList)).thenReturn(testTaskListDTO);
 
         // Act

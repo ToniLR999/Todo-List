@@ -6,7 +6,7 @@
   ></app-nav>
   <div class="main-content">
     <app-sidebar #sidebar *ngIf="showSidebar"></app-sidebar>
-    <main class="content">
+    <main class="content" [ngClass]="{'maintenance-mode': isMaintenanceRoute}">
       <router-outlet></router-outlet>
     </main>
   </div>

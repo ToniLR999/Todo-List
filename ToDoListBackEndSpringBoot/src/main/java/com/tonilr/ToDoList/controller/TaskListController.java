@@ -12,6 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
+import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.tonilr.ToDoList.model.User;
+import com.tonilr.ToDoList.service.UserService;
 
 /**
  * REST controller for managing task lists.
@@ -22,11 +28,16 @@ import org.springframework.security.core.Authentication;
 @RequestMapping("/api/lists")
 public class TaskListController {
 
+    private static final Logger log = LoggerFactory.getLogger(TaskListController.class);
+
     @Autowired
     private TaskListService taskListService;
     
     @Autowired
     private SecurityService securityService;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Creates a new task list for the authenticated user.
@@ -48,13 +59,48 @@ public class TaskListController {
      */
     @Operation(summary = "Get user's task lists")
     @GetMapping
-    public ResponseEntity<?> getUserTaskLists() {
+    public ResponseEntity<List<TaskListDTO>> getUserTaskLists(Authentication authentication) {
         try {
-            String username = securityService.getCurrentUsername();
-            List<TaskListDTO> lists = taskListService.getUserTaskLists(username);
-            return ResponseEntity.ok(lists);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            String username = authentication.getName();
+            log.info(" ===== INICIO GET /api/lists =====");
+            log.info("🔍 Usuario autenticado: {}", username);
+            log.info("🔍 Authentication object: {}", authentication);
+            log.info("🔍 Authorities: {}", authentication.getAuthorities());
+            
+            // Obtener el usuario completo para ver su ID
+            User user = userService.findByUsername(username);
+            if (user != null) {
+                log.info(" Usuario encontrado en BD - ID: {}, Username: {}, Email: {}", 
+                    user.getId(), user.getUsername(), user.getEmail());
+            } else {
+                log.warn("⚠️ Usuario NO encontrado en BD para username: {}", username);
+                return ResponseEntity.ok(Collections.emptyList());
+            }
+            
+            // Llamar al servicio
+            log.info("🔍 Llamando a taskListService.getUserTaskLists('{}')", username);
+            List<TaskListDTO> taskLists = taskListService.getUserTaskLists(username);
+            
+            log.info("✅ Listas encontradas para usuario {} (ID: {}): {}", 
+                username, user.getId(), taskLists.size());
+            
+            if (!taskLists.isEmpty()) {
+                log.info("📋 Primera lista: ID={}, Name={}, Owner={}", 
+                    taskLists.get(0).getId(), 
+                    taskLists.get(0).getName(),
+                    taskLists.get(0).getOwnerUsername() != null ? taskLists.get(0).getOwnerUsername() : "NULL");
+            }
+            
+            log.info(" ===== FIN GET /api/lists =====");
+            return ResponseEntity.ok(taskLists);
+            
+        } catch (Exception e) {
+            log.error("❌ ===== ERROR EN GET /api/lists =====");
+            log.error("❌ Usuario: {}", authentication.getName());
+            log.error("❌ Error completo:", e);
+            log.error("❌ Stack trace:", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Collections.emptyList());
         }
     }
 
