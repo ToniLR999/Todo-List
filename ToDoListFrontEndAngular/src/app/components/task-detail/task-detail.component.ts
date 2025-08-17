@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { TaskList } from '../../models/task-list.model';
+import { SubscriptionManagerService } from '../../shared/subscription-manager.service';
 
 /**
  * Component for displaying and editing task details.
@@ -63,7 +64,8 @@ export class TaskDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private taskService: TaskService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private subscriptionManager: SubscriptionManagerService
   ) {}
 
   /**
@@ -71,12 +73,15 @@ export class TaskDetailComponent implements OnInit {
    * Subscribes to route parameters to load task details if task ID is provided.
    */
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      const taskId = params['id'];
-      if (taskId) {
-        this.loadTask(taskId);
+    this.subscriptionManager.subscribe(
+      this.route.params,
+      (params: any) => {
+        const taskId = params['id'];
+        if (taskId) {
+          this.loadTask(taskId);
+        }
       }
-    });
+    );
   }
 
   /**

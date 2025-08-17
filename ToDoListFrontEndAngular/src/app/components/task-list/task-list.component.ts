@@ -13,6 +13,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { TaskListService } from '../../services/task-list.service';
 import { TaskList } from '../../models/task-list.model';
 import { TaskDetailComponent } from '../task-detail/task-detail.component';
+import { SubscriptionManagerService } from '../../shared/subscription-manager.service';
 
 
 interface TaskInput {
@@ -94,6 +95,7 @@ export class TaskListComponent implements OnInit {
     private toastr: ToastrService,
     private route: ActivatedRoute,
     private router: Router,
+    private subscriptionManager: SubscriptionManagerService
   ) {
     this.authService.getAuthStatus().subscribe(isAuthenticated => {
       //console.log('Estado de autenticación cambiado:', isAuthenticated);

@@ -75,15 +75,91 @@
       <div class="metric-grid">
         <div class="metric-item">
           <span class="label">Uso:</span>
-          <span class="value" [class]="getCpuClass(metrics?.cpu?.usage || 0)">
-            {{ (metrics?.cpu?.usage || 0) * 100 }}%
-          </span>
+                  <span class="value" [class]="getCpuClass(metrics?.cpu?.usage || 0)">
+          {{ (metrics?.cpu?.usage || 0) | number:'1.1-1' }}%
+        </span>
         </div>
         <div class="metric-item">
           <span class="label">Carga:</span>
           <span class="value">{{ metrics?.cpu?.load?.toFixed(2) || '0.00' }}</span>
         </div>
+        <div class="metric-item">
+          <span class="label">Núcleos:</span>
+          <span class="value">{{ metrics?.cpu?.cores || 1 }}</span>
+        </div>
       </div>
+      <div class="progress-bar">
+        <div class="progress-fill cpu-progress" [style.width.%]="(metrics?.cpu?.usage || 0)"></div>
+      </div>
+    </div>
+
+    <!-- Análisis Detallado del Disco -->
+    <div class="metric-card disk-analysis-card" *ngIf="!isLoading">
+      <ng-container *ngIf="getDiskAnalysis() as diskAnalysis">
+        <div class="card-header">
+          <h3>💿 Análisis del Disco del Sistema</h3>
+                            <div class="header-actions">
+                    <button class="btn btn-sm btn-outline-primary" (click)="refreshDiskAnalysis()" [disabled]="isLoading">
+                      🔄 Actualizar
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" (click)="performDiskCleanup()" [disabled]="isLoading">
+                      🧹 Limpiar
+                    </button>
+                  </div>
+        </div>
+        
+        <!-- Estado del Disco -->
+        <div class="disk-status" [class]="isDiskCritical() ? 'critical' : 'normal'">
+          <div class="status-header">
+            <span class="status-indicator">
+              {{ isDiskCritical() ? '🚨 CRÍTICO' : '⚠️ ALTO' }} - {{ metrics?.disk?.percentage?.toFixed(1) || '0.0' }}% usado
+            </span>
+          </div>
+          <div class="disk-info">
+            <span>Total: {{ metrics?.disk?.total || 0 }} GB</span>
+            <span>Usado: {{ metrics?.disk?.used || 0 }} GB</span>
+            <span>Libre: {{ diskAnalysis.freeSpace || 0 }} GB</span>
+          </div>
+        </div>
+
+        <!-- Barra de Progreso -->
+        <div class="progress-bar">
+          <div class="progress-fill disk-progress" [style.width.%]="metrics?.disk?.percentage || 0"></div>
+        </div>
+
+        <!-- Principales Consumidores -->
+        <div class="disk-consumers" *ngIf="diskAnalysis.topConsumers && diskAnalysis.topConsumers.length > 0">
+          <h4>🔍 Principales Consumidores de Espacio</h4>
+          <div class="consumer-list">
+            <div class="consumer-item" *ngFor="let consumer of diskAnalysis.topConsumers">
+              <div class="consumer-path">
+                <span class="path-icon">{{ getPathIcon(consumer.type) }}</span>
+                <span class="path-text">{{ consumer.path }}</span>
+              </div>
+              <div class="consumer-details">
+                <span class="consumer-size">{{ consumer.sizeFormatted }}</span>
+                <span class="consumer-percentage">{{ consumer.percentage }}%</span>
+              </div>
+              <div class="consumer-description">{{ consumer.description }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rutas Críticas -->
+        <div class="critical-paths" *ngIf="diskAnalysis.criticalPaths && diskAnalysis.criticalPaths.length > 0">
+          <h4>🚨 Rutas Críticas Requieren Atención</h4>
+          <div class="path-list">
+            <div class="path-item" *ngFor="let path of diskAnalysis.criticalPaths">
+              ⚠️ {{ path }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Última Actualización -->
+        <div class="last-analysis">
+          <small>Último análisis: {{ diskAnalysis.lastAnalysis | date:'short' }}</small>
+        </div>
+      </ng-container>
     </div>
 
     <!-- Estado de Base de Datos -->
@@ -124,6 +200,24 @@
       </div>
     </div>
 
+    <!-- Recomendaciones de Optimización -->
+    <div class="metric-card optimization-card" *ngIf="!isLoading">
+      <h3>🚀 Recomendaciones de Optimización</h3>
+      <div class="optimization-status" [class]="isSystemCritical() ? 'critical' : 'normal'">
+        <span class="status-indicator">
+          {{ isSystemCritical() ? '⚠️ Estado Crítico' : '✅ Estado Normal' }}
+        </span>
+      </div>
+      <div class="recommendations-list" *ngIf="getOptimizationRecommendations().length > 0">
+        <div class="recommendation-item" *ngFor="let recommendation of getOptimizationRecommendations()">
+          💡 {{ recommendation }}
+        </div>
+      </div>
+      <div class="no-recommendations" *ngIf="getOptimizationRecommendations().length === 0">
+        ✅ Sistema optimizado - No se requieren acciones
+      </div>
+    </div>
+
     <!-- Acciones de Administración -->
     <div class="metric-card" *ngIf="!isLoading">
       <h3>⚙️ Acciones</h3>
@@ -145,6 +239,19 @@
         </button>
         <button class="btn btn-dark" (click)="showPerformanceStats()" [disabled]="isLoading">
           🚀 Rendimiento
+        </button>
+      </div>
+    </div>
+
+    <!-- Botones de Debug (temporales) -->
+    <div class="metric-card debug-card" *ngIf="!isLoading">
+      <h3>🐛 Debug (Temporal)</h3>
+      <div class="action-buttons">
+        <button class="btn btn-outline-info" (click)="checkUserStatus()">
+          🔍 Verificar Usuario
+        </button>
+        <button class="btn btn-outline-warning" (click)="forceAdminAccess()">
+          🔓 Forzar Acceso Admin
         </button>
       </div>
     </div>

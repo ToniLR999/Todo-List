@@ -320,6 +320,255 @@
   color: #495057;
 }
 
+/* Estilos para métricas de disco */
+.disk-progress {
+  background: linear-gradient(90deg, #9b59b6 0%, #8e44ad 50%, #7d3c98 100%);
+}
+
+.disk-ok {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.disk-warning {
+  color: #f39c12;
+  font-weight: 600;
+}
+
+.disk-danger {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+/* Estilos para CPU */
+.cpu-progress {
+  background: linear-gradient(90deg, #e67e22 0%, #d35400 50%, #c0392b 100%);
+}
+
+.cpu-ok {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.cpu-warning {
+  color: #f39c12;
+  font-weight: 600;
+}
+
+.cpu-danger {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+/* Estilos para análisis del disco */
+.disk-analysis-card {
+  border-left: 4px solid #9b59b6;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.card-header h3 {
+  margin: 0;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+.btn-outline-primary {
+  background: transparent;
+  color: #3498db;
+  border: 1px solid #3498db;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background: #3498db;
+  color: white;
+}
+
+.disk-status {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.disk-status.critical {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.disk-status.normal {
+  background: rgba(243, 156, 18, 0.1);
+  border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.status-header {
+  margin-bottom: 0.5rem;
+}
+
+.status-indicator {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.disk-info {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.disk-consumers {
+  margin-top: 1.5rem;
+}
+
+.disk-consumers h4 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.consumer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.consumer-item {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #9b59b6;
+}
+
+.consumer-path {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.path-icon {
+  font-size: 1.2rem;
+}
+
+.path-text {
+  font-weight: 600;
+  color: #2c3e50;
+  font-family: monospace;
+}
+
+.consumer-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.consumer-size {
+  font-weight: 600;
+  color: #9b59b6;
+}
+
+.consumer-percentage {
+  font-weight: 600;
+  color: #e74c3c;
+}
+
+.consumer-description {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+}
+
+.critical-paths {
+  margin-top: 1.5rem;
+}
+
+.critical-paths h4 {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.path-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.path-item {
+  padding: 0.75rem;
+  background: rgba(231, 76, 60, 0.1);
+  border-left: 3px solid #e74c3c;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #c0392b;
+}
+
+.last-analysis {
+  margin-top: 1rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+/* Estilos para recomendaciones de optimización */
+.optimization-card {
+  border-left: 4px solid #3498db;
+}
+
+.optimization-status {
+  margin-bottom: 1rem;
+}
+
+.optimization-status.critical .status-indicator {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.optimization-status.normal .status-indicator {
+  background: rgba(39, 174, 96, 0.1);
+  color: #27ae60;
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.recommendations-list {
+  margin-top: 1rem;
+}
+
+.recommendation-item {
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  background: rgba(52, 152, 219, 0.05);
+  border-left: 3px solid #3498db;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.no-recommendations {
+  padding: 1rem;
+  text-align: center;
+  color: #27ae60;
+  font-weight: 500;
+  background: rgba(39, 174, 96, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(39, 174, 96, 0.2);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .metric-grid {

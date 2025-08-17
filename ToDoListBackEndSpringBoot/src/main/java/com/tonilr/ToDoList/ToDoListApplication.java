@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.cache.annotation.EnableCaching;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.tonilr.ToDoList")
 @EnableScheduling
 @EnableCaching
 public class ToDoListApplication {

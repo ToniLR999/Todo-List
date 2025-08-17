@@ -65,6 +65,8 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api-docs/**", "/swagger-ui/**").permitAll()
                 .requestMatchers("/api/app-status/**").permitAll()
+                .requestMatchers("/api/system/**").permitAll()
+                .requestMatchers("/api/test/**").permitAll()
                 .requestMatchers("/api/users/profile").authenticated()
                 .anyRequest().authenticated()
             )
