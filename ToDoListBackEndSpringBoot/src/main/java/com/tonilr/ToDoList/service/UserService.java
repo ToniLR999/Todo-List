@@ -3,6 +3,7 @@ package com.tonilr.ToDoList.service;
 import com.tonilr.ToDoList.exception.BadRequestException;
 import com.tonilr.ToDoList.exception.ResourceNotFoundException;
 import com.tonilr.ToDoList.model.User;
+import com.tonilr.ToDoList.model.Role;
 import com.tonilr.ToDoList.repository.UserRepository;
 import com.tonilr.ToDoList.repository.RoleRepository;
 import com.tonilr.ToDoList.dto.UserCacheDTO;
@@ -26,9 +27,6 @@ public class UserService {
     private UserRepository userRepository;
     
     @Autowired
-    private RoleRepository roleRepository;
-    
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -36,6 +34,9 @@ public class UserService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Autowired(required = false)
     private RedisTemplate<String, Object> redisTemplate;
@@ -58,14 +59,16 @@ public class UserService {
         // Encriptar contraseña
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         
-        // Asignar rol por defecto
-        roleRepository.findByName("ROLE_USER")
-            .ifPresent(role -> user.getRoles().add(role));
+        // Asignar rol por defecto (ROLE_USER)
+        Role defaultRole = roleRepository.findByName("ROLE_USER")
+            .orElseGet(() -> {
+                Role newRole = new Role("ROLE_USER", "Usuario");
+                return roleRepository.save(newRole);
+            });
+        user.getRoles().add(defaultRole);
             
         User savedUser = userRepository.save(user);
         
-        // Comentar temporalmente estas líneas para diagnosticar
-        /*
         emailService.sendSimpleEmail(
             savedUser.getEmail(),
             "¡Bienvenido a ToDoList!",
@@ -73,9 +76,73 @@ public class UserService {
         );
         
         auditLogService.logAction(savedUser, "REGISTRO_USUARIO", "Usuario registrado: " + savedUser.getUsername());
-        */
         
         return savedUser;
+    }
+
+    /**
+     * Assigns a role to a user (admin only operation).
+     * @param username Username of the user
+     * @param role Role to assign
+     * @return Updated user entity
+     */
+    @Transactional
+    public User assignRole(String username, Role role) {
+        User user = findByUsername(username);
+        user.getRoles().add(role);
+        return userRepository.save(user);
+    }
+
+    /**
+     * Removes a role from a user (admin only operation).
+     * @param username Username of the user
+     * @param role Role to remove
+     * @return Updated user entity
+     */
+    @Transactional
+    public User removeRole(String username, Role role) {
+        User user = findByUsername(username);
+        user.getRoles().remove(role);
+        // Asegurar que siempre tenga al menos ROLE_USER
+        if (user.getRoles().isEmpty()) {
+            Role defaultRole = roleRepository.findByName("ROLE_USER")
+                .orElseGet(() -> {
+                    Role newRole = new Role("ROLE_USER", "Usuario");
+                    return roleRepository.save(newRole);
+                });
+            user.getRoles().add(defaultRole);
+        }
+        return userRepository.save(user);
+    }
+
+    /**
+     * Promotes a user to admin (super admin only operation).
+     * @param username Username of the user to promote
+     * @return Updated user entity
+     */
+    @Transactional
+    public User promoteToAdmin(String username) {
+        Role adminRole = roleRepository.findByName("ROLE_ADMIN")
+            .orElseGet(() -> {
+                Role newRole = new Role("ROLE_ADMIN", "Administrador");
+                return roleRepository.save(newRole);
+            });
+        return assignRole(username, adminRole);
+    }
+
+    /**
+     * Demotes an admin user (super admin only operation).
+     * @param username Username of the admin user to demote
+     * @return Updated user entity
+     */
+    @Transactional
+    public User demoteFromAdmin(String username) {
+        Role adminRole = roleRepository.findByName("ROLE_ADMIN")
+            .orElseGet(() -> {
+                Role newRole = new Role("ROLE_ADMIN", "Administrador");
+                return roleRepository.save(newRole);
+            });
+        return removeRole(username, adminRole);
     }
 
     /**

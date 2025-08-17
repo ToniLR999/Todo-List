@@ -17,6 +17,8 @@ interface SystemMetrics {
     usage: number;
     load: number;
     cores: number;
+    loadAvailable: boolean;
+    loadStatus: string;
   };
   database: {
     connections: number;
@@ -98,7 +100,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.metricsCache.clear();
-    console.log('🧹 Recursos del dashboard liberados');
   }
 
   // 🚀 CONFIGURACIÓN OPTIMIZADA DE MÉTRICAS
@@ -125,8 +126,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       // Cargar métricas básicas del sistema
       await this.loadBasicMetrics();
       
-      // Cargar métricas de la aplicación
-      await this.loadAppMetrics();
       
       this.lastMetricsUpdate = Date.now();
       this.isLoading = false;
@@ -145,14 +144,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       // Primero probar el endpoint de prueba
       try {
         const testResponse = await this.http.get(`${environment.apiUrl}/api/test/ping`).toPromise();
-        console.log('✅ Endpoint de prueba funcionando:', testResponse);
       } catch (testError) {
         console.error('❌ Endpoint de prueba falló:', testError);
       }
       
       // Obtener métricas del nuevo endpoint personalizado
       const response = await this.http.get(`${environment.apiUrl}/api/system/metrics`).toPromise();
-      const systemMetrics = response as any;
+      const systemMetrics: any = response;
+
       
       // Construir objeto de métricas
       this.metrics = {
@@ -164,7 +163,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         cpu: {
           usage: Math.min(100, Math.max(0, (systemMetrics['system.cpu.usage'] || 0) * 100)), // Convertir de decimal a porcentaje
           load: systemMetrics['system.cpu.load'] || 0,
-          cores: systemMetrics['system.cpu.count'] || 1
+          cores: systemMetrics['system.cpu.count'] || 1,
+          loadAvailable: systemMetrics['system.cpu.load.available'] !== false, // true por defecto, false si explícitamente se marca como no disponible
+          loadStatus: systemMetrics['system.cpu.load.status'] || 'Disponible'
         },
         database: {
           connections: 0, // Simulado por ahora
@@ -192,12 +193,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       console.error('❌ Error cargando métricas básicas:', error);
       this.setFallbackMetrics();
     }
-  }
-
-  // 📱 CARGAR MÉTRICAS DE LA APLICACIÓN
-  private async loadAppMetrics(): Promise<void> {
-    // Ya no es necesario, las métricas se cargan en loadBasicMetrics
-    console.log('📱 Métricas de aplicación ya cargadas');
   }
 
   // 🔄 OBTENER MÉTRICA CON FALLBACK
@@ -238,7 +233,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   private setFallbackMetrics(): void {
     this.metrics = {
       memory: { used: 0, max: 0, percentage: 0 },
-      cpu: { usage: 0, load: 0, cores: 1 },
+      cpu: { usage: 0, load: 0, cores: 1, loadAvailable: false, loadStatus: 'No disponible' },
       database: { connections: 0, maxConnections: 10, status: 'UNKNOWN' },
       redis: { status: 'UNKNOWN', operations: 0 },
       app: { status: 'UNKNOWN', uptime: 0, schedule: 'Desconocido', version: '1.0.0' },
@@ -326,21 +321,17 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   private checkAdminAccess(): void {
     try {
       const user = this.authService.getCurrentUser();
-      console.log('🔍 Usuario actual:', user);
       
       // Verificar si el usuario está logueado
       if (user) {
-        console.log('✅ Usuario logueado encontrado');
         
         // Verificar rol de admin (temporalmente permitir acceso si está logueado)
         if ((user as any).role === 'ADMIN' || (user as any).role === 'admin') {
-          console.log('👑 Usuario es ADMIN');
           this.isAdmin = true;
           this.rotateSalt();
           this.adminToken = this.generateAdminToken();
           this.tokenExpiry = Date.now() + this.TOKEN_EXPIRY;
         } else {
-          console.log('⚠️ Usuario no es ADMIN, pero permitiendo acceso temporal');
           // Temporalmente permitir acceso para usuarios logueados
           this.isAdmin = true;
           this.rotateSalt();
@@ -348,13 +339,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           this.tokenExpiry = Date.now() + this.TOKEN_EXPIRY;
         }
       } else {
-        console.log('❌ No hay usuario logueado');
         this.redirectToLogin();
       }
     } catch (error) {
       console.error('❌ Error verificando acceso de admin:', error);
       // En caso de error, permitir acceso temporal para debug
-      console.log('🔄 Permitindo acceso temporal por error');
       this.isAdmin = true;
       this.redirectToLogin();
     }
@@ -431,16 +420,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return 'disk-normal';
   }
 
-  // 🔄 REFRESCAR ANÁLISIS DE DISCO
-  public refreshDiskAnalysis(): void {
-    // Simular análisis de disco (ya no tenemos el servicio)
-    console.log('🔄 Análisis de disco refrescado (simulado)');
-  }
 
   // 🧹 LIMPIAR CACHÉ
   public clearCache(): void {
     this.metricsCache.clear();
-    console.log('🧹 Caché limpiado');
     this.refreshMetrics();
   }
 
@@ -568,7 +551,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   // 🧹 REALIZAR LIMPIEZA DE DISCO (SIMULADA)
   public performDiskCleanup(): void {
-    console.log('🧹 Iniciando limpieza de disco (simulada)...');
     
     // Simular proceso de limpieza
     setTimeout(() => {
@@ -578,7 +560,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.metrics.disk.used = Math.max(0, this.metrics.disk.used - freedSpace);
         this.metrics.disk.percentage = Math.round((this.metrics.disk.used / this.metrics.disk.total) * 100);
         
-        console.log(`🧹 Limpieza completada. Espacio liberado: ${this.formatBytes(freedSpace)}`);
         this.cdr.detectChanges();
       }
     }, 2000);
@@ -653,7 +634,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   // 🧪 PROBAR ENDPOINTS
   public testEndpoints(): void {
-    console.log('🧪 Probando endpoints del sistema...');
     this.refreshMetrics();
   }
 
@@ -679,12 +659,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   public checkUserStatus(): void {
     try {
       const user = this.authService.getCurrentUser();
-      console.log('🔍 Estado del usuario:', {
-        user: user,
-        isLoggedIn: !!user,
-        role: user ? (user as any).role : 'N/A',
-        isAdmin: this.isAdmin
-      });
       
       if (user) {
         const userObj = user as any;
@@ -704,7 +678,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.rotateSalt();
     this.adminToken = this.generateAdminToken();
     this.tokenExpiry = Date.now() + this.TOKEN_EXPIRY;
-    console.log('🔓 Acceso admin forzado');
     this.cdr.detectChanges();
   }
 }

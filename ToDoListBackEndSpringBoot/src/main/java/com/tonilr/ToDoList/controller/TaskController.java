@@ -1,13 +1,10 @@
 package com.tonilr.ToDoList.controller;
 
 import com.tonilr.ToDoList.dto.TaskDTO;
-import com.tonilr.ToDoList.exception.ErrorResponse;
 import com.tonilr.ToDoList.service.TaskService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import com.tonilr.ToDoList.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -184,13 +181,6 @@ public class TaskController {
             Authentication authentication) {
         
         String username = authentication.getName();
-        System.out.println("🔄 CONTROLLER: Recibiendo petición de filtrado");
-        System.out.println("🔄 CONTROLLER: Usuario: " + username);
-        System.out.println("🔄 CONTROLLER: TaskListId: " + taskListId);
-        System.out.println("🔄 CONTROLLER: Completed: " + completed);
-        System.out.println("🔄 CONTROLLER: Search: " + search);
-        System.out.println("🔄 CONTROLLER: Priority: " + priority);
-        System.out.println("🔄 CONTROLLER: DateFilter: " + dateFilter);
         
         Boolean completedBool = completed != null ? Boolean.parseBoolean(completed) : null;
         
@@ -200,8 +190,6 @@ public class TaskController {
         List<TaskDTO> tasks = cachedTasks.stream()
             .map(CacheableTaskDTO::toTaskDTO)
             .collect(Collectors.toList());
-        
-        System.out.println("🔄 CONTROLLER: Tareas devueltas: " + tasks.size());
         
         return ResponseEntity.ok(tasks);
     }

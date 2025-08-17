@@ -48,14 +48,4 @@ public class AdminService {
             return new SystemStatusDTO();
         }
     }
-
-    @CacheEvict(allEntries = true)
-    public void clearUserCache() {
-        // Este método limpia específicamente el caché de usuarios
-    }
-
-    @CacheEvict(allEntries = true)
-    public void clearTaskCache() {
-        // Este método limpia específicamente el caché de tareas
-    }
 }

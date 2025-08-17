@@ -1,16 +1,12 @@
 package com.tonilr.ToDoList.service;
 
 import com.tonilr.ToDoList.model.User;
-import com.tonilr.ToDoList.model.Role;
 import com.tonilr.ToDoList.repository.UserRepository;
-import com.tonilr.ToDoList.repository.RoleRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -18,8 +14,7 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private RoleRepository roleRepository;
+
     @Mock
     private PasswordEncoder passwordEncoder;
 
@@ -40,9 +35,6 @@ class UserServiceTest {
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
         when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("hashedPassword");
-        Role role = new Role();
-        role.setName("ROLE_USER");
-        when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(role));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         User result = userService.registerUser(user);
@@ -50,7 +42,7 @@ class UserServiceTest {
         assertEquals("testuser", result.getUsername());
         assertEquals("test@example.com", result.getEmail());
         assertEquals("hashedPassword", result.getPassword());
-        assertTrue(result.getRoles().contains(role));
+        assertTrue(result.getRoles().stream().anyMatch(role -> "ROLE_USER".equals(role.getName())));
     }
 
     @Test

@@ -9,8 +9,8 @@ export class MemoryManagerService {
   private memoryUsage$ = new BehaviorSubject<number>(0);
   private cpuUsage$ = new BehaviorSubject<number>(0);
   private destroy$ = new Subject<void>();
-  private memoryThreshold = 80; // 80% de uso de memoria
-  private cpuThreshold = 70; // 70% de uso de CPU
+  private memoryThreshold = 80;
+  private cpuThreshold = 70;
 
   private optimizationNeededSubject$ = new BehaviorSubject<boolean>(false);
 
@@ -137,7 +137,6 @@ export class MemoryManagerService {
       (window as any).gc();
     }
 
-    console.log('Limpieza de memoria completada');
   }
 
   /**

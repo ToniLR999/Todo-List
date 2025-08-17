@@ -48,7 +48,7 @@ public class EmailService {
      */
     public void sendSimpleEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("TU_CORREO@gmail.com"); // Cambia por tu correo
+        message.setFrom(fromEmail);
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
@@ -67,7 +67,7 @@ public class EmailService {
             
             helper.setTo(sanitizeEmail(to));
             helper.setSubject("Restablecimiento de Contraseña - ToDoList");
-            helper.setFrom("noreply@todolist.com");
+            helper.setFrom(fromEmail);
             
             // Sanitizar el contenido HTML
             String sanitizedContent = String.format("""
@@ -97,7 +97,6 @@ public class EmailService {
             message.setHeader("Importance", "High");
             
             mailSender.send(message);
-            //log.info("Email de restablecimiento enviado a: {}", to);
         } catch (Exception e) {
             log.error("Error enviando email de restablecimiento: {}", e.getMessage());
             throw new RuntimeException("Error enviando email de restablecimiento");
@@ -126,10 +125,6 @@ public class EmailService {
      */
     public void sendTaskReminderEmail(String to, String subject, List<Task> tasks, User user) {
         try {
-            //log.info("Preparando email de recordatorio para: {}", to);
-            //log.info("Número de tareas a enviar: {}", tasks.size());
-            //log.info("Zona horaria del usuario: {}", user.getTimezone());
-            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             
@@ -140,9 +135,7 @@ public class EmailService {
             String content = buildEmailContent(tasks, subject, user);
             helper.setText(content, true);
             
-            //log.info("Enviando email a: {}", to);
             mailSender.send(message);
-            //log.info("Email enviado exitosamente a: {}", to);
         } catch (Exception e) {
             log.error("Error al enviar email: ", e);
             throw new RuntimeException("Error al enviar email", e);

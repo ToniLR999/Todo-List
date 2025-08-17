@@ -2,7 +2,6 @@ package com.tonilr.ToDoList.dto;
 
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import com.tonilr.ToDoList.model.Role;
 import com.tonilr.ToDoList.model.User;
 
@@ -14,9 +13,9 @@ public class UserCacheDTO {
     private Long id;
     private String username;
     private String email;
-    private String password; // Necesario para autenticación
+    private String password;
     private String timezone;
-    private Set<String> roleNames; // Solo los nombres de los roles
+    private Set<String> roleNames;
 
     // Constructor por defecto
     public UserCacheDTO() {}
@@ -29,7 +28,7 @@ public class UserCacheDTO {
         this.password = user.getPassword();
         this.timezone = user.getTimezone();
         this.roleNames = user.getRoles().stream()
-                .map(Role::getName)
+                .map(Role::getAuthority)
                 .collect(Collectors.toSet());
     }
 

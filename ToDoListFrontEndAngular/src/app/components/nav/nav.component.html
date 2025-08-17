@@ -34,36 +34,38 @@
     </button>
 
     <!-- Menú de usuario existente -->
-    <div class="user-menu" (click)="toggleDropdown()" tabindex="0" (blur)="closeDropdown()" [class.open]="dropdownOpen">
-      <span class="user-label">
+    <div class="user-menu" [class.open]="isUserMenuOpen">
+      <div class="user-label" (click)="toggleUserMenu()">
         <i class="bi bi-person-circle me-1"></i>
         {{ username }}
-        <i class="bi" [ngClass]="dropdownOpen ? 'bi-caret-up-fill' : 'bi-caret-down-fill'"></i>
-      </span>
-      <ul class="dropdown-list" *ngIf="dropdownOpen">
-        <li>
-          <a [routerLink]="['/perfil']">
-            <i class="bi bi-person me-2"></i>
-            Perfil
-          </a>
-        </li>
-        <li>
-          <a (click)="goToNotifications()">
-            <i class="bi bi-bell me-2"></i>
-            Notificaciones
-          </a>
-        </li>
-        <li>
-          <hr>
-        </li>
-        <li>
-          <a (click)="logout()">
-            <i class="bi bi-box-arrow-right me-2"></i>
-            Cerrar sesión
-          </a>
-        </li>
-
-      </ul>
+        <i class="bi" [ngClass]="isUserMenuOpen ? 'bi-caret-up-fill' : 'bi-caret-down-fill'"></i>
+      </div>
+      
+      <div class="user-dropdown" *ngIf="isUserMenuOpen">
+        <ul>
+          <li>
+            <a [routerLink]="['/perfil']" (click)="closeUserMenu()">
+              <i class="bi bi-person me-2"></i>
+              Perfil
+            </a>
+          </li>
+          <li>
+            <a (click)="goToNotifications(); closeUserMenu()">
+              <i class="bi bi-bell me-2"></i>
+              Notificaciones
+            </a>
+          </li>
+          <li>
+            <hr>
+          </li>
+          <li>
+            <a (click)="logout(); closeUserMenu()">
+              <i class="bi bi-box-arrow-right me-2"></i>
+              Cerrar sesión
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
 
 

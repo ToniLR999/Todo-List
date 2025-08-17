@@ -5,11 +5,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import lombok.extern.slf4j.Slf4j;
-
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.DayOfWeek;
@@ -38,10 +36,8 @@ public class ScheduleService {
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
         if (isProduction()) {
-            log.info("🚀 Aplicación iniciada en PRODUCCIÓN - Verificando horario de trabajo...");
             checkSchedule();
         } else {
-            log.info("🚀 Aplicación iniciada en DESARROLLO - Sin restricciones horarias");
             isApplicationActive = true;
         }
     }
@@ -61,10 +57,8 @@ public class ScheduleService {
         
         if (shouldBeActive != isApplicationActive) {
             if (shouldBeActive) {
-                log.info("🌅 Horario de trabajo iniciado - Aplicación activa");
                 isApplicationActive = true;
             } else {
-                log.info("🌙 Horario de trabajo terminado - Aplicación se apagará en 5 minutos");
                 scheduleShutdown();
             }
         }
@@ -85,7 +79,6 @@ public class ScheduleService {
     private void scheduleShutdown() {
         // Solo apagar en producción
         if (!isProduction()) {
-            log.info("🔄 Modo desarrollo: No se apagará la aplicación");
             return;
         }
 
@@ -93,7 +86,6 @@ public class ScheduleService {
         new Thread(() -> {
             try {
                 Thread.sleep(5 * 60 * 1000); // 5 minutos
-                log.info("🔄 Apagando aplicación por horario de trabajo...");
                 System.exit(0);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

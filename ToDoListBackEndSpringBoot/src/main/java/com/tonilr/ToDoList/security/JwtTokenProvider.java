@@ -19,10 +19,10 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${app.jwtSecret}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwtExpirationInMs}")
+    @Value("${jwt.expiration}")
     private int jwtExpirationInMs;
 
     /**
@@ -30,8 +30,13 @@ public class JwtTokenProvider {
      * @return SecretKey for JWT operations
      */
     private SecretKey getSigningKey() {
-        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        if (jwtSecret.length() >= 64) {
+            byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+            return Keys.hmacShaKeyFor(keyBytes);
+        } else {
+            // Generar una clave segura automáticamente para HS512
+            return Keys.secretKeyFor(SignatureAlgorithm.HS512);
+        }
     }
 
     /**
@@ -48,7 +53,7 @@ public class JwtTokenProvider {
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
-                .signWith(getSigningKey())
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512) // Especificar algoritmo explícitamente
                 .compact();
     }
 
@@ -92,8 +97,8 @@ public class JwtTokenProvider {
         return Jwts.builder()
             .setSubject(username)
             .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hora
-            .signWith(getSigningKey())
+            .setExpiration(new Date(System.currentTimeMillis() + 3600000))
+            .signWith(getSigningKey(), SignatureAlgorithm.HS512)
             .compact();
     }
 

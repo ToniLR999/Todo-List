@@ -9,10 +9,9 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import java.util.Set;
 import java.util.HashSet;
-import jakarta.persistence.Index;
 
 @Entity
 @Table(name = "users", indexes = {
@@ -31,7 +30,7 @@ public class User {
 
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = jakarta.persistence.FetchType.EAGER)
     @JoinTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "user_id"),
@@ -88,5 +87,27 @@ public class User {
 
     public void setTimezone(String timezone) {
         this.timezone = timezone;
+    }
+
+    // Métodos de seguridad
+    public boolean hasRole(Role role) {
+        return roles.contains(role);
+    }
+
+    public boolean isAdmin() {
+        return hasRole(new Role("ROLE_ADMIN", "Administrador"));
+    }
+
+    public boolean isModerator() {
+        return hasRole(new Role("ROLE_MODERATOR", "Moderador"));
+    }
+
+    public boolean hasAnyRole(Role... roles) {
+        for (Role role : roles) {
+            if (this.roles.contains(role)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -3,14 +3,12 @@ package com.tonilr.ToDoList.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.tonilr.ToDoList.dto.PasswordResetDTO;
 import com.tonilr.ToDoList.dto.PasswordResetRequestDTO;
 import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.security.JwtTokenProvider;
 import com.tonilr.ToDoList.service.EmailService;
 import com.tonilr.ToDoList.service.UserService;
-
 import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.Operation;
 

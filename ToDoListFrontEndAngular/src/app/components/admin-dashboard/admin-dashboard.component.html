@@ -81,7 +81,12 @@
         </div>
         <div class="metric-item">
           <span class="label">Carga:</span>
-          <span class="value">{{ metrics?.cpu?.load?.toFixed(2) || '0.00' }}</span>
+          <span class="value" [class.unavailable]="!metrics?.cpu?.loadAvailable">
+            {{ metrics?.cpu?.loadAvailable ? (metrics?.cpu?.load?.toFixed(2) || '0.00') : 'No disponible' }}
+          </span>
+          <span class="status-indicator" *ngIf="!metrics?.cpu?.loadAvailable">
+            ⚠️
+          </span>
         </div>
         <div class="metric-item">
           <span class="label">Núcleos:</span>
@@ -162,62 +167,6 @@
       </ng-container>
     </div>
 
-    <!-- Estado de Base de Datos -->
-    <div class="metric-card" *ngIf="!isLoading">
-      <h3>🗄️ Base de Datos</h3>
-      <div class="metric-grid">
-        <div class="metric-item">
-          <span class="label">Estado:</span>
-          <span class="value" [class]="getDbClass(metrics?.database?.status || '')">
-            {{ metrics?.database?.status || 'N/A' }}
-          </span>
-        </div>
-        <div class="metric-item">
-          <span class="label">Conexiones Activas:</span>
-          <span class="value">{{ metrics?.database?.connections || '0' }}</span>
-        </div>
-        <div class="metric-item">
-          <span class="label">Conexiones Máximas:</span>
-          <span class="value">{{ metrics?.database?.maxConnections || '0' }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Estado de Redis -->
-    <div class="metric-card" *ngIf="!isLoading">
-      <h3>🔴 Redis</h3>
-      <div class="metric-grid">
-        <div class="metric-item">
-          <span class="label">Estado:</span>
-          <span class="value" [class]="getRedisClass(metrics?.redis?.status || '')">
-            {{ metrics?.redis?.status || 'N/A' }}
-          </span>
-        </div>
-        <div class="metric-item">
-          <span class="label">Operaciones:</span>
-          <span class="value">{{ metrics?.redis?.operations || '0' }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recomendaciones de Optimización -->
-    <div class="metric-card optimization-card" *ngIf="!isLoading">
-      <h3>🚀 Recomendaciones de Optimización</h3>
-      <div class="optimization-status" [class]="isSystemCritical() ? 'critical' : 'normal'">
-        <span class="status-indicator">
-          {{ isSystemCritical() ? '⚠️ Estado Crítico' : '✅ Estado Normal' }}
-        </span>
-      </div>
-      <div class="recommendations-list" *ngIf="getOptimizationRecommendations().length > 0">
-        <div class="recommendation-item" *ngFor="let recommendation of getOptimizationRecommendations()">
-          💡 {{ recommendation }}
-        </div>
-      </div>
-      <div class="no-recommendations" *ngIf="getOptimizationRecommendations().length === 0">
-        ✅ Sistema optimizado - No se requieren acciones
-      </div>
-    </div>
-
     <!-- Acciones de Administración -->
     <div class="metric-card" *ngIf="!isLoading">
       <h3>⚙️ Acciones</h3>
@@ -243,18 +192,6 @@
       </div>
     </div>
 
-    <!-- Botones de Debug (temporales) -->
-    <div class="metric-card debug-card" *ngIf="!isLoading">
-      <h3>🐛 Debug (Temporal)</h3>
-      <div class="action-buttons">
-        <button class="btn btn-outline-info" (click)="checkUserStatus()">
-          🔍 Verificar Usuario
-        </button>
-        <button class="btn btn-outline-warning" (click)="forceAdminAccess()">
-          🔓 Forzar Acceso Admin
-        </button>
-      </div>
-    </div>
   </div>
 
   <div class="access-denied" *ngIf="!isAdmin">

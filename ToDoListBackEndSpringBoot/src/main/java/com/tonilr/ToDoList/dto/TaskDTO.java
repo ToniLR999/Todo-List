@@ -1,10 +1,7 @@
 package com.tonilr.ToDoList.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
-import java.time.LocalDateTime;
 import java.util.Date;
-
 import lombok.Data;
 
 /**

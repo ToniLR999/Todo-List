@@ -54,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // Extract JWT token from the request
         String token = getJwtFromRequest(request);
-
+        
         // If token exists, validate and set up authentication
         if (StringUtils.hasText(token)) {
             try {
@@ -71,10 +71,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 
                 // Set authentication in Spring Security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                
             } catch (Exception e) {
-                // Only log authentication errors in production
-                log.error("JWT token validation failed: {}", e.getMessage());
+                // Log authentication errors with more detail
+                e.printStackTrace();
+                
+                // Clear any existing authentication context
+                SecurityContextHolder.clearContext();
             }
+        } else {
         }
 
         // Continue with the filter chain

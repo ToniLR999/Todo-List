@@ -50,10 +50,10 @@ export class SystemMetricsService {
   public error$ = this.errorSubject.asObservable();
 
   // Configuración de métricas
-  private readonly UPDATE_INTERVAL = 30000; // 30 segundos
-  private readonly CPU_THRESHOLD = 0.95; // 95% máximo
-  private readonly MEMORY_THRESHOLD = 0.9; // 90% máximo
-  private readonly DISK_THRESHOLD = 0.85; // 85% máximo
+  private readonly UPDATE_INTERVAL = 30000;
+  private readonly CPU_THRESHOLD = 0.95;
+  private readonly MEMORY_THRESHOLD = 0.9;
+  private readonly DISK_THRESHOLD = 0.85;
 
   constructor(private http: HttpClient) {
     this.startMetricsMonitoring();

@@ -3,7 +3,7 @@
  * Provides user authentication status, task list navigation, sidebar toggle,
  * and responsive design support for mobile devices.
  */
-import { Component, OnInit, HostListener, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, HostListener, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -26,11 +26,13 @@ export class NavComponent implements OnInit {
   listsDropdownOpen = false;
   isMobile: boolean = window.innerWidth <= 768;
   sidebarVisible = false;
+  isUserMenuOpen = false;
 
   constructor(
     private authService: AuthService, 
     private router: Router,
-    private taskListService: TaskListService
+    private taskListService: TaskListService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   /**
@@ -47,7 +49,6 @@ export class NavComponent implements OnInit {
   loadTaskLists() {
     this.taskListService.getTaskLists().subscribe({
       next: (taskLists) => {
-        // console.log('🔄 nav: Obteniendo listas');
         this.taskLists = taskLists;
       },
       error: (error) => {
@@ -67,7 +68,7 @@ export class NavComponent implements OnInit {
    * Closes the user dropdown menu with a small delay.
    */
   closeDropdown() {
-    setTimeout(() => this.dropdownOpen = false, 150); // Permite click en opciones
+    setTimeout(() => this.dropdownOpen = false, 150);
   }
 
   /**
@@ -127,6 +128,39 @@ export class NavComponent implements OnInit {
     this.isMobile = window.innerWidth <= 768;
     if (!this.isMobile) {
       this.sidebarVisible = false;
+    }
+  }
+
+  toggleUserMenu(): void {
+    this.isUserMenuOpen = !this.isUserMenuOpen;
+    
+    this.cdr.detectChanges();
+    
+    setTimeout(() => {
+      const dropdown = document.querySelector('.user-dropdown');
+      if (dropdown) {
+
+      }
+    }, 50);
+  }
+
+  closeUserMenu(): void {
+    this.isUserMenuOpen = false;
+  }
+
+  // Cerrar menú cuando se hace clic fuera
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    
+    // Si el click es en el menú de usuario, no hacer nada
+    if (target.closest('.user-menu')) {
+      return;
+    }
+    
+    // Si el menú está abierto y el click es fuera, cerrarlo
+    if (this.isUserMenuOpen) {
+      this.isUserMenuOpen = false;
     }
   }
 }

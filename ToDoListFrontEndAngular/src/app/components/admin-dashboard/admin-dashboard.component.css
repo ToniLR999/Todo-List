@@ -90,6 +90,17 @@
   color: #2c3e50;
 }
 
+.metric-item .value.unavailable {
+  color: #e74c3c;
+  font-style: italic;
+}
+
+.status-indicator {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #f39c12;
+}
+
 /* Estados mejorados */
 .status-up {
   color: #27ae60;
