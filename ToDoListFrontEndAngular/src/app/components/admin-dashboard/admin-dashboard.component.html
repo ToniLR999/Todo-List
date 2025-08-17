@@ -103,14 +103,11 @@
       <ng-container *ngIf="getDiskAnalysis() as diskAnalysis">
         <div class="card-header">
           <h3>💿 Análisis del Disco del Sistema</h3>
-                            <div class="header-actions">
-                    <button class="btn btn-sm btn-outline-primary" (click)="refreshDiskAnalysis()" [disabled]="isLoading">
-                      🔄 Actualizar
-                    </button>
-                    <button class="btn btn-sm btn-outline-warning" (click)="performDiskCleanup()" [disabled]="isLoading">
-                      🧹 Limpiar
-                    </button>
-                  </div>
+          <div class="header-actions">
+            <button class="btn btn-sm btn-outline-warning" (click)="performDiskCleanup()" [disabled]="isLoading">
+              🧹 Limpiar
+            </button>
+          </div>
         </div>
         
         <!-- Estado del Disco -->
