@@ -49,39 +49,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @throws IOException If an I/O error occurs
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String requestURI = request.getRequestURI();
+        String method = request.getMethod();
+        
+        log.info("🔍 JWT Filter - Request: {} {}", method, requestURI);
         
         // Extract JWT token from the request
         String token = getJwtFromRequest(request);
         
-        // If token exists, validate and set up authentication
         if (StringUtils.hasText(token)) {
+            log.info(" JWT Filter - Token encontrado para: {} {}", method, requestURI);
             try {
                 // Extract username from JWT token
                 String username = tokenProvider.getUsernameFromJWT(token);
+                log.info("🔍 JWT Filter - Usuario extraído: {}", username);
                 
                 // Load user details from database
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                log.info("🔍 JWT Filter - UserDetails cargado para: {}", username);
                 
-                // Create authentication token with user details and authorities
-                UsernamePasswordAuthenticationToken authentication = 
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                // Create authentication token
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 
                 // Set authentication in Spring Security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.info("✅ JWT Filter - Autenticación exitosa para usuario: {} en {}", username, requestURI);
                 
             } catch (Exception e) {
-                // Log authentication errors with more detail
-                e.printStackTrace();
-                
-                // Clear any existing authentication context
+                log.error("❌ JWT Filter - Error de autenticación: {} - URI: {}", e.getMessage(), requestURI);
+                log.error("❌ JWT Filter - Stack trace:", e);
                 SecurityContextHolder.clearContext();
             }
         } else {
+            log.info("ℹ️ JWT Filter - No se encontró token en: {} {}", method, requestURI);
         }
-
+        
         // Continue with the filter chain
         filterChain.doFilter(request, response);
     }

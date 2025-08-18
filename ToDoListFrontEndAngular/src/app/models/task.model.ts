@@ -32,6 +32,4 @@ export interface Task {
   assignedToId?: number;
   /** Username of the user assigned to the task */
   assignedToUsername?: string;
-  /** List of comments on the task */
-  comments?: Comment[];
 } 

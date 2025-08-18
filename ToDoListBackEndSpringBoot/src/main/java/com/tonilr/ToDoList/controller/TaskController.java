@@ -18,6 +18,10 @@ import jakarta.validation.Valid;
 import com.tonilr.ToDoList.dto.CacheableTaskDTO;
 import java.util.stream.Collectors;
 import com.tonilr.ToDoList.service.CacheService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import java.util.Collections;
 
 /**
  * REST controller for managing user tasks.
@@ -28,6 +32,8 @@ import com.tonilr.ToDoList.service.CacheService;
 @RequestMapping("/api/tasks")
 @Tag(name = "Tasks", description = "Task management API")
 public class TaskController {
+
+    private static final Logger log = LoggerFactory.getLogger(TaskController.class);
 
     @Autowired
     private TaskService taskService;
@@ -180,7 +186,20 @@ public class TaskController {
             @RequestParam(required = false) Long taskListId,
             Authentication authentication) {
         
+        log.info("🔍 TaskController - /filter llamado");
+        
+        if (authentication == null) {
+            log.error("❌ TaskController - Usuario NO autenticado en /filter");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+        
+        if (!authentication.isAuthenticated()) {
+            log.error("❌ TaskController - Usuario NO autenticado correctamente en /filter");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+        
         String username = authentication.getName();
+        log.info("✅ TaskController - Usuario autenticado: {} en /filter", username);
         
         Boolean completedBool = completed != null ? Boolean.parseBoolean(completed) : null;
         
