@@ -18,6 +18,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
+
 
 @Configuration
 @EnableWebSecurity
@@ -30,6 +34,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     /**
      * Configures the AuthenticationManager bean for JWT authentication.
@@ -52,45 +59,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers("/api/**")
-            )
-            .headers(headers -> headers
-                .frameOptions().deny()
-                .contentSecurityPolicy("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:;")
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/users/register").permitAll()
-                .requestMatchers("/api/cache/**").permitAll()
-                .requestMatchers("/api/cache-test/**").permitAll()
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/api-docs/**", "/swagger-ui/**").permitAll()
-                .requestMatchers("/api/app-status/**").permitAll()
-                .requestMatchers("/api/system/**").permitAll()
-                .requestMatchers("/api/test/**").permitAll()
-                .requestMatchers("/api/users/profile").authenticated()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .cors(c -> {});
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .ignoringRequestMatchers("/api/**")
+        )
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // preflight
+            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/api/users/register").permitAll()
+            .requestMatchers("/api/app-status/**").permitAll()
+            .requestMatchers("/api/system/**").permitAll()
+            .requestMatchers("/api/test/**").permitAll()
+            .requestMatchers("/actuator/**").permitAll()
+            .requestMatchers("/api-docs/**", "/swagger-ui/**").permitAll()
+            .requestMatchers("/api/users/profile").authenticated()
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
+        )
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .cors(Customizer.withDefaults());
         
         return http.build();
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource(
-            @org.springframework.beans.factory.annotation.Value("${app.frontend.url}") String frontendUrl) {
+    CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of(frontendUrl));
+        cfg.setAllowedOriginPatterns(List.of(frontendUrl, "https://*.netlify.app"));
         cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With"));
         cfg.setAllowCredentials(true);
+    
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
         return source;
