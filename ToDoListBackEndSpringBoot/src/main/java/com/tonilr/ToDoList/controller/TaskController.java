@@ -51,12 +51,36 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO, Authentication authentication) {
         try {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.error("❌ TaskController - Usuario no autenticado en createTask");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+            
+            if (taskDTO == null) {
+                log.error("❌ TaskController - TaskDTO es null en createTask");
+                return ResponseEntity.badRequest().body(null);
+            }
+            
             String username = securityService.getCurrentUsername();
+            if (username == null || username.trim().isEmpty()) {
+                log.error("❌ TaskController - Username no disponible en createTask");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
+            
+            log.info("🔍 TaskController - Creando tarea para usuario: {}", username);
             TaskDTO newTask = taskService.createTask(taskDTO, username);
+            
+            if (newTask == null) {
+                log.warn("⚠️ TaskController - taskService.createTask retornó null");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
+            
+            log.info("✅ TaskController - Tarea creada exitosamente con ID: {}", newTask.getId());
             return ResponseEntity.ok(newTask);
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(null);
+            
+        } catch (Exception e) {
+            log.error("❌ TaskController - Error en createTask: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -70,25 +94,70 @@ public class TaskController {
         @RequestParam(required = false) Boolean showCompleted,
         @RequestParam(required = false) Long listId) {
         
-        String username = securityService.getCurrentUsername();
-        List<TaskDTO> tasks;
-        
-        if (listId != null) {
-            // Get tasks by list
-            List<CacheableTaskDTO> cachedTasks = taskService.getTasksByList(listId, username);
-            tasks = cachedTasks.stream()
-                .map(CacheableTaskDTO::toTaskDTO)
-                .collect(Collectors.toList());
-        } else {
-            // Get tasks by completion status
-            boolean showCompletedValue = showCompleted != null ? showCompleted : false;
-            List<CacheableTaskDTO> cachedTasks = taskService.getUserTasksByStatus(username, showCompletedValue);
-            tasks = cachedTasks.stream()
-                .map(CacheableTaskDTO::toTaskDTO)
-                .collect(Collectors.toList());
+        try {
+            String username = securityService.getCurrentUsername();
+            if (username == null || username.trim().isEmpty()) {
+                log.error("❌ TaskController - Username no disponible en getTasks");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+            }
+            
+            List<TaskDTO> tasks;
+            
+            if (listId != null) {
+                // Validar listId
+                if (listId <= 0) {
+                    log.warn("⚠️ TaskController - listId inválido: {}", listId);
+                    return ResponseEntity.badRequest().body(Collections.emptyList());
+                }
+                
+                // Get tasks by list
+                List<CacheableTaskDTO> cachedTasks = taskService.getTasksByList(listId, username);
+                if (cachedTasks == null) {
+                    cachedTasks = Collections.emptyList();
+                }
+                
+                tasks = cachedTasks.stream()
+                    .filter(task -> task != null)
+                    .map(task -> {
+                        try {
+                            return task.toTaskDTO();
+                        } catch (Exception e) {
+                            log.error("❌ TaskController - Error convirtiendo tarea a DTO: {}", e.getMessage());
+                            return null;
+                        }
+                    })
+                    .filter(task -> task != null)
+                    .collect(Collectors.toList());
+            } else {
+                // Get tasks by completion status
+                boolean showCompletedValue = showCompleted != null ? showCompleted : false;
+                List<CacheableTaskDTO> cachedTasks = taskService.getUserTasksByStatus(username, showCompletedValue);
+                
+                if (cachedTasks == null) {
+                    cachedTasks = Collections.emptyList();
+                }
+                
+                tasks = cachedTasks.stream()
+                    .filter(task -> task != null)
+                    .map(task -> {
+                        try {
+                            return task.toTaskDTO();
+                        } catch (Exception e) {
+                            log.error("❌ TaskController - Error convirtiendo tarea a DTO: {}", e.getMessage());
+                            return null;
+                        }
+                    })
+                    .filter(task -> task != null)
+                    .collect(Collectors.toList());
+            }
+            
+            log.info("✅ TaskController - getTasks completado exitosamente. Tareas obtenidas: {}", tasks.size());
+            return ResponseEntity.ok(tasks);
+            
+        } catch (Exception e) {
+            log.error("❌ TaskController - Error en getTasks: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
         }
-        
-        return ResponseEntity.ok(tasks);
     }
 
     /**
@@ -188,29 +257,83 @@ public class TaskController {
         
         log.info("🔍 TaskController - /filter llamado");
         
-        if (authentication == null) {
-            log.error("❌ TaskController - Usuario NO autenticado en /filter");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        try {
+            if (authentication == null) {
+                log.error("❌ TaskController - Usuario NO autenticado en /filter");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+            }
+            
+            if (!authentication.isAuthenticated()) {
+                log.error("❌ TaskController - Usuario NO autenticado correctamente en /filter");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+            }
+            
+            String username = authentication.getName();
+            if (username == null || username.trim().isEmpty()) {
+                log.error("❌ TaskController - Username vacío o nulo en /filter");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.emptyList());
+            }
+            
+            log.info("✅ TaskController - Usuario autenticado: {} en /filter", username);
+            
+            // Validar parámetros de entrada
+            Boolean completedBool = null;
+            if (completed != null && !completed.trim().isEmpty()) {
+                try {
+                    completedBool = Boolean.parseBoolean(completed);
+                } catch (Exception e) {
+                    log.warn("⚠️ TaskController - Parámetro 'completed' inválido: {}, usando null", completed);
+                }
+            }
+            
+            // Validar priority
+            if (priority != null && !priority.equals("all")) {
+                try {
+                    int priorityInt = Integer.parseInt(priority);
+                    if (priorityInt < 1 || priorityInt > 3) {
+                        log.warn("⚠️ TaskController - Prioridad fuera de rango: {}, usando 'all'", priority);
+                        priority = "all";
+                    }
+                } catch (NumberFormatException e) {
+                    log.warn("⚠️ TaskController - Prioridad inválida: {}, usando 'all'", priority);
+                    priority = "all";
+                }
+            }
+            
+            log.info("🔍 TaskController - Llamando a taskService.getFilteredTasks con parámetros: search={}, completed={}, priority={}, dateFilter={}, taskListId={}", 
+                search, completedBool, priority, dateFilter, taskListId);
+            
+            List<CacheableTaskDTO> cachedTasks = taskService.getFilteredTasks(search, completedBool, priority, dateFilter, username, taskListId);
+            
+            if (cachedTasks == null) {
+                log.warn("⚠️ TaskController - taskService.getFilteredTasks retornó null, usando lista vacía");
+                cachedTasks = Collections.emptyList();
+            }
+            
+            log.info("✅ TaskController - Tareas obtenidas del servicio: {}", cachedTasks.size());
+            
+            // Convertir de vuelta a TaskDTO para el frontend
+            List<TaskDTO> tasks = cachedTasks.stream()
+                .filter(task -> task != null) // Filtrar tareas nulas
+                .map(task -> {
+                    try {
+                        return task.toTaskDTO();
+                    } catch (Exception e) {
+                        log.error("❌ TaskController - Error convirtiendo tarea a DTO: {}", e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(task -> task != null) // Filtrar DTOs nulos
+                .collect(Collectors.toList());
+            
+            log.info("✅ TaskController - Tareas convertidas a DTO: {}", tasks.size());
+            return ResponseEntity.ok(tasks);
+            
+        } catch (Exception e) {
+            log.error("❌ TaskController - Error inesperado en /filter: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Collections.emptyList());
         }
-        
-        if (!authentication.isAuthenticated()) {
-            log.error("❌ TaskController - Usuario NO autenticado correctamente en /filter");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
-        }
-        
-        String username = authentication.getName();
-        log.info("✅ TaskController - Usuario autenticado: {} en /filter", username);
-        
-        Boolean completedBool = completed != null ? Boolean.parseBoolean(completed) : null;
-        
-        List<CacheableTaskDTO> cachedTasks = taskService.getFilteredTasks(search, completedBool, priority, dateFilter, username, taskListId);
-        
-        // Convertir de vuelta a TaskDTO para el frontend
-        List<TaskDTO> tasks = cachedTasks.stream()
-            .map(CacheableTaskDTO::toTaskDTO)
-            .collect(Collectors.toList());
-        
-        return ResponseEntity.ok(tasks);
     }
 
     /**

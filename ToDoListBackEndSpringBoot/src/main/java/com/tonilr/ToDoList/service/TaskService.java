@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import com.tonilr.ToDoList.dto.CacheableTaskDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Collections;
 
 /**
  * Service class for managing task operations.
@@ -29,6 +32,8 @@ import com.tonilr.ToDoList.dto.CacheableTaskDTO;
  */
 @Service
 public class TaskService {
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
+
     @Autowired
     private TaskRepository taskRepository;
     
@@ -280,98 +285,155 @@ public class TaskService {
 
     /**
      * Retrieves filtered tasks based on multiple criteria with caching.
-     * @param search Search term for task title
-     * @param completed Completion status filter
-     * @param priority Priority level filter
-     * @param dateFilter Date filter criteria
-     * @param username Username to filter tasks for
-     * @param taskListId Task list ID filter
-     * @return List of cacheable task DTOs
      */
     @Cacheable(value = "tasks", key = "'user_' + #username + '_filtered_' + #search + '_' + #completed + '_' + #priority + '_' + #dateFilter + '_' + #taskListId")
     public List<CacheableTaskDTO> getFilteredTasks(String search, Boolean completed, String priority, String dateFilter, String username, Long taskListId) {
+        try {
+            // Validar parámetros de entrada
+            if (username == null || username.trim().isEmpty()) {
+                log.error("❌ TaskService - Username es null o vacío en getFilteredTasks");
+                return Collections.emptyList();
+            }
+            
+            User user = userService.findByUsername(username);
+            if (user == null) {
+                log.warn("⚠️ TaskService - Usuario no encontrado para username: {}", username);
+                return Collections.emptyList();
+            }
+            
+            List<Task> tasks;
+            if (taskListId != null) {
+                // Validar taskListId
+                if (taskListId <= 0) {
+                    log.warn("⚠️ TaskService - taskListId inválido: {}", taskListId);
+                    return Collections.emptyList();
+                }
+                
+                // Filtrar por lista específica
+                try {
+                    tasks = taskRepository.findByAssignedToAndTaskListId(user, taskListId);
+                } catch (Exception e) {
+                    log.error("❌ TaskService - Error al buscar tareas por lista: {}", e.getMessage());
+                    return Collections.emptyList();
+                }
+            } else {
+                // Obtener todas las tareas del usuario
+                try {
+                    tasks = taskRepository.findByAssignedTo(user);
+                } catch (Exception e) {
+                    log.error("❌ TaskService - Error al buscar tareas del usuario: {}", e.getMessage());
+                    return Collections.emptyList();
+                }
+            }
+            
+            if (tasks == null) {
+                log.warn("⚠️ TaskService - taskRepository retornó null, usando lista vacía");
+                tasks = Collections.emptyList();
+            }
 
-        User user = userService.findByUsername(username);
-        
-        List<Task> tasks;
-        if (taskListId != null) {
-            // Filtrar por lista específica
-            tasks = taskRepository.findByAssignedToAndTaskListId(user, taskListId);
-        } else {
-            // Obtener todas las tareas del usuario
-            tasks = taskRepository.findByAssignedTo(user);
+            // Aplicar filtros adicionales
+            List<CacheableTaskDTO> filteredTasks = tasks.stream()
+                .filter(task -> task != null) // Filtrar tareas nulas
+                .filter(task -> {
+                    try {
+                        // Filtro por estado (completed)
+                        if (completed != null) {
+                            if (task.isCompleted() != completed) {
+                                return false;
+                            }
+                        }
+                        
+                        // Filtro por búsqueda (search)
+                        if (search != null && !search.trim().isEmpty()) {
+                            String taskTitle = task.getTitle() != null ? task.getTitle() : "";
+                            String taskDescription = task.getDescription() != null ? task.getDescription() : "";
+                            
+                            if (!taskTitle.toLowerCase().contains(search.toLowerCase()) &&
+                                !taskDescription.toLowerCase().contains(search.toLowerCase())) {
+                                return false;
+                            }
+                        }
+                        
+                        // Filtro por prioridad
+                        if (priority != null && !priority.equals("all")) {
+                            try {
+                                int priorityInt = Integer.parseInt(priority);
+                                if (task.getPriority() != priorityInt) {
+                                    return false;
+                                }
+                            } catch (NumberFormatException e) {
+                                log.warn("⚠️ TaskService - Prioridad inválida en filtro: {}", priority);
+                                return false;
+                            }
+                        }
+                        
+                        // Filtro por fecha
+                        if (dateFilter != null && !dateFilter.equals("all") && task.getDueDate() != null) {
+                            try {
+                                LocalDateTime now = LocalDateTime.now();
+                                LocalDateTime dueDate = task.getDueDate();
+                                
+                                switch (dateFilter) {
+                                    case "today":
+                                        if (!dueDate.toLocalDate().equals(now.toLocalDate())) {
+                                            return false;
+                                        }
+                                        break;
+                                    case "week":
+                                        LocalDateTime weekFromNow = now.plusWeeks(1);
+                                        if (dueDate.isAfter(weekFromNow) || dueDate.isBefore(now)) {
+                                            return false;
+                                        }
+                                        break;
+                                    case "month":
+                                        LocalDateTime monthFromNow = now.plusMonths(1);
+                                        if (dueDate.isAfter(monthFromNow) || dueDate.isBefore(now)) {
+                                            return false;
+                                        }
+                                        break;
+                                    case "overdue":
+                                        if (!dueDate.isBefore(now)) {
+                                            return false;
+                                        }
+                                        break;
+                                    default:
+                                        log.warn("⚠️ TaskService - Filtro de fecha desconocido: {}", dateFilter);
+                                        break;
+                                }
+                            } catch (Exception e) {
+                                log.error("❌ TaskService - Error en filtro de fecha: {}", e.getMessage());
+                                return false;
+                            }
+                        }
+                        
+                        return true;
+                    } catch (Exception e) {
+                        log.error("❌ TaskService - Error aplicando filtros a tarea: {}", e.getMessage());
+                        return false;
+                    }
+                })
+                .map(task -> {
+                    try {
+                        TaskDTO dto = dtoMapper.toTaskDTO(task);
+                        if (task.getTaskList() != null) {
+                            dto.setTaskListId(task.getTaskList().getId());
+                            dto.setTaskListName(task.getTaskList().getName());
+                        }
+                        return new CacheableTaskDTO(dto);
+                    } catch (Exception e) {
+                        log.error("❌ TaskService - Error convirtiendo tarea a DTO: {}", e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(task -> task != null) // Filtrar DTOs nulos
+                .collect(Collectors.toList());
+            
+            return filteredTasks;
+            
+        } catch (Exception e) {
+            log.error("❌ TaskService - Error inesperado en getFilteredTasks: {}", e.getMessage(), e);
+            return Collections.emptyList();
         }
-        
-
-        // Aplicar filtros adicionales
-        List<CacheableTaskDTO> filteredTasks = tasks.stream()
-            .filter(task -> {
-                // Filtro por estado (completed)
-                if (completed != null) {
-                    if (task.isCompleted() != completed) {
-                        return false;
-                    }
-                }
-                
-                // Filtro por búsqueda (search)
-                if (search != null && !search.trim().isEmpty()) {
-                    if (!task.getTitle().toLowerCase().contains(search.toLowerCase()) &&
-                        (task.getDescription() == null || !task.getDescription().toLowerCase().contains(search.toLowerCase()))) {
-                        return false;
-                    }
-                }
-                
-                // Filtro por prioridad
-                if (priority != null && !priority.equals("all")) {
-                    if (task.getPriority() != Integer.parseInt(priority)) {
-                        return false;
-                    }
-                }
-                
-                // Filtro por fecha
-                if (dateFilter != null && !dateFilter.equals("all") && task.getDueDate() != null) {
-                    LocalDateTime now = LocalDateTime.now();
-                    LocalDateTime dueDate = task.getDueDate();
-                    
-                    switch (dateFilter) {
-                        case "today":
-                            if (!dueDate.toLocalDate().equals(now.toLocalDate())) {
-                                return false;
-                            }
-                            break;
-                        case "week":
-                            LocalDateTime weekFromNow = now.plusWeeks(1);
-                            if (dueDate.isAfter(weekFromNow) || dueDate.isBefore(now)) {
-                                return false;
-                            }
-                            break;
-                        case "month":
-                            LocalDateTime monthFromNow = now.plusMonths(1);
-                            if (dueDate.isAfter(monthFromNow) || dueDate.isBefore(now)) {
-                                return false;
-                            }
-                            break;
-                        case "overdue":
-                            if (!dueDate.isBefore(now)) {
-                                return false;
-                            }
-                            break;
-                    }
-                }
-                
-                return true;
-            })
-            .map(task -> {
-                TaskDTO dto = dtoMapper.toTaskDTO(task);
-                if (task.getTaskList() != null) {
-                    dto.setTaskListId(task.getTaskList().getId());
-                    dto.setTaskListName(task.getTaskList().getName());
-                }
-                return new CacheableTaskDTO(dto);
-            })
-            .collect(Collectors.toList());
-        
-        return filteredTasks;
     }
 
     /**

@@ -40,28 +40,28 @@ public class TaskListController {
     private UserService userService;
 
     /**
-     * Creates a new task list for the authenticated user.
-     */
-    @Operation(summary = "Create a new task list")
-    @PostMapping
-    public ResponseEntity<TaskListDTO> createTaskList(@Valid @RequestBody TaskListDTO taskListDTO, Authentication authentication) {
-        try {
-            String username = securityService.getCurrentUsername();
-            TaskListDTO newList = taskListService.createTaskList(taskListDTO, username);
-            return ResponseEntity.ok(newList);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
-    }
-
-    /**
      * Retrieves all task lists for the authenticated user.
      */
     @Operation(summary = "Get user's task lists")
     @GetMapping
     public ResponseEntity<List<TaskListDTO>> getUserTaskLists(Authentication authentication) {
         try {
+            if (authentication == null) {
+                log.error("❌ TaskListController - Authentication es null en getUserTaskLists");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+            }
+            
+            if (!authentication.isAuthenticated()) {
+                log.error("❌ TaskListController - Usuario no autenticado en getUserTaskLists");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+            }
+            
             String username = authentication.getName();
+            if (username == null || username.trim().isEmpty()) {
+                log.error("❌ TaskListController - Username vacío o nulo en getUserTaskLists");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.emptyList());
+            }
+            
             log.info(" ===== INICIO GET /api/lists =====");
             log.info("🔍 Usuario autenticado: {}", username);
             log.info("🔍 Authentication object: {}", authentication);
@@ -69,26 +69,39 @@ public class TaskListController {
             
             // Obtener el usuario completo para ver su ID
             User user = userService.findByUsername(username);
-            if (user != null) {
-                log.info(" Usuario encontrado en BD - ID: {}, Username: {}, Email: {}", 
-                    user.getId(), user.getUsername(), user.getEmail());
-            } else {
+            if (user == null) {
                 log.warn("⚠️ Usuario NO encontrado en BD para username: {}", username);
                 return ResponseEntity.ok(Collections.emptyList());
             }
+            
+            if (user.getId() == null) {
+                log.error("❌ Usuario encontrado pero ID es null para username: {}", username);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+            }
+            
+            log.info(" Usuario encontrado en BD - ID: {}, Username: {}, Email: {}", 
+                user.getId(), user.getUsername(), user.getEmail());
             
             // Llamar al servicio
             log.info("🔍 Llamando a taskListService.getUserTaskLists('{}')", username);
             List<TaskListDTO> taskLists = taskListService.getUserTaskLists(username);
             
+            if (taskLists == null) {
+                log.warn("⚠️ taskListService.getUserTaskLists retornó null, usando lista vacía");
+                taskLists = Collections.emptyList();
+            }
+            
             log.info("✅ Listas encontradas para usuario {} (ID: {}): {}", 
                 username, user.getId(), taskLists.size());
             
             if (!taskLists.isEmpty()) {
-                log.info("📋 Primera lista: ID={}, Name={}, Owner={}", 
-                    taskLists.get(0).getId(), 
-                    taskLists.get(0).getName(),
-                    taskLists.get(0).getOwnerUsername() != null ? taskLists.get(0).getOwnerUsername() : "NULL");
+                TaskListDTO firstList = taskLists.get(0);
+                if (firstList != null) {
+                    log.info("📋 Primera lista: ID={}, Name={}, Owner={}", 
+                        firstList.getId(), 
+                        firstList.getName(),
+                        firstList.getOwnerUsername() != null ? firstList.getOwnerUsername() : "NULL");
+                }
             }
             
             log.info(" ===== FIN GET /api/lists =====");
@@ -96,11 +109,58 @@ public class TaskListController {
             
         } catch (Exception e) {
             log.error("❌ ===== ERROR EN GET /api/lists =====");
-            log.error("❌ Usuario: {}", authentication.getName());
+            if (authentication != null) {
+                log.error("❌ Usuario: {}", authentication.getName());
+            }
             log.error("❌ Error completo:", e);
             log.error("❌ Stack trace:", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Collections.emptyList());
+        }
+    }
+
+    /**
+     * Creates a new task list for the authenticated user.
+     */
+    @PostMapping
+    public ResponseEntity<TaskListDTO> createTaskList(@Valid @RequestBody TaskListDTO taskListDTO, Authentication authentication) {
+        try {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.error("❌ TaskListController - Usuario no autenticado en createTaskList");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+            
+            if (taskListDTO == null) {
+                log.error("❌ TaskListController - TaskListDTO es null en createTaskList");
+                return ResponseEntity.badRequest().body(null);
+            }
+            
+            String username = securityService.getCurrentUsername();
+            if (username == null || username.trim().isEmpty()) {
+                log.error("❌ TaskListController - Username no disponible en createTaskList");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
+            
+            // Validar datos de entrada
+            if (taskListDTO.getName() == null || taskListDTO.getName().trim().isEmpty()) {
+                log.warn("⚠️ TaskListController - Nombre de lista vacío en createTaskList");
+                return ResponseEntity.badRequest().body(null);
+            }
+            
+            log.info(" TaskListController - Creando lista para usuario: {}", username);
+            TaskListDTO newList = taskListService.createTaskList(taskListDTO, username);
+            
+            if (newList == null) {
+                log.warn("⚠️ TaskListController - taskListService.createTaskList retornó null");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
+            
+            log.info("✅ TaskListController - Lista creada exitosamente con ID: {}", newList.getId());
+            return ResponseEntity.ok(newList);
+            
+        } catch (Exception e) {
+            log.error("❌ TaskListController - Error en createTaskList: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
