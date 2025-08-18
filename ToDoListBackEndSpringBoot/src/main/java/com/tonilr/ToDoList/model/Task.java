@@ -8,12 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.CascadeType;
 import java.util.Date;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.persistence.Index;
 
 @Entity
@@ -50,9 +46,6 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "assigned_to_id")
     private User assignedTo;
-
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
-    private List<Comment> comments = new ArrayList<>();
 
     @Column(name = "created_at")
     private Date createdAt;
@@ -119,14 +112,6 @@ public class Task {
 
     public void setAssignedTo(User assignedTo) {
         this.assignedTo = assignedTo;
-    }
-
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
     }
 
     public Date getCreatedAt() {
