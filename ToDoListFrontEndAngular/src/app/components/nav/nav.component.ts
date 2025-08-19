@@ -3,12 +3,14 @@
  * Provides user authentication status, task list navigation, sidebar toggle,
  * and responsive design support for mobile devices.
  */
-import { Component, OnInit, HostListener, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, HostListener, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TaskListService } from '../../services/task-list.service';
 import { TaskList } from '../../models/task-list.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-nav',
@@ -17,7 +19,7 @@ import { TaskList } from '../../models/task-list.model';
   templateUrl: './nav.component.html',
   styleUrls: ['./nav.component.css']
 })
-export class NavComponent implements OnInit {
+export class NavComponent implements OnInit, OnDestroy {
   @Output() abrirSidebarEvent = new EventEmitter<void>();
   @Output() cerrarSidebarEvent = new EventEmitter<void>();
   username: string = '';
@@ -27,6 +29,8 @@ export class NavComponent implements OnInit {
   isMobile: boolean = window.innerWidth <= 768;
   sidebarVisible = false;
   isUserMenuOpen = false;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService, 
@@ -47,13 +51,9 @@ export class NavComponent implements OnInit {
    * Loads user's task lists for navigation dropdown.
    */
   loadTaskLists() {
-    this.taskListService.getTaskLists().subscribe({
-      next: (taskLists) => {
-        this.taskLists = taskLists;
-      },
-      error: (error) => {
-        console.error('Error al obtener listas de tareas:', error);
-      }
+    this.taskListService.getTaskLists().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (taskLists) => { this.taskLists = taskLists; },
+      error: (error) => { console.error('Error al obtener listas de tareas:', error); }
     });
   }
 
@@ -162,5 +162,10 @@ export class NavComponent implements OnInit {
     if (this.isUserMenuOpen) {
       this.isUserMenuOpen = false;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
