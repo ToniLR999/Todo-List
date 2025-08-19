@@ -8,7 +8,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { SubscriptionManagerService } from '../../shared/subscription-manager.service';
 
 @Component({
   selector: 'app-login',
@@ -28,8 +27,7 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router,
-    private subscriptionManager: SubscriptionManagerService
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]],
@@ -39,38 +37,22 @@ export class LoginComponent {
 
   /**
    * Handles form submission for user login.
-   * Validates form, authenticates user, and navigates to tasks page on success.
    */
   onSubmit(): void {
     if (this.loginForm.valid) {
       const { username, password } = this.loginForm.value;
       this.authService.setAuthMethod('jwt');
-      this.subscriptionManager.subscribe(
-        this.authService.login(username, password),
-        (response) => {
-          setTimeout(() => {
-            this.router.navigate(['/tasks']);
-          }, 100); // Pequeño delay para asegurar que el token se guarde
+      this.authService.login(username, password).subscribe({
+        next: () => {
+          setTimeout(() => this.router.navigate(['/tasks']), 100);
         },
-        (error) => {
-          // console.error('Error login:', error);
+        error: () => {
           this.error = 'Error de autenticación. Por favor, verifica tus credenciales.';
         }
-      );
+      });
     }
   }
 
-  /**
-   * Navigates to the registration page.
-   */
-  goToRegister(): void {
-    this.router.navigate(['/register']);
-  }
-
-  /**
-   * Navigates to the forgot password page.
-   */
-  goToForgotPassword(): void {
-    this.router.navigate(['/forgot-password']);
-  }
+  goToRegister(): void { this.router.navigate(['/register']); }
+  goToForgotPassword(): void { this.router.navigate(['/forgot-password']); }
 }

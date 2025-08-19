@@ -7,7 +7,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { TaskList } from '../../models/task-list.model';
-import { SubscriptionManagerService } from '../../shared/subscription-manager.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 /**
  * Component for displaying and editing task details.
@@ -53,6 +54,8 @@ export class TaskDetailComponent implements OnInit {
     completed: false
   };
 
+  private destroy$ = new Subject<void>();
+
   /**
    * Constructor for TaskDetailComponent.
    * @param route Angular route service for accessing route parameters
@@ -64,8 +67,7 @@ export class TaskDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private taskService: TaskService,
-    private toastr: ToastrService,
-    private subscriptionManager: SubscriptionManagerService
+    private toastr: ToastrService
   ) {}
 
   /**
@@ -73,15 +75,12 @@ export class TaskDetailComponent implements OnInit {
    * Subscribes to route parameters to load task details if task ID is provided.
    */
   ngOnInit(): void {
-    this.subscriptionManager.subscribe(
-      this.route.params,
-      (params: any) => {
-        const taskId = params['id'];
-        if (taskId) {
-          this.loadTask(taskId);
-        }
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params: any) => {
+      const taskId = params['id'];
+      if (taskId) {
+        this.loadTask(taskId);
       }
-    );
+    });
   }
 
   /**
@@ -98,8 +97,7 @@ export class TaskDetailComponent implements OnInit {
         this.errorMessage = '';
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Error al cargar la tarea:', error);
+      error: () => {
         this.errorMessage = 'Error al cargar la tarea';
         this.loading = false;
         this.toastr.error('Error al cargar la tarea');
@@ -145,14 +143,8 @@ export class TaskDetailComponent implements OnInit {
     if (this.task) {
       this.taskService.updateTask(this.task.id!, { ...this.task, completed: !this.task.completed })
         .subscribe({
-          next: (updatedTask) => {
-            this.task = updatedTask;
-            this.errorMessage = '';
-          },
-          error: (error) => {
-            console.error('Error updating task:', error);
-            this.errorMessage = 'Error al actualizar la tarea';
-          }
+          next: (updatedTask) => { this.task = updatedTask; this.errorMessage = ''; },
+          error: () => { this.errorMessage = 'Error al actualizar la tarea'; }
         });
     }
   }
@@ -175,13 +167,8 @@ export class TaskDetailComponent implements OnInit {
   private confirmDeleteTask(): void {
     if (this.task) {
       this.taskService.deleteTask(this.task.id!).subscribe({
-        next: () => {
-          this.toastr.success(`Tarea "${this.task!.title}" eliminada correctamente`);
-          this.router.navigate(['/tasks']);
-        },
-        error: (error) => {
-          this.toastr.error('Error al eliminar la tarea');
-        }
+        next: () => { this.toastr.success(`Tarea "${this.task!.title}" eliminada correctamente`); this.router.navigate(['/tasks']); },
+        error: () => { this.toastr.error('Error al eliminar la tarea'); }
       });
     }
   }
@@ -207,15 +194,8 @@ export class TaskDetailComponent implements OnInit {
     if (!task.id) return;
     
     this.taskService.updateTask(task.id, task).subscribe({
-      next: (response) => {
-        this.task = response;
-        this.isEditing = false;
-        this.toastr.success('Tarea actualizada correctamente');
-      },
-      error: (error) => {
-        console.error('Error al actualizar la tarea:', error);
-        this.toastr.error('Error al actualizar la tarea');
-      }
+      next: (response) => { this.task = response; this.isEditing = false; this.toastr.success('Tarea actualizada correctamente'); },
+      error: () => { this.toastr.error('Error al actualizar la tarea'); }
     });
   }
 
@@ -223,15 +203,11 @@ export class TaskDetailComponent implements OnInit {
    * Emits close event to notify parent component.
    * Used when the detail view should be closed (e.g., modal dialog).
    */
-  closeTaskDetail() {
-    this.close.emit();
-  }
+  closeTaskDetail() { this.close.emit(); }
 
   /**
    * Navigates back to the task list view.
    * Used when the component is used as a standalone page.
    */
-  goBack(): void {
-    this.router.navigate(['/tasks']);
-  }
+  goBack(): void { this.router.navigate(['/tasks']); }
 }

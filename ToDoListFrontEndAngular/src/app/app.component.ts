@@ -8,9 +8,7 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { AuthService } from './services/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../environments/environment';
-import { Subject, fromEvent } from 'rxjs';
-import { MemoryManagerService } from './shared/memory-manager.service';
-import { SubscriptionManagerService } from './shared/subscription-manager.service';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -40,9 +38,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone,
-    private memoryManager: MemoryManagerService,
-    private subscriptionManager: SubscriptionManagerService
+    private ngZone: NgZone
   ) {
     this.setupResizeOptimization();
     this.checkMaintenanceStatus();
@@ -50,69 +46,50 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // REEMPLAZAR todas las subscripciones manuales:
-    
     // 1. Navegación del router
-    this.subscriptionManager.subscribe(
-      this.router.events.pipe(
-        filter((event: Event): event is NavigationEnd => event instanceof NavigationEnd),
-        debounceTime(100),
-        distinctUntilChanged()
-      ),
-      (event: NavigationEnd) => {
-        this.ngZone.runOutsideAngular(() => {
-          const currentRoute = event.urlAfterRedirects;
-          this.showSidebar = this.shouldShowSidebar(currentRoute);
-          this.showNavbar = this.shouldShowNavbar(currentRoute);
-          this.cdr.detectChanges();
-        });
-      }
-    );
-
-    // 2. Monitoreo de memoria
-    this.subscriptionManager.subscribe(
-      this.memoryManager.getMemoryUsage(),
-      (usage: any) => {
-        if (usage > 80) {
-          this.optimizeForHighMemory();
-        }
-      }
-    );
+    this.router.events.pipe(
+      filter((event: Event): event is NavigationEnd => event instanceof NavigationEnd),
+      debounceTime(100),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe((event: NavigationEnd) => {
+      this.ngZone.runOutsideAngular(() => {
+        const currentRoute = event.urlAfterRedirects;
+        this.showSidebar = this.shouldShowSidebar(currentRoute);
+        this.showNavbar = this.shouldShowNavbar(currentRoute);
+        this.cdr.detectChanges();
+      });
+    });
 
     // 3. Optimización de resize
-    this.subscriptionManager.subscribe(
-      this.resizeSubject.pipe(
-        debounceTime(150),
-        distinctUntilChanged()
-      ),
-      (width: number) => {
-        this.ngZone.run(() => {
-          this.isMobile = width <= 768;
-          this.cdr.detectChanges();
-        });
-      }
-    );
+    this.resizeSubject.pipe(
+      debounceTime(150),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe((width: number) => {
+      this.ngZone.run(() => {
+        this.isMobile = width <= 768;
+        this.cdr.detectChanges();
+      });
+    });
 
     // 4. Estado de mantenimiento
-    this.subscriptionManager.subscribe(
-      this.http.get(`${environment.apiUrl}/api/app-status/status`),
-      (response: any) => {
-        const isActive = response.status === 'UP' && response.scheduleStatus === 'ACTIVO';
-        if (!isActive && this.router.url !== '/maintenance') {
-          this.router.navigate(['/maintenance']);
-        }
+    this.http.get<any>(`${environment.apiUrl}/api/app-status/status`).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe((response: any) => {
+      const isActive = response.status === 'UP' && response.scheduleStatus === 'ACTIVO';
+      if (!isActive && this.router.url !== '/maintenance') {
+        this.router.navigate(['/maintenance']);
       }
-    );
+    });
 
     // 5. Eventos de ruta
-    this.subscriptionManager.subscribe(
-      this.router.events.pipe(
-        filter(event => event instanceof NavigationEnd)
-      ),
-      (event: any) => {
-        this.isMaintenanceRoute = event.url === '/maintenance';
-      }
-    );
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe((event: any) => {
+      this.isMaintenanceRoute = event.url === '/maintenance';
+    });
   }
 
   /**
@@ -123,7 +100,7 @@ export class AppComponent implements OnInit, OnDestroy {
       debounceTime(150),
       distinctUntilChanged(),
       takeUntil(this.destroy$)
-    ).subscribe(width => {
+    ).subscribe((width: number) => {
       this.ngZone.run(() => {
         this.isMobile = width <= 768;
         this.cdr.detectChanges();
@@ -139,7 +116,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.ngZone.runOutsideAngular(() => {
       // Limpiar caché innecesario
       this.clearUnnecessaryCache();
-      
       // Reducir la frecuencia de detección de cambios
       setTimeout(() => {
         this.cdr.detectChanges();
@@ -151,7 +127,6 @@ export class AppComponent implements OnInit, OnDestroy {
    * Limpia caché innecesario
    */
   private clearUnnecessaryCache(): void {
-    // Limpiar imágenes no visibles
     const images = document.querySelectorAll('img');
     images.forEach(img => {
       if (!this.isElementInViewport(img)) {
@@ -175,19 +150,16 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private checkMaintenanceStatus() {
-    this.http.get(`${environment.apiUrl}/api/app-status/status`)
+    this.http.get<any>(`${environment.apiUrl}/api/app-status/status`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
           const isActive = response.status === 'UP' && response.scheduleStatus === 'ACTIVO';
-          
           if (!isActive && this.router.url !== '/maintenance') {
             this.router.navigate(['/maintenance']);
           }
         },
-        error: () => {
-          // En caso de error, permitir acceso (fallback)
-        }
+        error: () => {}
       });
   }
 
@@ -212,19 +184,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('window:resize')
   onResize() {
-    // Usar el subject optimizado en lugar de actualizar directamente
     this.resizeSubject.next(window.innerWidth);
-  }
-
-  @HostListener('window:beforeunload')
-  onBeforeUnload() {
-    // Limpiar recursos antes de cerrar
-    this.memoryManager.cleanup();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    this.memoryManager.cleanup();
   }
 }
