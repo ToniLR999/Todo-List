@@ -21,8 +21,8 @@ export class MaintenanceInfoComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadMaintenanceInfo();
-    // Actualizar cada 5 minutos
-    this.interval = setInterval(() => this.loadMaintenanceInfo(), 300000);
+    // Actualizar cada 3 minutos (más eficiente que 5 minutos)
+    this.interval = setInterval(() => this.loadMaintenanceInfo(), 180000);
   }
 
   ngOnDestroy() {
@@ -73,27 +73,6 @@ export class MaintenanceInfoComponent implements OnInit, OnDestroy {
     }
 
     return 'La aplicación está temporalmente no disponible.';
-  }
-
-  getStatusClass(): string {
-    if (!this.maintenanceInfo) return '';
-    
-    if (this.maintenanceInfo.status === 'UP' && this.maintenanceInfo.scheduleStatus === 'ACTIVO') {
-      return 'status-active';
-    }
-    
-    return 'status-maintenance';
-  }
-
-  getCurrentTime(): string {
-    return new Date().toLocaleString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   }
 
   refreshInfo() {

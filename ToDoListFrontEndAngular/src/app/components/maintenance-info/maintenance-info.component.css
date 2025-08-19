@@ -36,7 +36,7 @@
 }
 
 .maintenance-content {
-  max-width: 800px;
+  max-width: 700px;
   width: 100%;
 }
 
@@ -47,13 +47,6 @@
   margin-bottom: 20px;
   border: 1px solid #E0E0E0;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-}
-
-.status-card.status-active {
-  border-left: 5px solid #4CAF50;
-
-.status-card.status-maintenance {
-  border-left: 5px solid #FF9800;
 }
 
 .status-header {
@@ -71,19 +64,14 @@
 }
 
 .status-badge {
-  background: #E8F5E8;
-  color: #2E7D32;
+  background: #FFF3E0;
+  color: #E65100;
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-}
-
-.status-badge.status-maintenance {
-  background: #FFF3E0;
-  color: #E65100;
 }
 
 .status-message {
@@ -98,30 +86,30 @@
 }
 
 .schedule-info {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .info-item {
   background: #F8F9FA;
-  padding: 15px;
+  padding: 20px;
   border-radius: 12px;
   border: 1px solid #E9ECEF;
+  text-align: center;
 }
 
 .info-item .label {
   display: block;
   font-size: 0.9rem;
   color: #6C757D;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .info-item .value {
   display: block;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: #333333;
 }
@@ -150,49 +138,6 @@
   margin: 10px 0;
   line-height: 1.6;
   color: #666666;
-}
-
-.action-card {
-  background: #FFFFFF;
-  border-radius: 20px;
-  padding: 25px;
-  text-align: center;
-  border: 1px solid #E0E0E0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-}
-
-.btn {
-  background: #F8F9FA;
-  color: #333333;
-  border: 1px solid #DEE2E6;
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-}
-
-.btn:hover {
-  background: #E9ECEF;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.btn-primary {
-  background: linear-gradient(45deg, #4CAF50, #45a049);
-  color: #FFFFFF;
-  border: none;
-}
-
-.btn-primary:hover {
-  background: linear-gradient(45deg, #45a049, #4CAF50);
-}
-
-.note {
-  margin: 15px 0 0 0;
-  font-size: 0.9rem;
-  color: #6C757D;
 }
 
 .loading, .error {
@@ -228,6 +173,24 @@
   color: #666666;
 }
 
+.btn {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: #FFFFFF;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn:hover {
+  background: linear-gradient(45deg, #45a049, #4CAF50);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
@@ -243,12 +206,11 @@
     font-size: 2rem;
   }
   
-  .schedule-info {
-    grid-template-columns: 1fr;
-  }
-  
-  .status-card, .info-card, .action-card {
+  .status-card, .info-card {
     padding: 20px;
   }
-}
+  
+  .maintenance-content {
+    max-width: 100%;
+  }
 }
