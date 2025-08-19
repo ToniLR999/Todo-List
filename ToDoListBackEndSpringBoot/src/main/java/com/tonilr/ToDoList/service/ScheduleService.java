@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.DayOfWeek;
 import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime; 
 
 @Service
 @Slf4j
@@ -25,6 +27,9 @@ public class ScheduleService {
 
     @Value("${app.schedule.enabled:true}")
     private boolean scheduleEnabled;
+
+    @Value("${app.timezone:Europe/Madrid}")
+private String appZoneId;
 
     private LocalDateTime lastScheduleCheck;
     private boolean isApplicationActive = true;
@@ -44,14 +49,17 @@ public class ScheduleService {
 
     @Scheduled(fixedRate = 60000) // Verificar cada minuto
     public void checkSchedule() {
+        ZoneId zoneId = ZoneId.of(appZoneId);
+        ZonedDateTime now = ZonedDateTime.now(zoneId);
+        LocalDateTime localTime = now.toLocalDateTime();
+
         // Solo verificar horarios en producción
         if (!isProduction() || !scheduleEnabled) {
             return;
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        DayOfWeek currentDay = now.getDayOfWeek();
-        LocalTime currentTime = now.toLocalTime();
+        DayOfWeek currentDay = localTime.getDayOfWeek();
+        LocalTime currentTime = localTime.toLocalTime();
 
         boolean shouldBeActive = isWorkTime(currentDay, currentTime);
         
@@ -63,7 +71,7 @@ public class ScheduleService {
             }
         }
 
-        lastScheduleCheck = now;
+        lastScheduleCheck = localTime;
     }
 
     private boolean isWorkTime(DayOfWeek day, LocalTime time) {
@@ -107,9 +115,11 @@ public class ScheduleService {
             return "Desarrollo local - Siempre activo";
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        DayOfWeek currentDay = now.getDayOfWeek();
-        LocalTime currentTime = now.toLocalTime();
+        ZoneId zoneId = ZoneId.of(appZoneId);
+        ZonedDateTime now = ZonedDateTime.now(zoneId);
+        LocalDateTime localTime = now.toLocalDateTime();
+        DayOfWeek currentDay = localTime.getDayOfWeek();
+        LocalTime currentTime = localTime.toLocalTime();
 
         if (isWorkTime(currentDay, currentTime)) {
             LocalTime timeUntilEnd = WORK_END.minusHours(currentTime.getHour())
@@ -138,9 +148,11 @@ public class ScheduleService {
             return "Siempre activo (desarrollo)";
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        DayOfWeek currentDay = now.getDayOfWeek();
-        LocalTime currentTime = now.toLocalTime();
+        ZoneId zoneId = ZoneId.of(appZoneId);
+        ZonedDateTime now = ZonedDateTime.now(zoneId);
+        LocalDateTime localTime = now.toLocalDateTime();
+        DayOfWeek currentDay = localTime.getDayOfWeek();
+        LocalTime currentTime = localTime.toLocalTime();
 
         if (currentDay == DayOfWeek.FRIDAY && currentTime.isAfter(WORK_END)) {
             // Si es viernes después de las 19:00, el próximo inicio es lunes
@@ -170,9 +182,11 @@ public class ScheduleService {
             return "ACTIVO";
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        DayOfWeek currentDay = now.getDayOfWeek();
-        LocalTime currentTime = now.toLocalTime();
+        ZoneId zoneId = ZoneId.of(appZoneId);
+        ZonedDateTime now = ZonedDateTime.now(zoneId);
+        LocalDateTime localTime = now.toLocalDateTime();
+        DayOfWeek currentDay = localTime.getDayOfWeek();
+        LocalTime currentTime = localTime.toLocalTime();
         
         if (isWorkTime(currentDay, currentTime)) {
             return "ACTIVO";
