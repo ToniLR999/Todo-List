@@ -102,7 +102,7 @@ jobs:
           if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
             echo "🧪 MODO DE PRUEBA - No se enviará request a Railway"
             echo "📡 Request que se enviaría:"
-            echo "URL: https://railway.app/api/v2/services/$RAILWAY_SERVICE_ID"
+            echo "URL: https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID"
             echo "Headers: Authorization: Bearer [TOKEN], Content-Type: application/json"
             echo "Data: pause = $pause"
             echo "✅ Prueba completada exitosamente"
@@ -112,7 +112,7 @@ jobs:
           echo "📡 Enviando request a Railway API REST..."
           
           # Usar API REST de Railway (más estable que GraphQL)
-          resp=$(curl -sS -L -w "HTTP_CODE:%{http_code}" -X PATCH "https://railway.app/api/v2/services/$RAILWAY_SERVICE_ID" \
+          resp=$(curl -sS -L -w "HTTP_CODE:%{http_code}" -X PATCH "https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID" \
             -H "Authorization: Bearer $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"pause\":$pause}")
