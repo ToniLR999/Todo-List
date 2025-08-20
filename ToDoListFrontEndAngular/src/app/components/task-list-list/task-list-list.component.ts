@@ -52,6 +52,14 @@ export class TaskListListComponent implements OnInit, OnDestroy {
       })
     );
     
+    // Suscribirse a las notificaciones de actualización
+    this.subscription.add(
+      this.taskListService.listUpdated.subscribe(() => {
+        // Recargar listas cuando se notifique un cambio
+        this.loadTaskLists();
+      })
+    );
+    
     // Cargar listas iniciales (usará cache si está disponible)
     this.loadTaskLists();
   }
@@ -65,9 +73,15 @@ export class TaskListListComponent implements OnInit, OnDestroy {
    * Subscribes to the task list service to fetch and display task lists.
    */
   loadTaskLists() {
-    // El servicio ya maneja el cache y actualiza el observable
-    // Solo necesitamos llamar al método para disparar la carga
+    // Forzar recarga limpiando cache y obteniendo datos frescos
+    this.taskListService.clearCache();
     this.taskListService.getTaskLists().subscribe({
+      next: (taskLists) => {
+        // Actualizar directamente el array local para respuesta inmediata
+        if (taskLists && taskLists.length > 0) {
+          this.taskLists = taskLists;
+        }
+      },
       error: (error) => {
         console.error('❌ Error en componente al obtener listas:', error);
         this.toastr.error('Error al cargar las listas');
@@ -106,7 +120,7 @@ export class TaskListListComponent implements OnInit, OnDestroy {
       // Create new task list
       this.taskListService.createTaskList(this.newList).subscribe({
         next: (list) => {
-          // Add new list to the local array
+          // Add new list to the local array immediately
           this.taskLists = [...this.taskLists, list];
           // Reset form and notify other components
           this.showNewListForm = false;
@@ -174,6 +188,15 @@ export class TaskListListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/tasks/list', list.id]).then(() => {
       this.taskListService.listUpdated.next();
     });
+  }
+
+  /**
+   * Shows the new list form immediately.
+   */
+  openNewListForm() {
+    this.showNewListForm = true;
+    this.newList = { name: '', description: '' };
+    this.editingList = null;
   }
 
   /**

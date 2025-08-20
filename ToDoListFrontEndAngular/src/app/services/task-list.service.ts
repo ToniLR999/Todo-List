@@ -67,6 +67,16 @@ export class TaskListService {
       return of(currentValue);
     }
 
+    // Si no hay datos, hacer la llamada HTTP inmediatamente
+    return this.fetchTaskListsFromAPI();
+  }
+
+  /**
+   * Fetches task lists from API with caching.
+   * @returns Observable of TaskList array
+   */
+  private fetchTaskListsFromAPI(): Observable<TaskList[]> {
+
     const paginationParams = this.paginationService.getPaginationParams();
     const cacheKey = this.cacheService.generateKey(
       this.CACHE_KEY_PREFIX + 'all',
