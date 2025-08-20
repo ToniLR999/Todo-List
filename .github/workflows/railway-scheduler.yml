@@ -143,14 +143,27 @@ jobs:
           echo "🚀 Configurando Railway CLI..."
           echo "RAILWAY_TOKEN=$RAILWAY_TOKEN" > .env
           
+          # Debug: Ver qué valor real tiene la variable
+          echo "🔍 Debug: Valor real de SERVICE_ID (sin enmascarar):"
+          echo "🔍 SERVICE_ID = '$RAILWAY_SERVICE_ID'"
+          echo "🔍 Longitud = ${#RAILWAY_SERVICE_ID}"
+          echo "🔍 Primeros 8 chars = '${RAILWAY_SERVICE_ID:0:8}'"
+          
+          # Verificar que no esté vacía o sea ***
+          if [ "$RAILWAY_SERVICE_ID" = "***" ] || [ -z "$RAILWAY_SERVICE_ID" ]; then
+            echo "❌ ERROR: SERVICE_ID está enmascarado o vacío"
+            echo "❌ Valor actual: '$RAILWAY_SERVICE_ID'"
+            exit 1
+          fi
+          
           echo "🚀 Ejecutando comando Railway CLI..."
           if [ "$pause" = true ]; then
             echo "⏸️ Pausando servicio..."
-            railway service pause $RAILWAY_SERVICE_ID
+            railway service pause "$RAILWAY_SERVICE_ID"
             cli_exit_code=$?
           else
             echo "▶️ Reanudando servicio..."
-            railway service resume $RAILWAY_SERVICE_ID
+            railway service resume "$RAILWAY_SERVICE_ID"
             cli_exit_code=$?
           fi
           
