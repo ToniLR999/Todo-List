@@ -126,7 +126,7 @@ jobs:
           if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
             echo "🧪 MODO DE PRUEBA - No se enviará request a Railway"
             echo "📡 Comando que se ejecutaría:"
-            echo "railway service pause/resume --service $RAILWAY_SERVICE_ID --project $RAILWAY_PROJECT_ID"
+            echo "railway service pause/resume $RAILWAY_SERVICE_ID"
             echo "🔍 Debug Test: RAILWAY_SERVICE_ID = $RAILWAY_SERVICE_ID"
             echo "🔍 Debug Test: RAILWAY_PROJECT_ID = $RAILWAY_PROJECT_ID"
             echo "🔍 Debug Test: Token (primeros 10 chars) = ${RAILWAY_TOKEN:0:10}..."
@@ -142,11 +142,11 @@ jobs:
           echo "🚀 Ejecutando comando Railway CLI..."
           if [ "$pause" = true ]; then
             echo "⏸️ Pausando servicio..."
-            railway service pause --service $RAILWAY_SERVICE_ID --project $RAILWAY_PROJECT_ID
+            railway service pause $RAILWAY_SERVICE_ID
             cli_exit_code=$?
           else
             echo "▶️ Reanudando servicio..."
-            railway service resume --service $RAILWAY_SERVICE_ID --project $RAILWAY_PROJECT_ID
+            railway service resume $RAILWAY_SERVICE_ID
             cli_exit_code=$?
           fi
           
