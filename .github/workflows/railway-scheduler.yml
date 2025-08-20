@@ -112,7 +112,7 @@ jobs:
           echo "📡 Enviando request a Railway API REST..."
           
           # Usar API REST de Railway (más estable que GraphQL)
-          resp=$(curl -sS -w "HTTP_CODE:%{http_code}" -X PATCH "https://railway.app/api/v2/services/$RAILWAY_SERVICE_ID" \
+          resp=$(curl -sS -L -w "HTTP_CODE:%{http_code}" -X PATCH "https://railway.app/api/v2/services/$RAILWAY_SERVICE_ID" \
             -H "Authorization: Bearer $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"pause\":$pause}")
