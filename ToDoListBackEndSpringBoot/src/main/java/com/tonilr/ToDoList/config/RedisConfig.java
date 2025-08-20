@@ -13,15 +13,14 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.CacheManager;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.context.annotation.Primary;
 
 import java.time.Duration;
 
+/**
+ * Configuración optimizada de Redis para Railway.
+ * Configuración consolidada sin duplicación.
+ */
 @Configuration
 @EnableCaching
 @ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis")
@@ -32,13 +31,8 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Configurar serializador JSON
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        objectMapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, 
-            ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
-        jsonSerializer.setObjectMapper(objectMapper);
+        // Serializador JSON optimizado
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
 
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(jsonSerializer);
@@ -52,13 +46,21 @@ public class RedisConfig {
     @Bean
     @Primary
     public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-            .entryTtl(Duration.ofMinutes(30))
+        // Configuración base optimizada para Railway
+        RedisCacheConfiguration baseConfig = RedisCacheConfiguration.defaultCacheConfig()
+            .entryTtl(Duration.ofMinutes(15)) // TTL base reducido para Railway
+            .disableCachingNullValues()
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
             .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
         return RedisCacheManager.builder(connectionFactory)
-            .cacheDefaults(config)
+            .cacheDefaults(baseConfig)
+            .withCacheConfiguration("tasks", 
+                baseConfig.entryTtl(Duration.ofMinutes(10))) // TTL reducido para Railway
+            .withCacheConfiguration("taskLists", 
+                baseConfig.entryTtl(Duration.ofMinutes(15))) // TTL reducido para Railway
+            .withCacheConfiguration("users", 
+                baseConfig.entryTtl(Duration.ofMinutes(20))) // TTL reducido para Railway
             .build();
     }
 }
