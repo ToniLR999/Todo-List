@@ -24,11 +24,6 @@ jobs:
       BUSINESS_START: "10:00"
       BUSINESS_END: "19:00"
     steps:
-      - name: Setup Railway CLI
-        uses: railwayapp/setup-railway@v1
-        with:
-          token: ${{ secrets.RAILWAY_TOKEN }}
-      
       - name: Alternar estado del servicio en Railway según horario
         shell: bash
         run: |
@@ -136,8 +131,17 @@ jobs:
 
           echo "📡 Enviando request a Railway API REST..."
           
-          # Railway CLI ya está configurado por el setup-actions
-          echo "✅ Railway CLI listo y configurado"
+          # Instalar Railway CLI con cache
+          echo "🚀 Verificando Railway CLI..."
+          if ! command -v railway &> /dev/null; then
+            echo "🚀 Instalando Railway CLI..."
+            npm install -g @railway/cli
+          else
+            echo "✅ Railway CLI ya está instalado"
+          fi
+          
+          echo "🚀 Configurando Railway CLI..."
+          echo "RAILWAY_TOKEN=$RAILWAY_TOKEN" > .env
           
           echo "🚀 Ejecutando comando Railway CLI..."
           if [ "$pause" = true ]; then
