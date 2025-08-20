@@ -92,11 +92,11 @@ jobs:
             echo "⚠️ Falta RAILWAY_PROJECT_ID. Intenta sin projectId (puede fallar)."
           fi
 
-          echo "🔍 Debug: Preparando request para API REST de Railway..."
+          echo "🔍 Debug: Preparando request para API GraphQL de Railway..."
           
-          # Preparar datos para API REST de Railway
+          # Preparar datos para API GraphQL de Railway
           echo "🔍 Debug: pause = $pause"
-          echo "🔍 Debug: Usando API REST de Railway"
+          echo "🔍 Debug: Usando API GraphQL de Railway"
           echo "🔍 Debug: RAILWAY_SERVICE_ID = $RAILWAY_SERVICE_ID"
           echo "🔍 Debug: URL completa = https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID"
           echo "🔍 Debug: Token (primeros 10 chars) = ${RAILWAY_TOKEN:0:10}..."
@@ -141,11 +141,14 @@ jobs:
 
           echo "📡 Enviando request a Railway API REST..."
           
-          # Usar API REST de Railway (más estable que GraphQL)
-          resp=$(curl -sS -L -w "HTTP_CODE:%{http_code}" -X PATCH "https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID" \
+          # Usar la API CORRECTA de Railway (la que realmente funciona)
+          echo "🚨 PROBANDO API CORRECTA DE RAILWAY..."
+          
+          # API principal de Railway (la que SÍ funciona)
+          resp=$(curl -sS -L -w "HTTP_CODE:%{http_code}" -X POST "https://railway.app/api/graphql" \
             -H "Authorization: Bearer $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"pause\":$pause}")
+            -d "{\"query\":\"mutation { serviceUpdate(id: \\\"$RAILWAY_SERVICE_ID\\\", pause: $pause) { id } }\"}")
 
           # Separar respuesta y código HTTP
           http_code=$(echo "$resp" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
