@@ -1,0 +1,110 @@
+name: Railway Diagnostic
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Acción a realizar'
+        required: true
+        default: 'diagnose'
+        type: choice
+        options:
+          - diagnose
+          - test-token
+          - test-service
+          - test-mutation
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+    steps:
+      - name: Diagnóstico de Railway
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          echo "🔍 DIAGNÓSTICO DE RAILWAY"
+          echo "=========================="
+          
+          # Verificar secretos
+          if [ -z "${RAILWAY_TOKEN:-}" ]; then
+            echo "❌ RAILWAY_TOKEN no está configurado"
+            exit 1
+          fi
+          
+          if [ -z "${RAILWAY_SERVICE_ID:-}" ]; then
+            echo "❌ RAILWAY_SERVICE_ID no está configurado"
+            exit 1
+          fi
+          
+          echo "✅ Secretos configurados"
+          echo "🔑 Token: ${RAILWAY_TOKEN:0:10}..."
+          echo "🆔 Service ID: $RAILWAY_SERVICE_ID"
+          
+          # Verificar conectividad básica
+          echo ""
+          echo "🌐 Verificando conectividad..."
+          if curl -s -f https://backboard.railway.app/graphql/v2 > /dev/null; then
+            echo "✅ Conectividad con Railway OK"
+          else
+            echo "❌ No se puede conectar con Railway"
+            exit 1
+          fi
+          
+          # Verificar token
+          echo ""
+          echo "🔐 Verificando token..."
+          token_response=$(curl -s -X POST https://backboard.railway.app/graphql/v2 \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"query": "query { viewer { id email } }"}')
+          
+          if echo "$token_response" | grep -q '"errors"'; then
+            echo "❌ Token inválido o expirado"
+            echo "🔍 Error: $token_response"
+          else
+            echo "✅ Token válido"
+            viewer_id=$(echo "$token_response" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+            echo "👤 Viewer ID: $viewer_id"
+          fi
+          
+          # Verificar service
+          echo ""
+          echo "🆔 Verificando service..."
+          service_response=$(curl -s -X POST https://backboard.railway.app/graphql/v2 \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\": \"query { service(id: \\\"$RAILWAY_SERVICE_ID\\\") { id name status } }\"}")
+          
+          if echo "$service_response" | grep -q '"errors"'; then
+            echo "❌ Service ID inválido o sin permisos"
+            echo "🔍 Error: $service_response"
+          else
+            echo "✅ Service ID válido"
+            service_name=$(echo "$service_response" | grep -o '"name":"[^"]*"' | cut -d'"' -f4)
+            service_status=$(echo "$service_response" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+            echo "📋 Service: $service_name"
+            echo "📊 Status: $service_status"
+          fi
+          
+          # Probar mutation (solo lectura)
+          echo ""
+          echo "🧪 Probando mutation (solo lectura)..."
+          mutation_response=$(curl -s -X POST https://backboard.railway.app/graphql/v2 \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\": \"mutation { serviceUpdate(id: \\\"$RAILWAY_SERVICE_ID\\\", pause: false) { id } }\"}")
+          
+          if echo "$mutation_response" | grep -q '"errors"'; then
+            echo "❌ Mutation falló"
+            echo "🔍 Error: $mutation_response"
+          else
+            echo "✅ Mutation exitosa"
+            echo "🔍 Respuesta: $mutation_response"
+          fi
+          
+          echo ""
+          echo "🏁 Diagnóstico completado"
