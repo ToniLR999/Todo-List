@@ -8,7 +8,7 @@ on:
       test_mode:
         description: 'Modo de prueba (no modifica Railway)'
         required: false
-        default: false
+        default: true
         type: boolean
 
 jobs:
@@ -19,6 +19,7 @@ jobs:
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
       TIMEZONE: Europe/Madrid
       BUSINESS_START: "10:00"
       BUSINESS_END: "19:00"
@@ -80,13 +81,40 @@ jobs:
             echo "🚫 Fuera de horario. Poniendo servicio en pausa."
           fi
 
-          # Preparar JSON para GraphQL
-          json=$(cat <<EOF
+          # DEBUG: Mostrar información de secretos (sin revelar valores completos)
+          echo "🔍 Debug: Verificando configuración..."
+          echo "🔍 Debug: RAILWAY_TOKEN configurado: $([ -n "${RAILWAY_TOKEN:-}" ] && echo "SÍ" || echo "NO")"
+          echo "🔍 Debug: RAILWAY_SERVICE_ID configurado: $([ -n "${RAILWAY_SERVICE_ID:-}" ] && echo "SÍ" || echo "NO")"
+          echo "🔍 Debug: RAILWAY_PROJECT_ID configurado: $([ -n "${RAILWAY_PROJECT_ID:-}" ] && echo "SÍ" || echo "NO")"
+          
+          # Verificar PROJECT_ID
+          if [ -z "${RAILWAY_PROJECT_ID:-}" ]; then
+            echo "⚠️ Falta RAILWAY_PROJECT_ID. Intenta sin projectId (puede fallar)."
+          fi
+
+          echo "🔍 Debug: Construyendo JSON para GraphQL..."
+          
+          # Preparar JSON para GraphQL usando variables
+          read -r -d '' json <<'EOF'
           {
-            "query": "mutation { serviceUpdate(id: \"$RAILWAY_SERVICE_ID\", pause: $pause) { id } }"
+            "query": "mutation ServiceUpdate($serviceId: String!, $projectId: String, $pause: Boolean!) { serviceUpdate(id: $serviceId, projectId: $projectId, pause: $pause) { id } }",
+            "variables": {
+              "serviceId": "__SERVICE_ID__",
+              "projectId": "__PROJECT_ID__",
+              "pause": __PAUSE__
+            }
           }
           EOF
-          )
+
+          echo "🔍 Debug: JSON base creado, sustituyendo variables..."
+
+          # Sustituir variables en el JSON
+          json=${json/__SERVICE_ID__/$RAILWAY_SERVICE_ID}
+          json=${json/__PROJECT_ID__/${RAILWAY_PROJECT_ID:-null}}
+          if [ "$pause" = true ]; then json=${json/__PAUSE__/true}; else json=${json/__PAUSE__/false}; fi
+
+          echo "🔍 Debug: Variables sustituidas en JSON"
+          echo "🔍 Debug: pause = $pause"
 
           # Verificar si es modo de prueba
           if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
@@ -98,91 +126,34 @@ jobs:
           fi
 
           echo "📡 Enviando request a Railway..."
-          echo "🔑 Token: ${RAILWAY_TOKEN:0:10}..." # Solo mostrar primeros 10 caracteres
-          echo "🆔 Service ID: $RAILWAY_SERVICE_ID"
-          echo "📦 JSON: $json"
           
-          # Verificar conectividad con Railway primero
-          echo "🔍 Verificando conectividad con Railway..."
-          health_check=$(curl -s -o /dev/null -w "%{http_code}" https://backboard.railway.app/graphql/v2)
-          if [ "$health_check" != "200" ] && [ "$health_check" != "405" ]; then
-            echo "❌ Error de conectividad con Railway: HTTP $health_check"
-            exit 1
-          fi
-          echo "✅ Conectividad con Railway verificada"
-          
-          # Verificar que el token sea válido
-          echo "🔐 Verificando validez del token..."
-          token_check=$(curl -s -X POST https://backboard.railway.app/graphql/v2 \
+          # Hacer llamada a Railway API
+          resp=$(curl -sS -w "HTTP_CODE:%{http_code}" -X POST https://backboard.railway.app/graphql/v2 \
             -H "Authorization: Bearer $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"query": "query { viewer { id } }"}')
-          
-          if echo "$token_check" | grep -q '"errors"'; then
-            echo "❌ Token inválido o expirado"
-            echo "🔍 Respuesta del check: $token_check"
-            exit 1
-          fi
-          echo "✅ Token válido"
-          
-          # Verificar que el service ID sea válido
-          echo "🆔 Verificando service ID..."
-          service_check=$(curl -s -X POST https://backboard.railway.app/graphql/v2 \
-            -H "Authorization: Bearer $RAILWAY_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"query\": \"query { service(id: \\\"$RAILWAY_SERVICE_ID\\\") { id name } }\"}")
-          
-          if echo "$service_check" | grep -q '"errors"'; then
-            echo "❌ Service ID inválido o sin permisos"
-            echo "🔍 Respuesta del check: $service_check"
-            exit 1
-          fi
-          echo "✅ Service ID válido"
-          
-          # Hacer llamada a Railway API con más debugging
-          echo "🌐 URL: https://backboard.railway.app/graphql/v2"
-          
-          # Intentar con curl verbose para más información
-          resp=$(curl -v -sS -w "HTTP_CODE:%{http_code}" -X POST https://backboard.railway.app/graphql/v2 \
-            -H "Authorization: Bearer $RAILWAY_TOKEN" \
-            -H "Content-Type: application/json" \
-            -H "User-Agent: GitHub-Action-Railway-Scheduler/1.0" \
-            -d "$json" 2>&1)
+            -d "$json")
 
           # Separar respuesta y código HTTP
           http_code=$(echo "$resp" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
-          response_body=$(echo "$resp" | sed 's/HTTP_CODE:[0-9]*$//' | sed '/^[><*]/d') # Remover líneas de curl verbose
+          response_body=$(echo "$resp" | sed 's/HTTP_CODE:[0-9]*$//')
 
           echo "📋 Respuesta HTTP: $http_code"
-          echo "📄 Respuesta completa: $response_body"
+          echo "📄 Respuesta: $response_body"
           
           # Verificar código HTTP
           if [ "$http_code" != "200" ]; then
             echo "❌ Error HTTP: $http_code"
-            echo "🔍 Headers de respuesta:"
-            echo "$resp" | grep -E "^< HTTP|^< [A-Za-z-]+:"
             exit 1
           fi
           
           # Verificar errores en GraphQL
           if echo "$response_body" | grep -q '"errors"'; then
             echo "❌ Error en Railway GraphQL:"
-            echo "$response_body" | grep -o '"errors":\[[^]]*\]'
-            
-            # Intentar obtener más detalles del error
-            echo "🔍 Detalles del error:"
-            echo "$response_body" | jq -r '.errors[] | "Message: \(.message), Code: \(.code // "N/A"), Extensions: \(.extensions // "N/A")"' 2>/dev/null || echo "No se pudo parsear JSON de error"
-            
-            # Verificar si es un problema de autenticación
-            if echo "$response_body" | grep -q "unauthorized\|authentication\|token"; then
-              echo "🔐 Error de autenticación detectado. Verificar RAILWAY_TOKEN"
-            fi
-            
-            # Verificar si es un problema de permisos
-            if echo "$response_body" | grep -q "permission\|forbidden\|access"; then
-              echo "🚫 Error de permisos detectado. Verificar permisos del token"
-            fi
-            
+            echo "$response_body"
+            echo "🔎 Sugerencias:"
+            echo " - Verifica que el secreto RAILWAY_TOKEN sea un token de proyecto con permisos."
+            echo " - Añade el secreto RAILWAY_PROJECT_ID si no está definido."
+            echo " - Comprueba que RAILWAY_SERVICE_ID pertenece al proyecto indicado."
             exit 1
           fi
           
