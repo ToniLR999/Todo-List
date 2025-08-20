@@ -85,20 +85,13 @@ private String appZoneId;
     }
 
     private void scheduleShutdown() {
-        // Solo apagar en producción
+        // En producción, en lugar de apagar el proceso, marcamos la app como inactiva
         if (!isProduction()) {
             return;
         }
 
-        // Programar apagado en 5 minutos
-        new Thread(() -> {
-            try {
-                Thread.sleep(5 * 60 * 1000); // 5 minutos
-                System.exit(0);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }).start();
+        // Marcar como inactiva inmediatamente
+        isApplicationActive = false;
     }
 
     public boolean isApplicationActive() {
