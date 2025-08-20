@@ -17,7 +17,7 @@ import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 import com.tonilr.ToDoList.dto.CacheableTaskDTO;
 import java.util.stream.Collectors;
-import com.tonilr.ToDoList.service.CacheService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -41,8 +41,7 @@ public class TaskController {
     @Autowired
     private SecurityService securityService;
 
-    @Autowired
-    private CacheService cacheService;
+
 
     /**
      * Creates a new task for the authenticated user.
@@ -336,18 +335,6 @@ public class TaskController {
         }
     }
 
-    /**
-     * Endpoint to clear all task-related caches (for debugging or admin use).
-     */
-    @PostMapping("/clear-cache")
-    public ResponseEntity<String> clearCache() {
-        try {
-            // Limpiar caché de Redis
-            cacheService.evictAllCache();
-            return ResponseEntity.ok("Caché limpiado correctamente");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al limpiar caché: " + e.getMessage());
-        }
-    }
+
 }
         
