@@ -1,0 +1,64 @@
+# Configuración específica para Railway - Optimizada para memoria
+spring:
+  profiles:
+    active: railway
+  
+  # Configuración de base de datos optimizada para Railway
+  datasource:
+    hikari:
+      maximum-pool-size: 3        # Reducido para Railway
+      minimum-idle: 1             # Mínimo necesario
+      max-lifetime: 180000        # 3 minutos
+      idle-timeout: 30000         # 30 segundos
+      connection-timeout: 15000   # 15 segundos
+      leak-detection-threshold: 30000
+  
+  # JPA optimizado para Railway
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 10          # Reducido para Railway
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+        # Reducir logging en Railway
+        show_sql: false
+        format_sql: false
+  
+  # Caché optimizado para Railway
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=50,expireAfterWrite=180s  # Reducido para Railway
+
+# Configuración de servidor optimizada para Railway
+server:
+  tomcat:
+    threads:
+      max: 10                     # Reducido para Railway
+      min-spare: 2                # Mínimo necesario
+    max-connections: 50           # Reducido para Railway
+    accept-count: 5               # Reducido para Railway
+
+# Logging optimizado para Railway
+logging:
+  level:
+    root: WARN                    # Solo warnings y errores
+    com.tonilr.ToDoList: INFO     # Tu aplicación en INFO
+    org.springframework: WARN     # Spring en WARN
+    org.hibernate: WARN           # Hibernate en WARN
+  pattern:
+    console: "%d{HH:mm:ss} %-5level %logger{36} - %msg%n"  # Formato simple
+
+# Configuración de memoria específica para Railway
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info      # Solo endpoints esenciales
+  endpoint:
+    health:
+      show-details: when-authorized  # Solo para usuarios autenticados
