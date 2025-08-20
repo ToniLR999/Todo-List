@@ -97,6 +97,9 @@ jobs:
           # Preparar datos para API REST de Railway
           echo "🔍 Debug: pause = $pause"
           echo "🔍 Debug: Usando API REST de Railway"
+          echo "🔍 Debug: RAILWAY_SERVICE_ID = $RAILWAY_SERVICE_ID"
+          echo "🔍 Debug: URL completa = https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID"
+          echo "🔍 Debug: Token (primeros 10 chars) = ${RAILWAY_TOKEN:0:10}..."
 
           # Verificar si es modo de prueba
           if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
@@ -105,6 +108,8 @@ jobs:
             echo "URL: https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID"
             echo "Headers: Authorization: Bearer [TOKEN], Content-Type: application/json"
             echo "Data: pause = $pause"
+            echo "🔍 Debug Test: RAILWAY_SERVICE_ID = $RAILWAY_SERVICE_ID"
+            echo "🔍 Debug Test: Token (primeros 10 chars) = ${RAILWAY_TOKEN:0:10}..."
             echo "✅ Prueba completada exitosamente"
             exit 0
           fi
