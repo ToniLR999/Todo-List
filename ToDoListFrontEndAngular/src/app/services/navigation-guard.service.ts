@@ -21,11 +21,11 @@ export class NavigationGuardService {
   private setupNavigationGuard() {
     this.router.events.pipe(
       filter(event => event instanceof NavigationStart)
-    ).subscribe((event: NavigationStart) => {
+    ).subscribe((event) => {
       // Verificar si la aplicación está activa antes de permitir la navegación
       if (!this.scheduleService.isApplicationActive()) {
         // Si no está activa y no va a la página de mantenimiento, redirigir
-        if (event.url !== '/maintenance') {
+        if ((event as NavigationStart).url !== '/maintenance') {
           console.log('Navegación bloqueada fuera del horario de funcionamiento');
           this.router.navigate(['/maintenance']);
         }

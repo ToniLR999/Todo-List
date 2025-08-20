@@ -87,6 +87,14 @@ export class TaskListComponent implements OnInit {
 
   selectedTask: Task | null = null;
 
+  // Propiedades de paginación
+  currentPage = 1;
+  pageSize = 20;
+  totalItems = 0;
+  totalPages = 0;
+  hasNextPage = false;
+  hasPreviousPage = false;
+
   constructor(
     private fb: FormBuilder,
     private taskService: TaskService,
@@ -122,7 +130,45 @@ export class TaskListComponent implements OnInit {
     });
   }
   loadTasks(): void {
-    this.applyFilters();
+    this.loading = true;
+    
+    // Crear filtros con paginación
+    const filters: TaskFilters = {
+      search: this.searchTerm,
+      status: this.statusFilter,
+      priority: this.priorityFilter,
+      dateFilter: this.dateFilter,
+      tasklistId: this.currentListId || undefined
+    };
+
+    // Obtener parámetros de paginación
+    const params = {
+      page: this.currentPage - 1, // Backend usa 0-based indexing
+      size: this.pageSize
+    };
+
+    // Llamar al servicio con paginación
+    this.taskService.getFilteredTasks(filters).subscribe({
+      next: (response: any) => {
+        if (response && response.content) {
+          // Respuesta paginada del backend
+          this.tasks = response.content;
+          this.updatePaginationState(response.totalElements);
+        } else {
+          // Respuesta simple (fallback)
+          this.tasks = response || [];
+          this.updatePaginationState(this.tasks.length);
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar tareas:', error);
+        this.tasks = [];
+        this.updatePaginationState(0);
+        this.loading = false;
+        this.toastr.error('Error al cargar las tareas');
+      }
+    });
   }
 
   onSubmit() {
@@ -565,5 +611,81 @@ export class TaskListComponent implements OnInit {
         this.toastr.error('Error al actualizar la tarea');
       }
     });
+  }
+
+  // Métodos de paginación
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.loadTasks();
+    }
+  }
+
+  nextPage(): void {
+    if (this.hasNextPage) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.hasPreviousPage) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+
+  firstPage(): void {
+    this.goToPage(1);
+  }
+
+  lastPage(): void {
+    this.goToPage(this.totalPages);
+  }
+
+  onPageSizeChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const newPageSize = parseInt(select.value, 10);
+    this.pageSize = newPageSize;
+    this.currentPage = 1; // Reset a la primera página
+    this.loadTasks();
+  }
+
+  updatePaginationState(totalItems: number): void {
+    this.totalItems = totalItems;
+    this.totalPages = Math.ceil(totalItems / this.pageSize);
+    this.hasNextPage = this.currentPage < this.totalPages;
+    this.hasPreviousPage = this.currentPage > 1;
+  }
+
+  getDisplayRange(): { start: number; end: number } {
+    const start = (this.currentPage - 1) * this.pageSize + 1;
+    const end = Math.min(this.currentPage * this.pageSize, this.totalItems);
+    return { start, end };
+  }
+
+  getPageNumbers(maxVisible: number = 5): number[] {
+    const pages: number[] = [];
+    
+    if (this.totalPages <= maxVisible) {
+      // Mostrar todas las páginas si hay pocas
+      for (let i = 1; i <= this.totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Mostrar páginas alrededor de la actual
+      const halfVisible = Math.floor(maxVisible / 2);
+      let start = Math.max(1, this.currentPage - halfVisible);
+      let end = Math.min(this.totalPages, start + maxVisible - 1);
+      
+      // Ajustar si estamos cerca del final
+      if (end - start + 1 < maxVisible) {
+        start = Math.max(1, end - maxVisible + 1);
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    
+    return pages;
   }
 }

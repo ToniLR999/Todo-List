@@ -1,128 +1,130 @@
 import { Injectable } from '@angular/core';
 
-export interface CacheItem<T> {
+interface CacheItem<T> {
   data: T;
   timestamp: number;
-  ttl: number; // Time to live in milliseconds
+  ttl: number;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class CacheService {
-  private readonly CACHE_PREFIX = 'todolist_';
-  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutos
+  private cache = new Map<string, CacheItem<any>>();
+  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutos por defecto
+
+  constructor() {
+    // Limpiar cache expirado cada minuto
+    setInterval(() => this.cleanupExpiredCache(), 60000);
+  }
 
   /**
-   * Stores data in cache with optional TTL.
-   * @param key Cache key
-   * @param data Data to cache
-   * @param ttl Time to live in milliseconds (default: 5 minutes)
+   * Almacena un elemento en el cache con TTL configurable
    */
   set<T>(key: string, data: T, ttl: number = this.DEFAULT_TTL): void {
-    const cacheItem: CacheItem<T> = {
+    this.cache.set(key, {
       data,
       timestamp: Date.now(),
       ttl
-    };
-    
-    try {
-      localStorage.setItem(this.CACHE_PREFIX + key, JSON.stringify(cacheItem));
-      // console.log('✅ Caché guardado:', key, data);
-    } catch (error) {
-      console.warn('Error al guardar en caché:', error);
-      this.cleanup(); // Limpiar caché si está lleno
-    }
+    });
   }
 
   /**
-   * Retrieves data from cache if not expired.
-   * @param key Cache key
-   * @returns Cached data or null if not found/expired
+   * Obtiene un elemento del cache si no ha expirado
    */
   get<T>(key: string): T | null {
-    try {
-      const item = localStorage.getItem(this.CACHE_PREFIX + key);
-      if (!item) return null;
-
-      const cacheItem: CacheItem<T> = JSON.parse(item);
-      
-      // Verificar si ha expirado
-      if (Date.now() - cacheItem.timestamp > cacheItem.ttl) {
-        this.remove(key);
-        return null;
-      }
-
-      return cacheItem.data;
-    } catch (error) {
-      console.warn('Error al obtener del caché:', error);
+    const item = this.cache.get(key);
+    
+    if (!item) {
       return null;
+    }
+
+    // Verificar si ha expirado
+    if (Date.now() - item.timestamp > item.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return item.data;
+  }
+
+  /**
+   * Verifica si existe un elemento en el cache y no ha expirado
+   */
+  has(key: string): boolean {
+    const item = this.cache.get(key);
+    
+    if (!item) {
+      return false;
+    }
+
+    // Verificar si ha expirado
+    if (Date.now() - item.timestamp > item.ttl) {
+      this.cache.delete(key);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Elimina un elemento específico del cache
+   */
+  delete(key: string): boolean {
+    return this.cache.delete(key);
+  }
+
+  /**
+   * Limpia todo el cache
+   */
+  clear(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * Limpia solo el cache expirado
+   */
+  private cleanupExpiredCache(): void {
+    const now = Date.now();
+    
+    for (const [key, item] of this.cache.entries()) {
+      if (now - item.timestamp > item.ttl) {
+        this.cache.delete(key);
+      }
     }
   }
 
   /**
-   * Removes a specific item from cache.
-   * @param key Cache key to remove
+   * Obtiene estadísticas del cache
    */
-  remove(key: string): void {
-    localStorage.removeItem(this.CACHE_PREFIX + key);
+  getStats(): { size: number; keys: string[] } {
+    return {
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys())
+    };
   }
 
   /**
-   * Clears all cached data with the cache prefix.
+   * Genera una clave de cache basada en parámetros
    */
-  clear(): void {
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith(this.CACHE_PREFIX)) {
-        localStorage.removeItem(key);
-      }
-    });
+  generateKey(prefix: string, params: any): string {
+    const paramString = JSON.stringify(params);
+    return `${prefix}:${this.hashCode(paramString)}`;
   }
 
   /**
-   * Removes expired cache items to free up storage space.
+   * Función hash simple para generar claves únicas
    */
-  cleanup(): void {
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith(this.CACHE_PREFIX)) {
-        try {
-          const item = localStorage.getItem(key);
-          if (item) {
-            const cacheItem: CacheItem<any> = JSON.parse(item);
-            if (Date.now() - cacheItem.timestamp > cacheItem.ttl) {
-              localStorage.removeItem(key);
-            }
-          }
-        } catch (error) {
-          localStorage.removeItem(key);
-        }
-      }
-    });
-  }
-
-  /**
-   * Checks if a key exists in cache and is not expired.
-   * @param key Cache key to check
-   * @returns true if key exists and is valid, false otherwise
-   */
-  has(key: string): boolean {
-    return this.get(key) !== null;
-  }
-
-  /**
-   * Gets the total size of cached data in bytes.
-   * @returns Total size of cached data
-   */
-  getSize(): number {
-    let size = 0;
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith(this.CACHE_PREFIX)) {
-        size += localStorage.getItem(key)?.length || 0;
-      }
-    });
-    return size;
+  private hashCode(str: string): string {
+    let hash = 0;
+    if (str.length === 0) return hash.toString();
+    
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convertir a entero de 32 bits
+    }
+    
+    return Math.abs(hash).toString();
   }
 }

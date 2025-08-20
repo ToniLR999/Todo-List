@@ -90,7 +90,7 @@ export class TaskDetailComponent implements OnInit {
    */
   loadTask(taskId: string): void {
     this.loading = true;
-    this.taskService.getTaskById(taskId).subscribe({
+    this.taskService.getTaskById(parseInt(taskId, 10)).subscribe({
       next: (task) => {
         this.task = task;
         this.taskForm = { ...task };
