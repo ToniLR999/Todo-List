@@ -8,7 +8,7 @@ on:
       test_mode:
         description: 'Modo de prueba (no modifica Railway)'
         required: false
-        default: true
+        default: false
         type: boolean
 
 jobs:
