@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { TaskListService } from '../../services/task-list.service';
 import { TaskList } from '../../models/task-list.model';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 /**
  * Component for managing and displaying task lists.
@@ -18,7 +19,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule]
 })
-export class TaskListListComponent implements OnInit {
+export class TaskListListComponent implements OnInit, OnDestroy {
   /** Array of task lists to display */
   taskLists: TaskList[] = [];
   
@@ -34,6 +35,8 @@ export class TaskListListComponent implements OnInit {
   /** Reference to the task list being edited (null if creating new) */
   editingList: TaskList | null = null;
 
+  /** Subscription para el observable de listas */
+  private subscription: Subscription = new Subscription();
   
   constructor(
     private taskListService: TaskListService,
@@ -42,8 +45,19 @@ export class TaskListListComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.taskListService.clearCache();
+    // Suscribirse al observable de listas para actualizaciones en tiempo real
+    this.subscription.add(
+      this.taskListService.taskLists$.subscribe(taskLists => {
+        this.taskLists = taskLists;
+      })
+    );
+    
+    // Cargar listas iniciales (usará cache si está disponible)
     this.loadTaskLists();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   /**
@@ -51,11 +65,9 @@ export class TaskListListComponent implements OnInit {
    * Subscribes to the task list service to fetch and display task lists.
    */
   loadTaskLists() {
-    
+    // El servicio ya maneja el cache y actualiza el observable
+    // Solo necesitamos llamar al método para disparar la carga
     this.taskListService.getTaskLists().subscribe({
-      next: (taskLists) => {
-        this.taskLists = taskLists;
-      },
       error: (error) => {
         console.error('❌ Error en componente al obtener listas:', error);
         this.toastr.error('Error al cargar las listas');

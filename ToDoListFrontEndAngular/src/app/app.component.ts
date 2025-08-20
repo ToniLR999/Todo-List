@@ -8,6 +8,7 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { AuthService } from './services/auth.service';
 import { ScheduleService } from './services/schedule.service';
 import { NavigationGuardService } from './services/navigation-guard.service';
+import { TaskListService } from './services/task-list.service';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -38,6 +39,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private scheduleService: ScheduleService,
     private navigationGuardService: NavigationGuardService,
+    private taskListService: TaskListService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
   ) {
@@ -76,7 +78,10 @@ export class AppComponent implements OnInit, OnDestroy {
     // 3. Verificar estado del horario y redirigir si es necesario
     this.checkScheduleAndRedirect();
 
-    // 4. Eventos de ruta
+    // 4. Precargar listas de tareas para mejorar rendimiento
+    this.preloadTaskLists();
+
+    // 5. Eventos de ruta
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
@@ -151,6 +156,20 @@ export class AppComponent implements OnInit, OnDestroy {
       rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
       rect.right <= (window.innerWidth || document.documentElement.clientWidth)
     );
+  }
+
+  /**
+   * Precarga las listas de tareas para mejorar el rendimiento
+   */
+  private preloadTaskLists(): void {
+    // Solo precargar si el usuario está autenticado
+    if (this.authService.isAuthenticated()) {
+      this.taskListService.preloadTaskLists().subscribe({
+        error: (error) => {
+          console.warn('No se pudieron precargar las listas de tareas:', error);
+        }
+      });
+    }
   }
 
   private checkCurrentRoute() {

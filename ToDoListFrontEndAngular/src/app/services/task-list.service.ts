@@ -48,6 +48,12 @@ export class TaskListService {
    * @returns Observable of TaskList array
    */
   getTaskLists(): Observable<TaskList[]> {
+    // Si ya tenemos datos en el observable, devolverlos inmediatamente
+    const currentValue = this.taskListsSubject.value;
+    if (currentValue.length > 0) {
+      return of(currentValue);
+    }
+
     const paginationParams = this.paginationService.getPaginationParams();
     const cacheKey = this.cacheService.generateKey(
       this.CACHE_KEY_PREFIX + 'all',
@@ -84,6 +90,14 @@ export class TaskListService {
         return of([]);
       })
     );
+  }
+
+  /**
+   * Precarga las listas de tareas para mejorar el rendimiento
+   * @returns Observable of TaskList array
+   */
+  preloadTaskLists(): Observable<TaskList[]> {
+    return this.getTaskLists();
   }
 
   /**

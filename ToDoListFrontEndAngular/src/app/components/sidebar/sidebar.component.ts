@@ -3,13 +3,14 @@
  * Provides navigation between task lists, list management operations,
  * and responsive design support for mobile devices.
  */
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { TaskListService } from '../../services/task-list.service';
 import { TaskList } from '../../models/task-list.model';
 import { ToastrService } from 'ngx-toastr';
 import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-sidebar',
@@ -18,11 +19,14 @@ import { filter } from 'rxjs/operators';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnDestroy {
   taskLists: TaskList[] = [];
   selectedListId: number | null = null;
   isMobile: boolean = window.innerWidth <= 768;
   sidebarVisible: boolean = false;
+  
+  /** Subscription para el observable de listas */
+  private subscription: Subscription = new Subscription();
 
   constructor(
     private taskListService: TaskListService,
@@ -35,36 +39,51 @@ export class SidebarComponent implements OnInit {
    * Initializes the component by loading task lists and setting up route monitoring.
    */
   ngOnInit() {
-    this.loadTaskLists();
+    // Suscribirse al observable de listas para actualizaciones en tiempo real
+    this.subscription.add(
+      this.taskListService.taskLists$.subscribe(taskLists => {
+        this.taskLists = taskLists;
+      })
+    );
     
     // Suscribirse a los cambios en la ruta
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      const url = this.router.url;
-      const match = url.match(/\/tasks\/list\/(\d+)/);
-      if (match) {
-        this.selectedListId = Number(match[1]);
-      } else {
-        this.selectedListId = null;
-      }
-    });
+    this.subscription.add(
+      this.router.events.pipe(
+        filter(event => event instanceof NavigationEnd)
+      ).subscribe(() => {
+        const url = this.router.url;
+        const match = url.match(/\/tasks\/list\/(\d+)/);
+        if (match) {
+          this.selectedListId = Number(match[1]);
+        } else {
+          this.selectedListId = null;
+        }
+      })
+    );
 
-    // Suscribirse a los cambios en las listas
-    this.taskListService.listUpdated.subscribe(() => {
-      this.loadTaskLists();
-    });
+    // Suscribirse a los cambios en las listas (para invalidar cache)
+    this.subscription.add(
+      this.taskListService.listUpdated.subscribe(() => {
+        // Solo invalidar cache, no recargar
+        this.taskListService.clearCache();
+      })
+    );
+    
+    // Cargar listas iniciales (usará cache si está disponible)
+    this.loadTaskLists();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   /**
    * Loads user's task lists for sidebar navigation.
    */
   loadTaskLists() {
+    // El servicio ya maneja el cache y actualiza el observable
+    // Solo necesitamos llamar al método para disparar la carga
     this.taskListService.getTaskLists().subscribe({
-      next: (taskLists) => {
-        // console.log('🔄 sidebar: Obteniendo listas');
-        this.taskLists = taskLists;
-      },
       error: (error) => {
         console.error('Error al obtener listas de tareas:', error);
         this.toastr.error('Error al cargar las listas');
