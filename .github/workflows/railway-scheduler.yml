@@ -120,8 +120,12 @@ jobs:
           # Verificar si es modo de prueba
           if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
             echo "🧪 MODO DE PRUEBA - No se enviará request a Railway"
-            echo "📡 Comando que se ejecutaría:"
-            echo "railway service pause/resume $RAILWAY_SERVICE_ID"
+            echo "📡 Query GraphQL que se ejecutaría:"
+            if [ "$pause" = true ]; then
+              echo "mutation { serviceUpdate(id: \"$RAILWAY_SERVICE_ID\", pause: true) { id } }"
+            else
+              echo "mutation { serviceUpdate(id: \"$RAILWAY_SERVICE_ID\", pause: false) { id } }"
+            fi
             echo "🔍 Debug Test: RAILWAY_SERVICE_ID = $RAILWAY_SERVICE_ID"
             echo "🔍 Debug Test: RAILWAY_PROJECT_ID = $RAILWAY_PROJECT_ID"
             echo "🔍 Debug Test: Token (primeros 10 chars) = ${RAILWAY_TOKEN:0:10}..."
@@ -131,17 +135,8 @@ jobs:
 
           echo "📡 Enviando request a Railway API REST..."
           
-          # Instalar Railway CLI con cache
-          echo "🚀 Verificando Railway CLI..."
-          if ! command -v railway &> /dev/null; then
-            echo "🚀 Instalando Railway CLI..."
-            npm install -g @railway/cli
-          else
-            echo "✅ Railway CLI ya está instalado"
-          fi
-          
-          echo "🚀 Configurando Railway CLI..."
-          echo "RAILWAY_TOKEN=$RAILWAY_TOKEN" > .env
+          # Usar API GraphQL directa (más confiable que CLI)
+          echo "🚀 Usando API GraphQL directa de Railway..."
           
           # Debug: Ver qué valor real tiene la variable
           echo "🔍 Debug: Valor real de SERVICE_ID (sin enmascarar):"
@@ -156,25 +151,26 @@ jobs:
           
           echo "✅ SERVICE_ID configurado correctamente (longitud: ${#RAILWAY_SERVICE_ID})"
           
-          echo "🚀 Ejecutando comando Railway CLI..."
+          echo "🚀 Ejecutando mutación GraphQL..."
           if [ "$pause" = true ]; then
             echo "⏸️ Pausando servicio..."
-            railway service pause "$RAILWAY_SERVICE_ID"
-            cli_exit_code=$?
+            # Mutación para pausar servicio
+            query="mutation { serviceUpdate(id: \"$RAILWAY_SERVICE_ID\", pause: true) { id } }"
           else
             echo "▶️ Reanudando servicio..."
-            railway service resume "$RAILWAY_SERVICE_ID"
-            cli_exit_code=$?
+            # Mutación para reanudar servicio
+            query="mutation { serviceUpdate(id: \"$RAILWAY_SERVICE_ID\", pause: false) { id } }"
           fi
           
-          echo "🔍 Código de salida del CLI: $cli_exit_code"
+          echo "🔍 Query GraphQL: $query"
           
-          # Simular respuesta para mantener compatibilidad con el resto del script
-          if [ $cli_exit_code -eq 0 ]; then
-            resp="HTTP_CODE:200"
-          else
-            resp="HTTP_CODE:500"
-          fi
+          # Llamada a la API GraphQL de Railway
+          resp=$(curl -sS -w "HTTP_CODE:%{http_code}" -X POST "https://backboard.railway.app/graphql/v2" \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\":\"$query\"}")
+          
+          echo "🔍 Respuesta completa: $resp"
 
           # Separar respuesta y código HTTP
           http_code=$(echo "$resp" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
