@@ -20,9 +20,6 @@ jobs:
       - name: Instalar Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Autenticarse en Railway
-        run: railway login --token $RAILWAY_TOKEN
-
       - name: Alternar estado del servicio según horario
         run: |
           set -euo pipefail
