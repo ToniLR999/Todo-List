@@ -32,7 +32,12 @@ export class TaskListService {
     private http: HttpClient,
     private cacheService: CacheService,
     private paginationService: PaginationService
-  ) {}
+  ) {
+    // Asegurar que el BehaviorSubject esté inicializado correctamente
+    if (!this.taskListsSubject.value) {
+      this.taskListsSubject.next([]);
+    }
+  }
 
   /**
    * Creates HTTP headers with JWT authorization token.
@@ -44,12 +49,20 @@ export class TaskListService {
   }
 
   /**
+   * Gets the current task lists value safely.
+   * @returns Current TaskList array
+   */
+  private getCurrentTaskLists(): TaskList[] {
+    return this.taskListsSubject.value || [];
+  }
+
+  /**
    * Retrieves all task lists with pagination and caching support.
    * @returns Observable of TaskList array
    */
   getTaskLists(): Observable<TaskList[]> {
     // Si ya tenemos datos en el observable, devolverlos inmediatamente
-    const currentValue = this.taskListsSubject.value;
+    const currentValue = this.getCurrentTaskLists();
     if (currentValue.length > 0) {
       return of(currentValue);
     }
@@ -113,7 +126,7 @@ export class TaskListService {
         // Invalidar cache relacionado
         this.invalidateRelatedCache();
         // Agregar nueva lista al subject
-        const currentLists = this.taskListsSubject.value;
+        const currentLists = this.getCurrentTaskLists();
         this.taskListsSubject.next([...currentLists, newTaskList]);
         this.listUpdated.next();
       }),
@@ -137,7 +150,7 @@ export class TaskListService {
         // Invalidar cache relacionado
         this.invalidateRelatedCache();
         // Remover lista del subject
-        const currentLists = this.taskListsSubject.value;
+        const currentLists = this.getCurrentTaskLists();
         const filteredLists = currentLists.filter(list => list.id !== id);
         this.taskListsSubject.next(filteredLists);
         this.listUpdated.next();
@@ -169,7 +182,7 @@ export class TaskListService {
         // Invalidar cache relacionado
         this.invalidateRelatedCache();
         // Actualizar lista en el subject
-        const currentLists = this.taskListsSubject.value;
+        const currentLists = this.getCurrentTaskLists();
         const updatedLists = currentLists.map(list => 
           list.id === id ? { ...list, ...updatedTaskList } : list
         );
