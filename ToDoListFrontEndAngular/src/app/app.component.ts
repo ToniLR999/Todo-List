@@ -6,8 +6,8 @@ import { RouterModule } from '@angular/router';
 import { NavComponent } from './components/nav/nav.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { AuthService } from './services/auth.service';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../environments/environment';
+import { ScheduleService } from './services/schedule.service';
+import { NavigationGuardService } from './services/navigation-guard.service';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -36,12 +36,12 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private http: HttpClient,
+    private scheduleService: ScheduleService,
+    private navigationGuardService: NavigationGuardService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
   ) {
     this.setupResizeOptimization();
-    this.checkMaintenanceStatus();
     this.checkCurrentRoute();
   }
 
@@ -61,7 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     });
 
-    // 3. Optimización de resize
+    // 2. Optimización de resize
     this.resizeSubject.pipe(
       debounceTime(150),
       distinctUntilChanged(),
@@ -73,17 +73,10 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     });
 
-    // 4. Estado de mantenimiento
-    this.http.get<any>(`${environment.apiUrl}/api/app-status/status`).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe((response: any) => {
-      const isActive = response.status === 'UP' && response.scheduleStatus === 'ACTIVO';
-      if (!isActive && this.router.url !== '/maintenance') {
-        this.router.navigate(['/maintenance']);
-      }
-    });
+    // 3. Verificar estado del horario y redirigir si es necesario
+    this.checkScheduleAndRedirect();
 
-    // 5. Eventos de ruta
+    // 4. Eventos de ruta
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
@@ -106,6 +99,17 @@ export class AppComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       });
     });
+  }
+
+  /**
+   * Verifica el estado del horario y redirige si es necesario
+   */
+  private checkScheduleAndRedirect(): void {
+    // Verificar si la aplicación está activa según el horario hardcodeado
+    if (!this.scheduleService.isApplicationActive() && this.router.url !== '/maintenance') {
+      console.log('Aplicación fuera del horario de funcionamiento, redirigiendo a mantenimiento');
+      this.router.navigate(['/maintenance']);
+    }
   }
 
   /**
@@ -147,20 +151,6 @@ export class AppComponent implements OnInit, OnDestroy {
       rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
       rect.right <= (window.innerWidth || document.documentElement.clientWidth)
     );
-  }
-
-  private checkMaintenanceStatus() {
-    this.http.get<any>(`${environment.apiUrl}/api/app-status/status`)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          const isActive = response.status === 'UP' && response.scheduleStatus === 'ACTIVO';
-          if (!isActive && this.router.url !== '/maintenance') {
-            this.router.navigate(['/maintenance']);
-          }
-        },
-        error: () => {}
-      });
   }
 
   private checkCurrentRoute() {

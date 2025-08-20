@@ -29,9 +29,6 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Autowired
-    private MaintenanceFilter maintenanceFilter;
-
     @Value("${app.frontend.url:http://localhost:4200}")
     private String frontendUrl;
 
@@ -59,12 +56,10 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/auth/**", "/api/app-status/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )
-            // Garantizar que CORS se procese antes; luego aplicar mantenimiento y JWT
-            .addFilterAfter(maintenanceFilter, org.springframework.web.filter.CorsFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
@@ -76,7 +71,7 @@ public class SecurityConfig {
         // Permitimos el dominio configurado y patrones de Netlify
         configuration.setAllowedOriginPatterns(Arrays.asList(
             frontendUrl,
-            "https://todolist-tonilr.netlify.app",
+            "https://todolist-tonlifr.netlify.app",
             "https://*.netlify.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

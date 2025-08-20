@@ -1,8 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-import { MaintenanceInfo } from '../../models/maintenance-info.model';
+import { ScheduleService, ScheduleStatus } from '../../services/schedule.service';
 
 @Component({
   selector: 'app-maintenance-info',
@@ -11,71 +9,62 @@ import { MaintenanceInfo } from '../../models/maintenance-info.model';
   templateUrl: './maintenance-info.component.html',
   styleUrls: ['./maintenance-info.component.css']
 })
-export class MaintenanceInfoComponent implements OnInit, OnDestroy {
-  maintenanceInfo: MaintenanceInfo | null = null;
-  isLoading = true; 
+export class MaintenanceInfoComponent implements OnInit {
+  scheduleStatus: ScheduleStatus | null = null;
+  isLoading = false;
   error = false;
-  private interval: any;
 
-  constructor(private http: HttpClient) {}
+  constructor(public scheduleService: ScheduleService) {}
 
   ngOnInit() {
-    this.loadMaintenanceInfo();
-    // Actualizar cada 3 minutos (más eficiente que 5 minutos)
-    this.interval = setInterval(() => this.loadMaintenanceInfo(), 180000);
+    this.loadScheduleStatus();
   }
 
-  ngOnDestroy() {
-    if (this.interval) {
-      clearInterval(this.interval);
-    }
-  }
-
-  loadMaintenanceInfo() {
+  loadScheduleStatus() {
     this.isLoading = true;
     this.error = false;
-
-    this.http.get(`${environment.apiUrl}/api/app-status/status`)
-      .subscribe({
-        next: (response: any) => {
-          this.maintenanceInfo = {
-            status: response.status || 'UNKNOWN',
-            schedule: response.schedule || 'N/A',
-            nextStart: response.nextStart || 'N/A',
-            scheduleStatus: response.scheduleStatus || 'UNKNOWN',
-            message: this.generateMessage(response)
-          };
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Error loading maintenance info:', err);
-          this.error = true;
-          this.isLoading = false;
-        }
-      });
-  }
-
-  private generateMessage(response: any): string {
-    if (response.status === 'UP' && response.scheduleStatus === 'ACTIVO') {
-      return 'La aplicación está funcionando normalmente.';
+    
+    try {
+      this.scheduleStatus = this.scheduleService.getCurrentScheduleStatus();
+      this.isLoading = false;
+    } catch (err) {
+      console.error('Error loading schedule status:', err);
+      this.error = true;
+      this.isLoading = false;
     }
-
-    if (response.scheduleStatus === 'INACTIVO') {
-      return 'La aplicación está temporalmente cerrada por horario de trabajo.';
-    }
-
-    if (response.schedule && response.schedule.includes('Fin de semana')) {
-      return 'La aplicación está cerrada durante el fin de semana.';
-    }
-
-    if (response.nextStart && response.nextStart.includes('Lunes')) {
-      return 'La aplicación estará disponible el próximo lunes a las 10:00.';
-    }
-
-    return 'La aplicación está temporalmente no disponible.';
   }
 
   refreshInfo() {
-    this.loadMaintenanceInfo();
+    this.loadScheduleStatus();
+  }
+
+  getStatusIcon(): string {
+    if (!this.scheduleStatus) return '❓';
+    
+    switch (this.scheduleStatus.status) {
+      case 'ACTIVE':
+        return '✅';
+      case 'INACTIVE':
+        return '⏰';
+      case 'WEEKEND':
+        return '🏖️';
+      default:
+        return '❓';
+    }
+  }
+
+  getStatusColor(): string {
+    if (!this.scheduleStatus) return 'text-gray-500';
+    
+    switch (this.scheduleStatus.status) {
+      case 'ACTIVE':
+        return 'text-green-600';
+      case 'INACTIVE':
+        return 'text-orange-600';
+      case 'WEEKEND':
+        return 'text-blue-600';
+      default:
+        return 'text-gray-500';
+    }
   }
 }

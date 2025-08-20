@@ -1,57 +1,87 @@
 <div class="maintenance-container">
-  <div class="maintenance-header">
-    <div class="maintenance-icon">🔧</div>
-    <h1>Aplicación Inactiva</h1>
-    <p class="subtitle">Aplicación temporalmente no disponible</p>
-  </div>
-
-  <div class="maintenance-content" *ngIf="!isLoading && !error">
-    <div class="status-card">
-      <div class="status-header">
-        <h2>Estado del Sistema</h2>
-        <span class="status-badge">{{ maintenanceInfo?.scheduleStatus || 'INACTIVO' }}</span>
+  <div class="maintenance-card">
+    <div class="maintenance-header">
+      <div class="status-indicator" [ngClass]="getStatusColor()">
+        <span class="status-icon">{{ getStatusIcon() }}</span>
+        <h1 class="maintenance-title">Información de Horario</h1>
       </div>
-      
-      <div class="status-message">
-        <p>{{ maintenanceInfo?.message }}</p>
-      </div>
+    </div>
 
-      <div class="schedule-info">
-        <div class="info-item">
-          <span class="label">Próximo Inicio:</span>
-          <span class="value">{{ maintenanceInfo?.nextStart || 'N/A' }}</span>
+    <div class="maintenance-content" *ngIf="!isLoading && !error && scheduleStatus">
+      <div class="status-section">
+        <h2 class="section-title">Estado Actual</h2>
+        <div class="status-info">
+          <p class="status-message">{{ scheduleStatus.message }}</p>
+          <div class="status-details">
+            <span class="status-badge" [ngClass]="getStatusColor()">
+              {{ scheduleStatus.status === 'ACTIVE' ? 'ACTIVA' : 
+                 scheduleStatus.status === 'INACTIVE' ? 'INACTIVA' : 
+                 scheduleStatus.status === 'WEEKEND' ? 'FIN DE SEMANA' : 'MANTENIMIENTO' }}
+            </span>
+          </div>
         </div>
       </div>
+
+      <div class="time-section">
+        <h2 class="section-title">Información de Horario</h2>
+        <div class="time-info">
+          <div class="time-row">
+            <span class="time-label">Hora actual:</span>
+            <span class="time-value">{{ scheduleService.formatTime(scheduleStatus.currentTime) }}</span>
+          </div>
+          <div class="time-row">
+            <span class="time-label">Fecha:</span>
+            <span class="time-value">{{ scheduleService.formatDate(scheduleStatus.currentTime) }}</span>
+          </div>
+          <div class="time-row">
+            <span class="time-label">Horario de funcionamiento:</span>
+            <span class="time-value">{{ scheduleStatus.businessStartHour }}:00 - {{ scheduleStatus.businessEndHour }}:00</span>
+          </div>
+          <div class="time-row">
+            <span class="time-label">Zona horaria:</span>
+            <span class="time-value">{{ scheduleStatus.timezone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="next-start-section" *ngIf="!scheduleStatus.isActive">
+        <h2 class="section-title">Próxima Apertura</h2>
+        <div class="next-start-info">
+          <div class="next-start-time">
+            <span class="next-start-label">Disponible desde:</span>
+            <span class="next-start-value">{{ scheduleService.formatDate(scheduleStatus.nextStartTime) }}</span>
+            <span class="next-start-hour">{{ scheduleService.formatTime(scheduleStatus.nextStartTime) }}</span>
+          </div>
+          <div class="countdown">
+            <span class="countdown-label">Tiempo restante:</span>
+            <span class="countdown-value">{{ scheduleService.getTimeUntilNextStart() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-section">
+        <button class="refresh-btn" (click)="refreshInfo()" [disabled]="isLoading">
+          <span class="refresh-icon">🔄</span>
+          Actualizar Información
+        </button>
+      </div>
     </div>
 
-    <div class="info-card">
-      <h3>📋 Información para el usuario</h3>
-      <div class="recruiter-info">
-        <p><strong>Horario de Trabajo:</strong> Lunes a Viernes, 10:00 - 19:00 (CET)</p>
-        <p><strong>Fin de Semana:</strong> Cerrado (Sábados y Domingos)</p>
-        <p><strong>Motivo:</strong> Optimización de costos en Railway</p>
-      </div>
+    <div class="loading-section" *ngIf="isLoading">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Cargando información de horario...</p>
+    </div>
+
+    <div class="error-section" *ngIf="error">
+      <div class="error-icon">❌</div>
+      <p class="error-text">Error al cargar la información de horario</p>
+      <button class="retry-btn" (click)="refreshInfo()">Reintentar</button>
     </div>
   </div>
 
-  <div class="loading" *ngIf="isLoading">
-    <div class="spinner"></div>
-    <p>Cargando información del sistema...</p>
-  </div>
-
-  <div class="error" *ngIf="error">
-    <div class="info-card">
-      <h3>📋 Información para el usuario</h3>
-      <div class="recruiter-info">
-        <p><strong>Horario de la Aplicación:</strong> Lunes a Viernes, 10:00 - 19:00 (CET)</p>
-        <p><strong>Fin de Semana:</strong> Cerrado (Sábados y Domingos)</p>
-        <p><strong>Motivo:</strong> Optimización de costos.</p>
-      </div>
-    </div>
-    
-    <div class="error-icon">⚠️</div>
-    <h3>Error de Conexión</h3>
-    <p>No se pudo obtener la información del sistema.</p>
-    <button class="btn btn-primary" (click)="refreshInfo()">Reintentar</button>
+  <div class="maintenance-footer">
+    <p class="footer-text">
+      Esta página se actualiza automáticamente cada minuto para mostrar el estado más reciente del horario.
+    </p>
   </div>
 </div>
