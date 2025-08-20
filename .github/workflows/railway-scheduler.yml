@@ -145,16 +145,16 @@ jobs:
           
           # Debug: Ver qué valor real tiene la variable
           echo "🔍 Debug: Valor real de SERVICE_ID (sin enmascarar):"
-          echo "🔍 SERVICE_ID = '$RAILWAY_SERVICE_ID'"
           echo "🔍 Longitud = ${#RAILWAY_SERVICE_ID}"
           echo "🔍 Primeros 8 chars = '${RAILWAY_SERVICE_ID:0:8}'"
           
-          # Verificar que no esté vacía o sea ***
-          if [ "$RAILWAY_SERVICE_ID" = "***" ] || [ -z "$RAILWAY_SERVICE_ID" ]; then
-            echo "❌ ERROR: SERVICE_ID está enmascarado o vacío"
-            echo "❌ Valor actual: '$RAILWAY_SERVICE_ID'"
+          # Verificar que no esté vacía
+          if [ -z "$RAILWAY_SERVICE_ID" ]; then
+            echo "❌ ERROR: SERVICE_ID está vacío"
             exit 1
           fi
+          
+          echo "✅ SERVICE_ID configurado correctamente (longitud: ${#RAILWAY_SERVICE_ID})"
           
           echo "🚀 Ejecutando comando Railway CLI..."
           if [ "$pause" = true ]; then
