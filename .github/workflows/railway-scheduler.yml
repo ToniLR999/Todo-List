@@ -17,10 +17,7 @@ jobs:
       BUSINESS_END: "19:00"
 
     steps:
-      - name: Instalar Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Alternar estado del servicio según horario
+      - name: Alternar estado del servicio en Railway
         run: |
           set -euo pipefail
           export TZ="$TIMEZONE"
@@ -35,9 +32,20 @@ jobs:
 
           if [ "$current_day" -ge 1 ] && [ "$current_day" -le 5 ] && \
              [[ "$current_time" > "$BUSINESS_START" ]] && [[ "$current_time" < "$BUSINESS_END" ]]; then
+            pause=false
             echo "✅ Dentro de horario laboral, reanudando servicio..."
-            railway service $RAILWAY_SERVICE_ID resume
           else
+            pause=true
             echo "🚫 Fuera de horario laboral, pausando servicio..."
-            railway service $RAILWAY_SERVICE_ID pause
           fi
+
+          query='mutation($serviceId: ID!, $pause: Boolean!) { serviceUpdate(id: $serviceId, pause: $pause) { id } }'
+          payload=$(printf '{"query":"%s","variables":{"serviceId":"%s","pause":%s}}' "$query" "$RAILWAY_SERVICE_ID" "$pause")
+
+          resp=$(curl -sS -w "HTTP_CODE:%{http_code}" -X POST "https://backboard.railway.app/graphql/v2" \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$payload")
+
+          echo "📡 Respuesta de Railway:"
+          echo "$resp"
