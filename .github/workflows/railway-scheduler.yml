@@ -92,48 +92,38 @@ jobs:
             echo "⚠️ Falta RAILWAY_PROJECT_ID. Intenta sin projectId (puede fallar)."
           fi
 
-          echo "🔍 Debug: Preparando request para API GraphQL de Railway..."
+          echo "🔍 Debug: Preparando Railway CLI..."
           
-          # Preparar datos para API GraphQL de Railway
+          # Preparar datos para Railway CLI
           echo "🔍 Debug: pause = $pause"
-          echo "🔍 Debug: Usando API GraphQL de Railway"
+          echo "🔍 Debug: Usando Railway CLI (más confiable)"
           echo "🔍 Debug: RAILWAY_SERVICE_ID = $RAILWAY_SERVICE_ID"
-          echo "🔍 Debug: URL completa = https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID"
+          echo "🔍 Debug: RAILWAY_PROJECT_ID = $RAILWAY_PROJECT_ID"
           echo "🔍 Debug: Token (primeros 10 chars) = ${RAILWAY_TOKEN:0:10}..."
           
-          # LOGGING EXHAUSTIVO - NO ME RINDO
-          echo "🚨 DEBUG EXHAUSTIVO:"
-          echo "🚨 Longitud del SERVICE_ID: ${#RAILWAY_SERVICE_ID}"
-          echo "🚨 Longitud del PROJECT_ID: ${#RAILWAY_PROJECT_ID}"
-          echo "🚨 Longitud del TOKEN: ${#RAILWAY_TOKEN}"
-          echo "🚨 SERVICE_ID empieza con: ${RAILWAY_SERVICE_ID:0:8}..."
-          echo "🚨 PROJECT_ID empieza con: ${RAILWAY_PROJECT_ID:0:8}..."
-          echo "🚨 TOKEN empieza con: ${RAILWAY_TOKEN:0:8}..."
-          
           # Verificar formato UUID
-          echo "🚨 Verificando formato UUID:"
+          echo "🔍 Verificando formato UUID:"
           if [[ $RAILWAY_SERVICE_ID =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
             echo "✅ SERVICE_ID tiene formato UUID válido"
           else
             echo "❌ SERVICE_ID NO tiene formato UUID válido"
-            echo "🚨 Valor actual: '$RAILWAY_SERVICE_ID'"
+            echo "🔍 Valor actual: '$RAILWAY_SERVICE_ID'"
           fi
           
           if [[ $RAILWAY_PROJECT_ID =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
             echo "✅ PROJECT_ID tiene formato UUID válido"
           else
             echo "❌ PROJECT_ID NO tiene formato UUID válido"
-            echo "🚨 Valor actual: '$RAILWAY_PROJECT_ID'"
+            echo "🔍 Valor actual: '$RAILWAY_PROJECT_ID'"
           fi
 
           # Verificar si es modo de prueba
           if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
             echo "🧪 MODO DE PRUEBA - No se enviará request a Railway"
-            echo "📡 Request que se enviaría:"
-            echo "URL: https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID"
-            echo "Headers: Authorization: Bearer [TOKEN], Content-Type: application/json"
-            echo "Data: pause = $pause"
+            echo "📡 Comando que se ejecutaría:"
+            echo "railway service pause/resume --service $RAILWAY_SERVICE_ID --project $RAILWAY_PROJECT_ID"
             echo "🔍 Debug Test: RAILWAY_SERVICE_ID = $RAILWAY_SERVICE_ID"
+            echo "🔍 Debug Test: RAILWAY_PROJECT_ID = $RAILWAY_PROJECT_ID"
             echo "🔍 Debug Test: Token (primeros 10 chars) = ${RAILWAY_TOKEN:0:10}..."
             echo "✅ Prueba completada exitosamente"
             exit 0
@@ -141,14 +131,32 @@ jobs:
 
           echo "📡 Enviando request a Railway API REST..."
           
-          # Usar la API CORRECTA de Railway (la que realmente funciona)
-          echo "🚨 PROBANDO API CORRECTA DE RAILWAY..."
+          # Instalar y usar Railway CLI (más confiable que las APIs)
+          echo "🚀 Instalando Railway CLI..."
+          npm install -g @railway/cli
           
-          # API principal de Railway (la que SÍ funciona)
-          resp=$(curl -sS -L -w "HTTP_CODE:%{http_code}" -X POST "https://railway.app/api/graphql" \
-            -H "Authorization: Bearer $RAILWAY_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"query\":\"mutation { serviceUpdate(id: \\\"$RAILWAY_SERVICE_ID\\\", pause: $pause) { id } }\"}")
+          echo "🚀 Configurando Railway CLI..."
+          echo "RAILWAY_TOKEN=$RAILWAY_TOKEN" > .env
+          
+          echo "🚀 Ejecutando comando Railway CLI..."
+          if [ "$pause" = true ]; then
+            echo "⏸️ Pausando servicio..."
+            railway service pause --service $RAILWAY_SERVICE_ID --project $RAILWAY_PROJECT_ID
+            cli_exit_code=$?
+          else
+            echo "▶️ Reanudando servicio..."
+            railway service resume --service $RAILWAY_SERVICE_ID --project $RAILWAY_PROJECT_ID
+            cli_exit_code=$?
+          fi
+          
+          echo "🔍 Código de salida del CLI: $cli_exit_code"
+          
+          # Simular respuesta para mantener compatibilidad con el resto del script
+          if [ $cli_exit_code -eq 0 ]; then
+            resp="HTTP_CODE:200"
+          else
+            resp="HTTP_CODE:500"
+          fi
 
           # Separar respuesta y código HTTP
           http_code=$(echo "$resp" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
