@@ -94,27 +94,12 @@ jobs:
 
           echo "🔍 Debug: Construyendo JSON para GraphQL..."
           
-          # Preparar JSON para GraphQL usando variables
-          read -r -d '' json <<'EOF'
-          {
-            "query": "mutation ServiceUpdate($serviceId: String!, $projectId: String, $pause: Boolean!) { serviceUpdate(id: $serviceId, projectId: $projectId, pause: $pause) { id } }",
-            "variables": {
-              "serviceId": "__SERVICE_ID__",
-              "projectId": "__PROJECT_ID__",
-              "pause": __PAUSE__
-            }
-          }
-          EOF
+          # Construir JSON directamente (más simple y compatible)
+          json="{\"query\":\"mutation ServiceUpdate(\$serviceId: String!, \$projectId: String, \$pause: Boolean!) { serviceUpdate(id: \$serviceId, projectId: \$projectId, pause: \$pause) { id } }\",\"variables\":{\"serviceId\":\"$RAILWAY_SERVICE_ID\",\"projectId\":\"$RAILWAY_PROJECT_ID\",\"pause\":$pause}}"
 
-          echo "🔍 Debug: JSON base creado, sustituyendo variables..."
-
-          # Sustituir variables en el JSON
-          json=${json/__SERVICE_ID__/$RAILWAY_SERVICE_ID}
-          json=${json/__PROJECT_ID__/${RAILWAY_PROJECT_ID:-null}}
-          if [ "$pause" = true ]; then json=${json/__PAUSE__/true}; else json=${json/__PAUSE__/false}; fi
-
-          echo "🔍 Debug: Variables sustituidas en JSON"
+          echo "🔍 Debug: JSON construido directamente"
           echo "🔍 Debug: pause = $pause"
+          echo "🔍 Debug: JSON length = ${#json}"
 
           # Verificar si es modo de prueba
           if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
