@@ -100,6 +100,31 @@ jobs:
           echo "🔍 Debug: RAILWAY_SERVICE_ID = $RAILWAY_SERVICE_ID"
           echo "🔍 Debug: URL completa = https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID"
           echo "🔍 Debug: Token (primeros 10 chars) = ${RAILWAY_TOKEN:0:10}..."
+          
+          # LOGGING EXHAUSTIVO - NO ME RINDO
+          echo "🚨 DEBUG EXHAUSTIVO:"
+          echo "🚨 Longitud del SERVICE_ID: ${#RAILWAY_SERVICE_ID}"
+          echo "🚨 Longitud del PROJECT_ID: ${#RAILWAY_PROJECT_ID}"
+          echo "🚨 Longitud del TOKEN: ${#RAILWAY_TOKEN}"
+          echo "🚨 SERVICE_ID empieza con: ${RAILWAY_SERVICE_ID:0:8}..."
+          echo "🚨 PROJECT_ID empieza con: ${RAILWAY_PROJECT_ID:0:8}..."
+          echo "🚨 TOKEN empieza con: ${RAILWAY_TOKEN:0:8}..."
+          
+          # Verificar formato UUID
+          echo "🚨 Verificando formato UUID:"
+          if [[ $RAILWAY_SERVICE_ID =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
+            echo "✅ SERVICE_ID tiene formato UUID válido"
+          else
+            echo "❌ SERVICE_ID NO tiene formato UUID válido"
+            echo "🚨 Valor actual: '$RAILWAY_SERVICE_ID'"
+          fi
+          
+          if [[ $RAILWAY_PROJECT_ID =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
+            echo "✅ PROJECT_ID tiene formato UUID válido"
+          else
+            echo "❌ PROJECT_ID NO tiene formato UUID válido"
+            echo "🚨 Valor actual: '$RAILWAY_PROJECT_ID'"
+          fi
 
           # Verificar si es modo de prueba
           if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
@@ -128,6 +153,34 @@ jobs:
 
           echo "📋 Respuesta HTTP: $http_code"
           echo "📄 Respuesta: $response_body"
+          
+          # LOGGING EXHAUSTIVO DE LA RESPUESTA
+          echo "🚨 DEBUG EXHAUSTIVO DE RESPUESTA:"
+          echo "🚨 Longitud de respuesta: ${#response_body}"
+          echo "🚨 Primeros 200 chars de respuesta: ${response_body:0:200}"
+          echo "🚨 Código HTTP numérico: $http_code"
+          
+          # Intentar diferentes APIs si falla
+          if [ "$http_code" = "404" ]; then
+            echo "🚨 404 DETECTADO - PROBANDO ALTERNATIVAS:"
+            echo "🚨 Probando API v1..."
+            resp_v1=$(curl -sS -L -w "HTTP_CODE:%{http_code}" -X PATCH "https://backboard.railway.app/v1/services/$RAILWAY_SERVICE_ID" \
+              -H "Authorization: Bearer $RAILWAY_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"pause\":$pause}")
+            
+            http_code_v1=$(echo "$resp_v1" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+            echo "🚨 API v1 HTTP Code: $http_code_v1"
+            
+            echo "🚨 Probando API de proyectos..."
+            resp_proj=$(curl -sS -L -w "HTTP_CODE:%{http_code}" -X PATCH "https://backboard.railway.app/v2/projects/$RAILWAY_PROJECT_ID" \
+              -H "Authorization: Bearer $RAILWAY_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"pause\":$pause}")
+            
+            http_code_proj=$(echo "$resp_proj" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+            echo "🚨 API Proyectos HTTP Code: $http_code_proj"
+          fi
           
           # Verificar código HTTP
           if [ "$http_code" != "200" ]; then
