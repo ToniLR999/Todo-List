@@ -92,31 +92,30 @@ jobs:
             echo "⚠️ Falta RAILWAY_PROJECT_ID. Intenta sin projectId (puede fallar)."
           fi
 
-          echo "🔍 Debug: Construyendo JSON para GraphQL..."
+          echo "🔍 Debug: Preparando request para API REST de Railway..."
           
-          # Construir JSON con mutación estándar de Railway
-          json="{\"query\":\"mutation { serviceUpdate(id: \\\"$RAILWAY_SERVICE_ID\\\", pause: $pause) { id } }\"}"
-
-          echo "🔍 Debug: JSON construido directamente"
+          # Preparar datos para API REST de Railway
           echo "🔍 Debug: pause = $pause"
-          echo "🔍 Debug: JSON length = ${#json}"
+          echo "🔍 Debug: Usando API REST de Railway"
 
           # Verificar si es modo de prueba
           if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
             echo "🧪 MODO DE PRUEBA - No se enviará request a Railway"
-            echo "📡 JSON que se enviaría:"
-            echo "$json"
+            echo "📡 Request que se enviaría:"
+            echo "URL: https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID"
+            echo "Headers: Authorization: Bearer [TOKEN], Content-Type: application/json"
+            echo "Data: pause = $pause"
             echo "✅ Prueba completada exitosamente"
             exit 0
           fi
 
-          echo "📡 Enviando request a Railway..."
+          echo "📡 Enviando request a Railway API REST..."
           
-          # Hacer llamada a Railway API
-          resp=$(curl -sS -w "HTTP_CODE:%{http_code}" -X POST https://backboard.railway.app/graphql/v2 \
+          # Usar API REST de Railway (más estable que GraphQL)
+          resp=$(curl -sS -w "HTTP_CODE:%{http_code}" -X PATCH "https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID" \
             -H "Authorization: Bearer $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "$json")
+            -d "{\"pause\":$pause}")
 
           # Separar respuesta y código HTTP
           http_code=$(echo "$resp" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
