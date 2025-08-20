@@ -94,8 +94,8 @@ jobs:
 
           echo "🔍 Debug: Construyendo JSON para GraphQL..."
           
-          # Construir JSON directamente (más simple y compatible)
-          json="{\"query\":\"mutation ServiceUpdate(\$serviceId: String!, \$projectId: String, \$pause: Boolean!) { serviceUpdate(id: \$serviceId, projectId: \$projectId, pause: \$pause) { id } }\",\"variables\":{\"serviceId\":\"$RAILWAY_SERVICE_ID\",\"projectId\":\"$RAILWAY_PROJECT_ID\",\"pause\":$pause}}"
+          # Construir JSON con mutación estándar de Railway
+          json="{\"query\":\"mutation { serviceUpdate(id: \\\"$RAILWAY_SERVICE_ID\\\", pause: $pause) { id } }\"}"
 
           echo "🔍 Debug: JSON construido directamente"
           echo "🔍 Debug: pause = $pause"
