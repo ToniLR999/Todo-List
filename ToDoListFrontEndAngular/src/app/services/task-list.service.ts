@@ -93,15 +93,27 @@ export class TaskListService {
       .set('page', paginationParams.page.toString())
       .set('size', paginationParams.size.toString());
 
-    return this.http.get<PaginatedTaskListsResponse>(`${this.apiUrl}`, { params }).pipe(
+    return this.http.get<any>(`${this.apiUrl}`, { params }).pipe(
       map(response => {
-        // Actualizar paginación
-        this.paginationService.updatePaginationState({
-          totalItems: response.totalElements,
-          totalPages: response.totalPages
-        });
-        
-        const taskLists = response.content;
+        let taskLists: TaskList[] = [];
+        // Soportar respuesta paginada { content, totalElements, totalPages }
+        if (response && Array.isArray(response.content)) {
+          this.paginationService.updatePaginationState({
+            totalItems: response.totalElements ?? response.content.length ?? 0,
+            totalPages: response.totalPages ?? 1
+          });
+          taskLists = response.content as TaskList[];
+        } else if (Array.isArray(response)) {
+          // Soportar respuesta como array simple
+          taskLists = response as TaskList[];
+          this.paginationService.updatePaginationState({
+            totalItems: taskLists.length,
+            totalPages: 1
+          });
+        } else {
+          // Fallback seguro
+          taskLists = [];
+        }
         this.cacheService.set(cacheKey, taskLists, this.CACHE_TTL);
         this.taskListsSubject.next(taskLists);
         return taskLists;
@@ -110,6 +122,7 @@ export class TaskListService {
         console.error('❌ Error al obtener listas de tareas:', error);
         console.error('❌ Status:', error.status);
         console.error('❌ Message:', error.message);
+        this.taskListsSubject.next([]);
         return of([]);
       })
     );
@@ -256,15 +269,24 @@ export class TaskListService {
       .set('page', paginationParams.page.toString())
       .set('size', paginationParams.size.toString());
 
-    return this.http.get<PaginatedTaskListsResponse>(`${this.apiUrl}/search`, { params }).pipe(
+    return this.http.get<any>(`${this.apiUrl}/search`, { params }).pipe(
       map(response => {
-        // Actualizar paginación
-        this.paginationService.updatePaginationState({
-          totalItems: response.totalElements,
-          totalPages: response.totalPages
-        });
-        
-        const taskLists = response.content;
+        let taskLists: TaskList[] = [];
+        if (response && Array.isArray(response.content)) {
+          this.paginationService.updatePaginationState({
+            totalItems: response.totalElements ?? response.content.length ?? 0,
+            totalPages: response.totalPages ?? 1
+          });
+          taskLists = response.content as TaskList[];
+        } else if (Array.isArray(response)) {
+          taskLists = response as TaskList[];
+          this.paginationService.updatePaginationState({
+            totalItems: taskLists.length,
+            totalPages: 1
+          });
+        } else {
+          taskLists = [];
+        }
         this.cacheService.set(cacheKey, taskLists, this.CACHE_TTL);
         return taskLists;
       }),
