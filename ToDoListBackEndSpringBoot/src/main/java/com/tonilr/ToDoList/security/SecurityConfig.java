@@ -68,23 +68,13 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permitimos el dominio configurado y patrones de Netlify
-        configuration.setAllowedOriginPatterns(Arrays.asList(
+        // Orígenes permitidos explícitos (prod y el configurado por propiedad)
+        configuration.setAllowedOrigins(Arrays.asList(
             frontendUrl,
-            "https://todolist-tonlifr.netlify.app",
-            "https://*.netlify.app"
+            "https://todolist-tonilr.netlify.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization",
-            "Content-Type",
-            "X-Requested-With",
-            "Accept",
-            "Origin",
-            "X-XSRF-TOKEN",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
-        ));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
 
