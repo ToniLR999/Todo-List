@@ -1,8 +1,5 @@
 # Configuración específica para Railway - Optimizada para memoria
 spring:
-  profiles:
-    active: railway
-  
   # Configuración de base de datos optimizada para Railway
   datasource:
     hikari:
