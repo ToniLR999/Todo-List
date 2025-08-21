@@ -1,6 +1,6 @@
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { routes } from './app-routing.module';
 import { provideToastr } from 'ngx-toastr';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -11,8 +11,9 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimations(),
     provideHttpClient(
-      withInterceptors([ScheduleInterceptor])
+      withInterceptorsFromDi()
     ),
+    { provide: HTTP_INTERCEPTORS, useClass: ScheduleInterceptor, multi: true },
     provideToastr({
       timeOut: 3000,
       positionClass: 'toast-top-right',

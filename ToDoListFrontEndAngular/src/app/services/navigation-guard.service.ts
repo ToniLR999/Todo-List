@@ -24,10 +24,10 @@ export class NavigationGuardService {
     ).subscribe((event) => {
       // Verificar si la aplicación está activa antes de permitir la navegación
       if (!this.scheduleService.isApplicationActive()) {
-        // Si no está activa y no va a la página de mantenimiento, redirigir
-        if ((event as NavigationStart).url !== '/maintenance') {
+        // Si no está activa y no va a la página de información, redirigir
+        if ((event as NavigationStart).url !== '/info') {
           console.log('Navegación bloqueada fuera del horario de funcionamiento');
-          this.router.navigate(['/maintenance']);
+          this.router.navigate(['/info']);
         }
       }
     });
@@ -37,8 +37,8 @@ export class NavigationGuardService {
    * Verifica si se puede navegar a una URL específica
    */
   canNavigateTo(url: string): boolean {
-    // Siempre permitir acceso a la página de mantenimiento
-    if (url === '/maintenance') {
+    // Siempre permitir acceso a la página de información
+    if (url === '/info') {
       return true;
     }
 
@@ -51,7 +51,7 @@ export class NavigationGuardService {
    */
   forceMaintenanceRedirect(): void {
     if (!this.scheduleService.isApplicationActive()) {
-      this.router.navigate(['/maintenance']);
+      this.router.navigate(['/info']);
     }
   }
 }

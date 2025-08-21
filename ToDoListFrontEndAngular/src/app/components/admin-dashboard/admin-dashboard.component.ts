@@ -6,41 +6,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import * as CryptoJS from 'crypto-js';
 import { Subject, interval, takeUntil } from 'rxjs';
+import { SystemMetrics } from '../../models/system-metrics.model';
 
-interface SystemMetrics {
-  memory: {
-    used: number;
-    max: number;
-    percentage: number;
-  };
-  cpu: {
-    usage: number;
-    load: number;
-    cores: number;
-    loadAvailable: boolean;
-    loadStatus: string;
-  };
-  database: {
-    connections: number;
-    maxConnections: number;
-    status: string;
-  };
-  redis: {
-    status: string;
-    operations: number;
-  };
-  app: {
-    status: string;
-    uptime: number;
-    schedule: string;
-    version: string;
-  };
-  disk: {
-    used: number;
-    total: number;
-    percentage: number;
-  };
-}
 
 @Component({
   selector: 'app-admin-dashboard',

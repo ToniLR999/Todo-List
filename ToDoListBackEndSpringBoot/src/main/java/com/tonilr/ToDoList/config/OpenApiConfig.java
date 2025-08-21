@@ -13,6 +13,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("ToDo List API")
+                        .description("API completa para gestión de tareas con autenticación JWT, roles y auditoría")
                         .version("1.0"));
     }
 }

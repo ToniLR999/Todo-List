@@ -21,8 +21,8 @@ export class MaintenanceGuard {
     const isActive = this.scheduleService.isApplicationActive();
     
     if (!isActive) {
-      // Si la aplicación no está activa, redirigir a mantenimiento
-      this.router.navigate(['/maintenance']);
+      // Si la aplicación no está activa, redirigir a información
+      this.router.navigate(['/info']);
       return of(false);
     }
     

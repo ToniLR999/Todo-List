@@ -5,6 +5,8 @@ import com.tonilr.ToDoList.model.User;
 import com.tonilr.ToDoList.repository.RoleRepository;
 import com.tonilr.ToDoList.service.UserService;
 import com.tonilr.ToDoList.service.SecurityService;
+import com.tonilr.ToDoList.service.AuditLogService;
+import com.tonilr.ToDoList.service.SystemMaintenanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +15,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.MemoryMXBean;
+import org.springframework.cache.CacheManager;
 
 /**
- * Controlador de administración para gestión de usuarios y roles.
+ * Controlador de administración para gestión de usuarios, roles y logs de auditoría.
  * Solo accesible por usuarios con rol ROLE_ADMIN.
  */
 @RestController
@@ -36,6 +44,15 @@ public class AdminController {
 
     @Autowired
     private RoleRepository roleRepository;
+    
+    @Autowired
+    private AuditLogService auditLogService;
+    
+    @Autowired
+    private SystemMaintenanceService systemMaintenanceService;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     /**
      * Obtiene todos los usuarios del sistema (admin only).
@@ -196,6 +213,133 @@ public class AdminController {
             return ResponseEntity.ok(new UserSummary(updatedUser));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Obtiene estadísticas de la base de datos de logs de auditoría.
+     * @return Estadísticas de logs
+     */
+    @Operation(summary = "Get audit log statistics (Admin only)")
+    @GetMapping("/logs/statistics")
+    public ResponseEntity<String> getLogStatistics() {
+        try {
+            String stats = auditLogService.getLogStatistics();
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error obteniendo estadísticas: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Ejecuta limpieza manual de logs de auditoría.
+     * @param daysToKeep Número de días de logs a mantener
+     * @return Resultado de la limpieza
+     */
+    @Operation(summary = "Manual audit log cleanup (Admin only)")
+    @PostMapping("/logs/cleanup")
+    public ResponseEntity<String> manualLogCleanup(@RequestParam(defaultValue = "30") int daysToKeep) {
+        try {
+            if (daysToKeep < 1 || daysToKeep > 365) {
+                return ResponseEntity.badRequest().body("Días a mantener debe estar entre 1 y 365");
+            }
+            
+            int deletedCount = auditLogService.manualLogCleanup(daysToKeep);
+            return ResponseEntity.ok(String.format("Limpieza completada: %d logs eliminados. Manteniendo %d días.", 
+                deletedCount, daysToKeep));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error durante la limpieza: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Ejecuta limpieza automática de logs de auditoría.
+     * @return Resultado de la limpieza automática
+     */
+    @Operation(summary = "Trigger automatic audit log cleanup (Admin only)")
+    @PostMapping("/logs/cleanup/auto")
+    public ResponseEntity<String> triggerAutoLogCleanup() {
+        try {
+            auditLogService.performLogCleanup();
+            return ResponseEntity.ok("Limpieza automática ejecutada correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error durante la limpieza automática: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Obtiene estadísticas del sistema y mantenimiento.
+     * @return Estadísticas del sistema
+     */
+    @Operation(summary = "Get system maintenance statistics (Admin only)")
+    @GetMapping("/maintenance/statistics")
+    public ResponseEntity<String> getSystemMaintenanceStatistics() {
+        try {
+            String stats = systemMaintenanceService.getSystemStatistics();
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error obteniendo estadísticas del sistema: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Ejecuta mantenimiento manual del sistema.
+     * @return Resultado del mantenimiento
+     */
+    @Operation(summary = "Execute manual system maintenance (Admin only)")
+    @PostMapping("/maintenance/execute")
+    public ResponseEntity<String> executeSystemMaintenance() {
+        try {
+            String result = systemMaintenanceService.executeManualMaintenance();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error durante el mantenimiento del sistema: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Obtiene información del sistema.
+     * @return Información del sistema
+     */
+    @Operation(summary = "Get system information (Admin only)")
+    @GetMapping("/system/info")
+    public ResponseEntity<Map<String, Object>> getSystemInfo() {
+        try {
+            RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
+            OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+            MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+
+            Map<String, Object> systemInfo = new HashMap<>();
+            systemInfo.put("status", "UP");
+            systemInfo.put("version", "1.0.0");
+            systemInfo.put("environment", System.getProperty("spring.profiles.active", "default"));
+            systemInfo.put("uptimeSeconds", (System.currentTimeMillis() - runtimeBean.getStartTime()) / 1000);
+            systemInfo.put("timestamp", System.currentTimeMillis());
+
+            return ResponseEntity.ok(systemInfo);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Limpia todos los caches de la aplicación.
+     * @return Resultado de la limpieza
+     */
+    @Operation(summary = "Clear all caches (Admin only)")
+    @PostMapping("/cache/clear")
+    public ResponseEntity<String> clearAllCaches() {
+        try {
+            if (cacheManager != null) {
+                cacheManager.getCacheNames()
+                    .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
+                return ResponseEntity.ok("All caches cleared successfully");
+            }
+            return ResponseEntity.ok("No cache manager available");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error clearing caches: " + e.getMessage());
         }
     }
 

@@ -21,7 +21,7 @@ import { MaintenanceInfoComponent } from './components/maintenance-info/maintena
  */
 export const routes: Routes = [
   { 
-    path: 'maintenance', 
+    path: 'info', 
     component: MaintenanceInfoComponent,
     data: { animation: 'maintenance' }
   },

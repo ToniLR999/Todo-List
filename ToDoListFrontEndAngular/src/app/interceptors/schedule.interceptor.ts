@@ -16,8 +16,8 @@ export class ScheduleInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Verificar si la aplicación está activa según el horario
     if (!this.scheduleService.isApplicationActive()) {
-      // Si no está activa, redirigir a mantenimiento y bloquear la llamada
-      this.router.navigate(['/maintenance']);
+      // Si no está activa, redirigir a información y bloquear la llamada
+      this.router.navigate(['/info']);
       return throwError(() => new HttpErrorResponse({
         error: 'Application is outside business hours',
         status: 503,
@@ -31,7 +31,7 @@ export class ScheduleInterceptor implements HttpInterceptor {
         // Si hay un error de red y la aplicación no está activa, redirigir a mantenimiento
         if (error.status === 0 || error.status === 503) {
           if (!this.scheduleService.isApplicationActive()) {
-            this.router.navigate(['/maintenance']);
+            this.router.navigate(['/info']);
           }
         }
         return throwError(() => error);

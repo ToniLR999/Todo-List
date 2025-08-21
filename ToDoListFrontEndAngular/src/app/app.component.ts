@@ -86,7 +86,7 @@ export class AppComponent implements OnInit, OnDestroy {
       filter(event => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
     ).subscribe((event: any) => {
-      this.isMaintenanceRoute = event.url === '/maintenance';
+      this.isMaintenanceRoute = event.url === '/info';
     });
   }
 
@@ -111,9 +111,9 @@ export class AppComponent implements OnInit, OnDestroy {
    */
   private checkScheduleAndRedirect(): void {
     // Verificar si la aplicación está activa según el horario hardcodeado
-    if (!this.scheduleService.isApplicationActive() && this.router.url !== '/maintenance') {
+    if (!this.scheduleService.isApplicationActive() && this.router.url !== '/info') {
       console.log('Aplicación fuera del horario de funcionamiento, redirigiendo a mantenimiento');
-      this.router.navigate(['/maintenance']);
+      this.router.navigate(['/info']);
     }
   }
 
@@ -177,17 +177,17 @@ export class AppComponent implements OnInit, OnDestroy {
       filter(event => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
     ).subscribe((event: any) => {
-      this.isMaintenanceRoute = event.url === '/maintenance';
+      this.isMaintenanceRoute = event.url === '/info';
     });
   }
 
   private shouldShowSidebar(route: string): boolean {
-    const publicRoutes = ['/login', '/register', '/profile', '/notification-preferences', '/admin','/maintenance'];
+    const publicRoutes = ['/login', '/register', '/profile', '/notification-preferences', '/admin','/info'];
     return !publicRoutes.some(r => route.startsWith(r)) && this.authService.isAuthenticated();
   }
 
   private shouldShowNavbar(route: string): boolean {
-    const publicRoutes = ['/login', '/register','/maintenance','/forgot-password'];
+    const publicRoutes = ['/login', '/register','/info','/forgot-password'];
     return !publicRoutes.some(r => route.startsWith(r));
   }
 

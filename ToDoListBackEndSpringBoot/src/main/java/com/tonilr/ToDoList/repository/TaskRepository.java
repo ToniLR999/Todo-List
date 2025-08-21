@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
@@ -200,4 +202,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
      */
     @Query("SELECT t FROM Task t WHERE t.assignedTo = :user AND t.taskList.id = :taskListId")
     List<Task> findByAssignedToAndTaskListId(@Param("user") User user, @Param("taskListId") Long taskListId);
+
+    // AÑADIR paginación para consultas grandes
+    @Query("SELECT t FROM Task t WHERE t.assignedTo = :user ORDER BY t.dueDate ASC")
+    Page<Task> findByAssignedToWithPagination(@Param("user") User user, Pageable pageable);
 }

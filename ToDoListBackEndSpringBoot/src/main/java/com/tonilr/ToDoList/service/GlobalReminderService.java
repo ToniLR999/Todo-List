@@ -40,7 +40,7 @@ public class GlobalReminderService {
      * Processes all user notification preferences and sends appropriate reminders
      * based on configured settings (due date, daily, weekly summaries).
      */
-    @Scheduled(cron = "0 */1 * * * *")  // Cada minuto
+    @Scheduled(cron = "0 0 * * * *") 
     public void checkAndSendReminders() {
         try {
             List<NotificationPreferences> preferences = notificationPreferencesRepository.findAll();
